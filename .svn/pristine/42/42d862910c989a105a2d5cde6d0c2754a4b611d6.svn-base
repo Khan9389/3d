@@ -1,0 +1,124 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ko" xml:lang="ko">
+<head>
+<meta name="keywords" content="3DBANK" />
+<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+<title>3DBANK</title>
+<link rel="stylesheet" type="text/css" href="../css/common.css" />
+</head>
+<body>
+<dl class="hid">
+    <dt>바로가기 메뉴</dt>
+    <dd><a href="#gnb">주메뉴 바로가기</a></dd>
+    <dd><a href="#container">본문 바로가기</a></dd>
+    <dd><a href="#address">주소 바로가기</a></dd>
+</dl>
+<div id="header_wrap">
+    <div class="top_bg">
+        <!--header -->
+        <div id="header">
+            <!-- top_mnu -->
+            <div class="top_mnu">
+                <h1 class="logo"><a href="index.html"><img src="../images/common/com_logo.gif" alt="3DBANK"/></a></h1>
+                <ul class="util_mnu">
+                    <li class="bgNo"><a href="#">로그인</a></li>
+                    <li><a href="#">회원가입</a></li>
+                    <li><a href="#">아이디/비밀번호찾기</a></li>
+                    <li><a href="#">마이페이지</a></li>
+                    <li><a href="#">싸이트맵</a></li>
+                    <li class="cart">카트<span>1</span></li>
+                    <li class="lng"><a href="#">Language</a></li>
+                    <li class="money"><a href="#">수수료안내</a></li>
+                </ul>
+            </div>
+            <!-- //top_mnu -->
+            <!-- //gnb_wrap -->
+        </div>
+        <!-- //header -->
+    </div>
+    <!-- //top_bg -->
+    <div id="gnb_wrap">
+        <div id="gnb_group">
+            <ul class="gnb">
+                <li class="menu"><a href="#" style="color:#f27417;">3D MODEL</a>
+                    <ul class="sub first">
+                        <li class="sub_tit"><img src="../images/common/gnb_tit01.gif" alt="녹색인증개요" class="fl" style="margin-right:20px" /></li>
+                        <li class="gnbSub_bg01"><a href="#">문화유산</a></li>
+                        <li class="gnbSub_bg02"><a href="#">박물관</a></li>
+                        <li class="gnbSub_bg03"><a href="#">생활ㆍ과학관</a></li>
+                        <li class="gnbSub_bg04 bl_no "><a href="#">모델링</a></li>
+                    </ul>
+                </li>
+                <li class="menu"><a href="#">COMMUNITY</a></li>
+                <li class="menu"><a href="#">ORDER</a></li>
+                <li class="menu"><a href="#">MEMBER</a></li>
+                <li class="menu"><a href="#">SHOP</a></li>
+                <li class="menu"><a href="#">3D MUSEUM</a></li>
+                <li class="menu"><a href="#">3DBANK 카페</a></li>
+            </ul>
+        </div>
+        <!-- //gnb_group -->
+    </div>
+    <!-- //gnb_wrap -->
+</div>
+<!-- //header_wrap -->
+<!-- quick Menu -->
+<dl id="quick">
+    <dt>나의현황정보</dt>
+    <dd>
+        <ul>
+            <li><img src="../images/common/quick_img01.gif" alt="이의신청이미지" class="mb7"/></li>
+            <li>이의신청 <span class="bold fontC02">1건</span></li>
+        </ul>
+    </dd>
+    <dd>
+        <ul>
+            <li><img src="../images/common/quick_img02.gif" alt="온라인답변이미지" class="mb7"/></li>
+            <li>온라인답변 <span class="bold fontC02">1건</span></li>
+        </ul>
+    </dd>
+    <dd>
+        <ul>
+            <li><img src="../images/common/quick_img03.gif" alt="문서보관이미지" class="mb7"/></li>
+            <li>문서보관 <span class="bold fontC02">1건</span></li>
+        </ul>
+    </dd>
+    <dd class="top_btn"><a href="#"><img src="../images/common/top_btn.gif" alt="top가기" /></a></dd>
+</dl>
+<!-- //quick Menu -->
+<div id="footer_wrap">
+<img src="../images/common/bi_KIAT.gif" alt="KIAT-한국산업기술진흥원" class="fl mr40"/>
+		<ul class="footer_mnu fl">
+			<li class="bgNo"><a href="#"  style="color:#ec5215; font-weight:bold; padding-left:0">개인정보처리방침</a></li>
+			<li><a href="#">이메일무단수집거부</a></li>
+			<li><a href="#">오시는길</a></li>
+			<li><a href="#">뷰어다운로드</a></li>
+			<li><a href="#">개인정보침해신고</a></li>
+		</ul>
+
+		<address id="address">
+			135-513 서울특별시 강남구 테헤란로 305(역삼동 701-7) 한국기술센터 17층 녹색인증센터 사무국 6009-3981~7 6009-3989<br />
+			COPYRIGHT ⓒ 2015 KOREA STANDARD ASSOCIATION. ALL RIGHTS RESERVED.
+		</address>
+
+		<div class="bottom_link">
+			<ul>
+				<!-- <li><img src="../images/common/aword02.gif" alt="" /></li> -->
+				<li><a href="http://validator.w3.org/check?uri=referer"><img src="http://www.w3.org/Icons/valid-xhtml10" alt="Valid XHTML 1.0 Transitional" height="31" width="88" /></a></li>
+			</ul>
+			<div class="relSite mt5">
+				<form name="relSiteForm" method="get" action="#">
+					<fieldset>
+						<legend class="hid">관련싸이트 바로가기</legend>
+							<select name="relsite" title="관련싸이트 이동">
+								<option>유관기관 및 관련싸이트</option>
+								<option value="http://www.naver.com">네이버</option>
+							</select>
+							<!-- <input type="button" value="이동" name="" title="이동" class="" /> -->
+					</fieldset>
+				</form>
+			</div><!-- //relSite -->
+		</div><!-- // link -->
+	 </div><!-- //footer_wrap -->
+</body>
+</html>

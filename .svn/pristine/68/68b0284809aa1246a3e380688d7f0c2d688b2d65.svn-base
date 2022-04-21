@@ -1,0 +1,96 @@
+<%@ page contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ko" xml:lang="ko">
+
+<head>
+	<%@ include file="../comm/util.jsp" %>
+	<meta name="keywords" content="3DBANK" />
+	<script type="text/javascript" charset="utf-8" src="/asia3d/js/jquery.cookie.js"></script>
+	<title><%=title%></title>
+</head>
+
+<body>
+<%
+	String prevPage = request.getHeader("REFERER");
+%>
+
+<script type="text/javascript">
+$(document).ready(function() {
+});
+
+function clickBtnLogin() {
+	var p_login_id = $('#p_login_id').val();
+	var p_pswd = $('#p_pswd').val();
+	
+	if (!p_login_id) {
+		$('#p_login_id').focus();
+		return;
+	}
+	if (!p_pswd) {
+		$('#p_pswd').focus();
+		return;
+	}
+	
+	var paramJson = new Object();
+	paramJson.service_tp = "admin_login";
+	paramJson.p_login_id = p_login_id;
+	paramJson.p_pswd = p_pswd;
+	
+	doCommunication(paramJson);
+}
+
+function doCommunication(jsonParam) {
+	var jsondata = "jsondata=" + JSON.stringify(jsonParam);
+	printLog("send data", jsondata);
+	
+	$.ajax({
+        type : "POST",  
+        url : "/Ajax3DBankController.do",
+        data : jsondata,
+        success : function(result) {
+        	printLog("response data", JSON.stringify(result));
+        	
+        	if (result.retcode == "000") {
+				location.href = "/index.do"
+			} else {
+				alert(result.retmsg);
+			}
+        }
+    });
+}
+</script>
+<%@ include file="../comm/menu.jsp" %>
+
+<div id="container">
+	<div class="SubContents"  >
+        <!-- //sub_left -->
+		<div class="Acontents">
+					 <!--login_wrap-->
+			<div class="login_wrap admin_login_wrap">
+				<div class="">
+					<p class="admin_title"><span>A</span>mdministration</p>
+				</div>
+				<div class="box_login">
+					<p class="txt_id"> <span class="input_text">
+						<input id="p_login_id" title="아이디 또는 이메일 주소" placeholder="아이디 또는 이메일 주소를 입력해주세요" style="width:375px;" InputType="true" EnterTab="true" >
+					</span>	</p>
+					<p class="txt_id"> <span class="input_text">
+						<input id="p_pswd" type="password" title="비밀번호" placeholder="비밀번호를 입력해주세요" style="width:375px;" maxlength="15" onkeypress="if(event.keyCode==13) {clickBtnLogin(); return false;}" />
+					</span> </p>
+					<p class="txt_save hide"> <span class="input_checkbox">
+						<input type="checkbox" id="saveId" title="아이디 저장">
+						<label for="saveId"> <span></span> <em>아이디 저장</em> </label>
+					</span> </p>
+					<p class="txt_save"></p>
+					<button type="submit" class="login_button2 btn_login" onclick="clickBtnLogin();" style="letter-spacing:-2px;  padding:5px">로그인</button>						
+				</div>
+			</div>
+			<!-- //login_wrap -->
+		</div>
+	</div>
+	<!--//Scontents-->
+</div>
+
+<%@ include file="../comm/footer.jsp" %>
+</body>
+</html>

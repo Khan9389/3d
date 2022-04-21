@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="calculateDAO">
+
+
+	<insert id="calculateDAO.insertPAY_DEPOSIT_INFO">
+		<selectKey keyProperty="new_dep_info_seq" resultClass="int">
+			SELECT IFNULL(MAX(DEP_INFO_SEQ),0)+1  FROM PAY_DEPOSIT_INFO
+		</selectKey>
+		<![CDATA[
+			INSERT INTO PAY_DEPOSIT_INFO 
+			(	
+        
+				DEP_DT  		     
+			,	DEP_INFO_SEQ 
+			, 	MID  			
+			,	STTL_ID      
+			,	AUTH_CNT     
+			,	AUTH_AMT     
+			,	CANCEL_CNT   
+			,	CANCEL_AMT   
+			,	HOLD_PAY_AMT 
+			,	HOLD_CPAY_AMT
+			,	OFFSET_AMT   
+			,	FEES         
+			,	TAX          
+			,	DEP_AMT      
+			,	REG_DTTM     
+	
+
+			)
+			VALUES 
+			( 
+			
+				#dep_dt#    
+			,	#new_dep_info_seq#    
+			,	#mid#  			
+			,	#sttl_id#         
+			,	#auth_cnt#        
+			,	#auth_amt#        
+			,	#cancel_cnt#      
+			,	#cancel_amt#      
+			,	#hold_pay_amt#    
+			,	#hold_cpay_amt#   
+			,	#offset_amt#      
+			,	#fees#            
+			,	#tax#             
+			,	#dep_amt#         
+			,	date_format(now(),'%Y%m%d%H%i%s')	
+			)
+		]]>
+	</insert>
+
+    <!--  업데이트 -->
+	<update id="calculateDAO.updatePAY_APPR_INFO">
+			UPDATE PAY_APPR_INFO   
+			<dynamic prepend="SET">
+				<isPropertyAvailable prepend="," property="cpay_auth_dt"   > CPAY_AUTH_DT   = #cpay_auth_dt#   </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="cpay_cancel_dt" > CPAY_CANCEL_DT = #cpay_cancel_dt# </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="cpay_tid"       > CPAY_TID       = #cpay_tid#       </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="cpay_org_tid"   > CPAY_ORG_TID   = #cpay_org_tid#   </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="cpay_goodsname" > CPAY_GOODSNAME = #cpay_goodsname# </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="cpay_amt"       > CPAY_AMT       = #cpay_amt#       </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="cpay_st"        > CPAY_ST        = #cpay_st#        </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="cpay_authcode"  > CPAY_AUTHCODE  = #cpay_authcode#  </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="cpay_order_num" > CPAY_ORDER_NUM = #cpay_order_num# </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="cpay_msub_id"   > CPAY_MSUB_ID   = #cpay_msub_id#   </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="cpay_cbank_cd"  > CPAY_CBANK_CD  = #cpay_cbank_cd#  </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="cpay_acctnum"   > CPAY_ACCTNUM   = #cpay_acctnum#   </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="cpay_inq_dttm"  > CPAY_INQ_DTTM  = #cpay_inq_dttm#  </isPropertyAvailable> 
+
+				<isPropertyAvailable prepend="," property="csttl_msub_id"  > CSTTL_MSUB_ID  = #csttl_msub_id#  </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="csttl_sttl_dt"  > CSTTL_STTL_DT  = #csttl_sttl_dt#  </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="csttl_st"       > CSTTL_ST       = #csttl_st#       </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="csttl_tr_tp"    > CSTTL_TR_TP    = #csttl_tr_tp#    </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="csttl_ac_dt"    > CSTTL_AC_DT    = #csttl_ac_dt#    </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="csttl_ac_amt"   > CSTTL_AC_AMT   = #csttl_ac_amt#   </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="csttl_fees"     > CSTTL_FEES     = #csttl_fees#     </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="csttl_tax"      > CSTTL_TAX      = #csttl_tax#      </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="csttl_inq_dttm" > CSTTL_INQ_DTTM = #csttl_inq_dttm# </isPropertyAvailable> 
+				
+				<isPropertyAvailable prepend="," property="proc_st"        > PROC_ST        = #proc_st#        </isPropertyAvailable> 
+			</dynamic>
+			WHERE TID = #tid# 
+	</update>
+    
+        		
+</sqlMap>

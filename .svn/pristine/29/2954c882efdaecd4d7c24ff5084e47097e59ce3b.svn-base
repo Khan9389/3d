@@ -1,0 +1,12 @@
+<STL Volume Weight Calculator>:http://codecanyon.net/item/stl-volume-weight-calculator/3073161
+데모테스트: http://codecanyon.net/item/stl-volume-weight-calculator/full_screen_preview/3073161
+
+결과는 위랑 동일함.
+
+<node-stl> 명령어
+[vdiuser@dev:/home/vdiuser/3dbank/node_modules/node-stl] mocha parse.js ./test_data/20.stl
+#############################################
+stlfile=[./test_data/20.stl]
+#############################################
+cm^3=1578.510042550951
+gram=1641.6504442529892

@@ -1,0 +1,2408 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="memberDAO">
+
+	<!--   메인페이지에 들어가는 3D Contents 대분류 + 인기순 -->
+   	<select id="memberDAO.main_info_conts_3d_list_by_major_by_like" resultClass="java.util.HashMap">
+        <![CDATA[  
+			SELECT 
+				T1.*,
+				T2.CONTS_FILE_SEQ   conts_file_seq,
+				T2.CONTS_SAVE_NAME  conts_save_name,
+				T2.STL_THUMNAIL     stl_thumnail
+			FROM
+			(
+				(
+					SELECT 
+						  CONTS_3D_INFO.CONTS_MAJOR  conts_major,
+						  CONTS_3D_INFO.CONTS_UID    conts_uid, 
+						  CONTS_3D_INFO.T_LIKE_CNT   t_like_cnt,    
+						  MIN(CONTS_FILE.CONTS_FILE_SEQ)  conts_file_seq
+					FROM  CONTS_3D_INFO , CONTS_FILE
+					WHERE 
+						  CONTS_FILE.CONTS_UID = CONTS_3D_INFO.CONTS_UID 
+					AND   CONTS_3D_INFO.CONTS_MAJOR = '1' 
+					AND   IFNULL(CONTS_3D_INFO.DEL_YN,'N') = 'N'   
+					AND   CONTS_FILE.CONTS_TP = '01' 
+					AND   CONTS_FILE.CONTS_FILE_SIZE > 0 
+					AND   CONTS_FILE.CONTS_UID = CONTS_3D_INFO.CONTS_UID 
+					AND   IFNULL(CONTS_FILE.DEL_YN,'N') = 'N'
+					GROUP BY CONTS_3D_INFO.CONTS_MAJOR, CONTS_3D_INFO.CONTS_UID, CONTS_3D_INFO.T_LIKE_CNT
+					ORDER BY CONTS_3D_INFO.T_LIKE_CNT DESC, CONTS_3D_INFO.CONTS_UID DESC, CONTS_FILE.CONTS_FILE_SEQ ASC, CONTS_FILE.CONTS_FILE_SEQ ASC LIMIT 4
+			    )
+			    UNION 
+			    (
+					SELECT 
+						  CONTS_3D_INFO.CONTS_MAJOR  conts_major,
+						  CONTS_3D_INFO.CONTS_UID    conts_uid, 
+						  CONTS_3D_INFO.T_LIKE_CNT   t_like_cnt,    
+						  MIN(CONTS_FILE.CONTS_FILE_SEQ)  conts_file_seq
+					FROM  CONTS_3D_INFO , CONTS_FILE
+					WHERE 
+						  CONTS_FILE.CONTS_UID = CONTS_3D_INFO.CONTS_UID 
+					AND   CONTS_3D_INFO.CONTS_MAJOR = '2' 
+					AND   IFNULL(CONTS_3D_INFO.DEL_YN,'N') = 'N'   
+					AND   CONTS_FILE.CONTS_TP = '01' 
+					AND   CONTS_FILE.CONTS_FILE_SIZE > 0 
+					AND   CONTS_FILE.CONTS_UID = CONTS_3D_INFO.CONTS_UID 
+					AND   IFNULL(CONTS_FILE.DEL_YN,'N') = 'N'
+					GROUP BY CONTS_3D_INFO.CONTS_MAJOR, CONTS_3D_INFO.CONTS_UID, CONTS_3D_INFO.T_LIKE_CNT
+					ORDER BY CONTS_3D_INFO.T_LIKE_CNT DESC, CONTS_3D_INFO.CONTS_UID DESC, CONTS_FILE.CONTS_FILE_SEQ ASC, CONTS_FILE.CONTS_FILE_SEQ ASC LIMIT 4    
+			    )
+			    UNION 
+			    (
+					SELECT 
+						  CONTS_3D_INFO.CONTS_MAJOR  conts_major,
+						  CONTS_3D_INFO.CONTS_UID    conts_uid, 
+						  CONTS_3D_INFO.T_LIKE_CNT   t_like_cnt,    
+						  MIN(CONTS_FILE.CONTS_FILE_SEQ)  conts_file_seq
+					FROM  CONTS_3D_INFO , CONTS_FILE
+					WHERE 
+						  CONTS_FILE.CONTS_UID = CONTS_3D_INFO.CONTS_UID 
+					AND   CONTS_3D_INFO.CONTS_MAJOR = '3' 
+					AND   IFNULL(CONTS_3D_INFO.DEL_YN,'N') = 'N'   
+					AND   CONTS_FILE.CONTS_TP = '01' 
+					AND   CONTS_FILE.CONTS_FILE_SIZE > 0 
+					AND   CONTS_FILE.CONTS_UID = CONTS_3D_INFO.CONTS_UID 
+					AND   IFNULL(CONTS_FILE.DEL_YN,'N') = 'N'
+					GROUP BY CONTS_3D_INFO.CONTS_MAJOR, CONTS_3D_INFO.CONTS_UID, CONTS_3D_INFO.T_LIKE_CNT
+					ORDER BY CONTS_3D_INFO.T_LIKE_CNT DESC, CONTS_3D_INFO.CONTS_UID DESC, CONTS_FILE.CONTS_FILE_SEQ ASC, CONTS_FILE.CONTS_FILE_SEQ ASC LIMIT 4    
+			    )
+			    UNION 
+			    (
+					SELECT 
+						  CONTS_3D_INFO.CONTS_MAJOR  conts_major,
+						  CONTS_3D_INFO.CONTS_UID    conts_uid, 
+						  CONTS_3D_INFO.T_LIKE_CNT   t_like_cnt,    
+						  MIN(CONTS_FILE.CONTS_FILE_SEQ)  conts_file_seq
+					FROM  CONTS_3D_INFO , CONTS_FILE
+					WHERE 
+						  CONTS_FILE.CONTS_UID = CONTS_3D_INFO.CONTS_UID 
+					AND   CONTS_3D_INFO.CONTS_MAJOR = '4' 
+					AND   IFNULL(CONTS_3D_INFO.DEL_YN,'N') = 'N'   
+					AND   CONTS_FILE.CONTS_TP = '01' 
+					AND   CONTS_FILE.CONTS_FILE_SIZE > 0 
+					AND   CONTS_FILE.CONTS_UID = CONTS_3D_INFO.CONTS_UID 
+					AND   IFNULL(CONTS_FILE.DEL_YN,'N') = 'N'
+					GROUP BY CONTS_3D_INFO.CONTS_MAJOR, CONTS_3D_INFO.CONTS_UID, CONTS_3D_INFO.T_LIKE_CNT
+					ORDER BY CONTS_3D_INFO.T_LIKE_CNT DESC, CONTS_3D_INFO.CONTS_UID DESC, CONTS_FILE.CONTS_FILE_SEQ ASC, CONTS_FILE.CONTS_FILE_SEQ ASC LIMIT 4    
+			    )    
+			) T1,
+			CONTS_FILE T2
+			WHERE
+			    T2.CONTS_UID = T1.conts_uid 
+			AND T2.CONTS_FILE_SEQ = T1.conts_file_seq   
+        ]]>
+    </select>
+
+	<insert id="memberDAO.user_reg">
+		<selectKey keyProperty="new_user_uid" resultClass="int">
+			SELECT IFNULL(MAX(USER_UID),0)+1  FROM USER
+		</selectKey>
+		
+		<![CDATA[
+			INSERT INTO USER 
+			(	
+					USER_UID		
+				,	USER_TP			
+				,	COMPY_NAME		
+				,	COMPY_NUM		
+				,	P_NAME			
+				,	P_LOGIN_ID		
+				,	P_PSWD			
+				,	POST_CODE		
+				,	ROAD_ADDR		
+				,	JIBUN_ADDR		
+				,	DETAIL_ADDR		
+				,	PHONE_NUM	
+
+				,	SNS_ID
+				,	SNS_TP
+				,	AGE
+				,	GENDER
+				,	R_NAME
+
+				,	DESIGN_YN		
+				,	PRINT_YN		
+				,	TEACHER_YN		
+				,	SUM_POINT		
+				,	USED_POINT		
+				,	USE_PSSB_POINT	
+				,	ACCT_BANK		
+				,	ACCT_NUM		
+				,	LOGIN_CNT		
+				,	REG_CERT_TP		
+				,	REG_CERT_NUM	
+				,	REQ_REG_DTTM	
+				,	REG_CERT_ST		
+				,	LST_LOGIN_DTTM	
+				,	RCMDER_UID	
+				,	HOME_PAGE
+				,	MY_INTRO
+				,	MY_PHOTO	
+				,	REG_DTTM
+
+			)
+			VALUES 
+			( 
+					#new_user_uid#		
+				,	#user_tp#			
+				,	#compy_name#		
+				,	#compy_num#		
+				,	#p_name#			
+				,	#p_login_id#		
+				,	#p_pswd#			
+				,	#post_code#		
+				,	#road_addr#		
+				,	#jibun_addr#		
+				,	#detail_addr#		
+				,	#phone_num#		
+
+				,	#sns_id#
+				,	#sns_tp#
+				,	#age#
+				,	#gender#
+				,	#r_name#
+			
+				,	#design_yn#		
+				,	#print_yn#		
+				,	#teacher_yn#		
+				,	#sum_point#		
+				,	#used_point#		
+				,	#use_pssb_point#	
+				,	#acct_bank#		
+				,	#acct_num#		
+				,	#login_cnt#		
+				,	#reg_cert_tp#		
+				,	#reg_cert_num#	
+				,	#req_reg_dttm#	
+				,	#reg_cert_st#		
+				,	#lst_login_dttm#	
+				,	#rcmder_uid#	
+				,	#home_page#
+				,	#my_intro#
+				,	#my_photo#
+				,	date_format(now(),'%Y%m%d%H%i%s')
+			)
+		]]>
+	</insert>
+
+    <select id="memberDAO.selectUser_by_p_login_id" resultClass="java.util.HashMap">
+        <![CDATA[
+        SELECT
+        	*,(SELECT P_LOGIN_ID FROM USER WHERE USER_UID=T1.rcmder_uid) rcmder_login_id   
+        FROM 
+        (	
+			 SELECT B.P_LOGIN_ID corp_p_login_id,
+			       B.P_PSWD corp_p_pswd,
+			       B.P_NAME corp_p_name,
+			       B.P_PHONE_NUM corp_p_phone_num,
+			       B.UPT_DTTM corp_upt_dttm,
+			       A.USER_UID user_uid,
+			       A.USER_TP user_tp,
+			       A.COMPY_NAME compy_name,
+			       A.COMPY_NUM compy_num,
+			       A.P_NAME p_name,
+			       A.P_LOGIN_ID p_login_id,
+			       A.P_PSWD p_pswd,
+			       A.POST_CODE post_code,
+			       A.ROAD_ADDR road_addr,
+			       A.JIBUN_ADDR jibun_addr,
+			       A.DETAIL_ADDR detail_addr,
+			       A.PHONE_NUM phone_num,
+
+				   A.SNS_ID  sns_id,  
+				   A.SNS_TP  sns_tp,  
+				   A.AGE	  age,
+				   A.GENDER  gender,  
+				   A.R_NAME  r_name,  
+
+			       A.DESIGN_YN design_yn,
+			       A.PRINT_YN print_yn,
+			       A.TEACHER_YN teacher_yn,
+			       A.SUM_POINT sum_point,
+			       A.USED_POINT used_point,
+			       A.USE_PSSB_POINT use_pssb_point,
+			       A.ACCT_BANK acct_bank,
+			       A.ACCT_NUM acct_num,
+			       A.LOGIN_CNT login_cnt,
+			       A.REG_CERT_TP reg_cert_tp,
+			       A.REG_CERT_NUM reg_cert_num,
+			       A.REQ_REG_DTTM req_reg_dttm,
+			       A.REG_CERT_ST reg_cert_st,
+			       A.LST_LOGIN_DTTM lst_login_dttm,
+			       A.RCMDER_UID rcmder_uid,
+			       A.HOME_PAGE home_page,
+			       A.MY_INTRO my_intro,
+			       A.MY_PHOTO my_photo,
+			       A.USER_CONDITION user_condition,
+			       A.STOP_DESC stop_desc,
+			       A.ACCT_NAME	acct_name
+			 FROM 	USER A LEFT OUTER JOIN CORP_USER B 
+			 ON 		A.USER_UID = B.USER_UID
+			 AND 		B.P_LOGIN_ID = #p_login_id#
+			 WHERE (
+			        A.P_LOGIN_ID = #p_login_id#
+			        OR 
+			        B.P_LOGIN_ID = #p_login_id#
+			) AND (
+				A.USER_UID = #user_uid# OR IFNULL(#user_uid#,'') = ''
+			)    
+			LIMIT 1
+        ) T1         
+        ]]>
+    </select>
+    
+	<select id="memberDAO.selectUser_by_user_uid" resultClass="java.util.HashMap">
+        <![CDATA[
+        SELECT
+        	*,(SELECT P_LOGIN_ID FROM USER WHERE USER_UID=T1.rcmder_uid) rcmder_login_id   
+        FROM 
+        (	
+            SELECT
+			     USER_UID    		user_uid    	
+			,    USER_TP    		user_tp    		
+			,    COMPY_NAME    		compy_name    	
+			,    COMPY_NUM    		compy_num    	
+			,    P_NAME    			p_name    		
+			,    P_LOGIN_ID    		p_login_id    	
+			,    P_PSWD    			p_pswd    		
+			,    POST_CODE    		post_code    	
+			,    ROAD_ADDR    		road_addr    	
+			,    JIBUN_ADDR    		jibun_addr    	
+			,    DETAIL_ADDR    	detail_addr    	
+			,    PHONE_NUM    		phone_num    
+			
+			,	 SNS_ID				sns_id
+			,	 SNS_TP				sns_tp  
+			,	 AGE				age     
+			,	 GENDER				gender  
+			,	 R_NAME				r_name 
+ 		
+			,    DESIGN_YN    		design_yn    	
+			,    PRINT_YN    		print_yn    	
+			,    TEACHER_YN    		teacher_yn    	
+			,    SUM_POINT    		sum_point    	
+			,    USED_POINT    		used_point    	
+			,    USE_PSSB_POINT    	use_pssb_point 
+			,    ACCT_BANK    		acct_bank    	
+			,    ACCT_NUM    		acct_num    	
+			,    LOGIN_CNT    		login_cnt    	
+			,    REG_CERT_TP    	reg_cert_tp    	
+			,    REG_CERT_NUM    	reg_cert_num   
+			,    REQ_REG_DTTM    	req_reg_dttm   
+			,    REG_CERT_ST    	reg_cert_st    	
+			,    LST_LOGIN_DTTM    	lst_login_dttm 
+			,    RCMDER_UID    		rcmder_uid   
+			,    HOME_PAGE          home_page
+			,    MY_INTRO           my_intro
+			,    MY_PHOTO           my_photo
+			,	 ACCT_NAME			acct_name  		
+            FROM USER 
+            WHERE USER_UID=#user_uid#
+            LIMIT 1
+        ) T1
+        ]]>
+    </select>
+    
+    
+    
+    
+    <!-- 회원 정보 업데이트 -->
+	<update id="memberDAO.updateUser_by_p_login_id">
+			UPDATE USER   
+			<dynamic prepend="SET">
+ 	
+				<isPropertyAvailable prepend="," property="user_tp">
+							USER_TP    			= #user_tp# </isPropertyAvailable>   	
+				<isPropertyAvailable prepend="," property="compy_name">			
+							COMPY_NAME    		= #compy_name# </isPropertyAvailable>   	
+				<isPropertyAvailable prepend="," property="compy_num">
+							COMPY_NUM    		= #compy_num# </isPropertyAvailable>   	
+				<isPropertyAvailable prepend="," property="p_name">
+							P_NAME    			= #p_name# </isPropertyAvailable>   		
+				<isPropertyAvailable prepend="," property="p_login_id">
+							P_LOGIN_ID    		= #p_login_id# </isPropertyAvailable>   
+				<isPropertyAvailable prepend="," property="p_pswd">			
+							P_PSWD    			= #p_pswd# </isPropertyAvailable>   	
+				<isPropertyAvailable prepend="," property="post_code">			
+							POST_CODE    		= #post_code# </isPropertyAvailable>   
+				<isPropertyAvailable prepend="," property="road_addr">			
+							ROAD_ADDR    		= #road_addr# </isPropertyAvailable>   
+				<isPropertyAvailable prepend="," property="jibun_addr">			
+							JIBUN_ADDR    		= #jibun_addr# </isPropertyAvailable>   
+				<isPropertyAvailable prepend="," property="detail_addr">			
+							DETAIL_ADDR    		= #detail_addr# </isPropertyAvailable>  
+				<isPropertyAvailable prepend="," property="phone_num">			
+							PHONE_NUM    		= #phone_num# </isPropertyAvailable>   
+
+				<isPropertyAvailable prepend="," property="sns_id">			
+							SNS_ID    		= #sns_id# </isPropertyAvailable>   
+				<isPropertyAvailable prepend="," property="sns_tp">			
+							SNS_TP    		= #sns_tp# </isPropertyAvailable>   
+				<isPropertyAvailable prepend="," property="age">			
+							AGE    		= #age# </isPropertyAvailable>   
+				<isPropertyAvailable prepend="," property="gender">			
+							GENDER    		= #gender# </isPropertyAvailable>   
+				<isPropertyAvailable prepend="," property="r_name">			
+							R_NAME    		= #r_name# </isPropertyAvailable>   
+  	
+				<isPropertyAvailable prepend="," property="design_yn">			
+							DESIGN_YN    		= #design_yn# </isPropertyAvailable>   
+				<isPropertyAvailable prepend="," property="print_yn">			
+							PRINT_YN    		= #print_yn# </isPropertyAvailable>   
+				<isPropertyAvailable prepend="," property="teacher_yn">			
+							TEACHER_YN    		= #teacher_yn# </isPropertyAvailable>   	
+				<isPropertyAvailable prepend="," property="sum_point">
+							SUM_POINT    		= #sum_point# </isPropertyAvailable>   
+				<isPropertyAvailable prepend="," property="used_point">			
+							USED_POINT    		= #used_point# </isPropertyAvailable>   	
+				<isPropertyAvailable prepend="," property="use_pssb_point">
+							USE_PSSB_POINT    	= #use_pssb_point# </isPropertyAvailable>
+				<isPropertyAvailable prepend="," property="acct_bank">
+							ACCT_BANK    		= #acct_bank# </isPropertyAvailable>   	
+				<isPropertyAvailable prepend="," property="acct_num">
+							ACCT_NUM    		= #acct_num# </isPropertyAvailable>
+				<isPropertyAvailable prepend="," property="acct_name">
+							ACCT_NAME    		= #acct_name# </isPropertyAvailable>   	
+				<isPropertyAvailable prepend="," property="login_cnt">
+							LOGIN_CNT    		= #login_cnt# </isPropertyAvailable>   	
+				<isPropertyAvailable prepend="," property="reg_cert_tp">
+							REG_CERT_TP    		= #reg_cert_tp# </isPropertyAvailable>   	
+				<isPropertyAvailable prepend="," property="reg_cert_num">
+							REG_CERT_NUM    	= #reg_cert_num# </isPropertyAvailable>  
+				<isPropertyAvailable prepend="," property="req_reg_dttm">
+							REQ_REG_DTTM    	= #req_reg_dttm# </isPropertyAvailable>  
+				<isPropertyAvailable prepend="," property="reg_cert_st">
+							REG_CERT_ST    		= #reg_cert_st# </isPropertyAvailable>   	
+				<isPropertyAvailable prepend="," property="lst_login_dttm">
+							LST_LOGIN_DTTM    	= #lst_login_dttm# </isPropertyAvailable>
+				<isPropertyAvailable prepend="," property="rcmder_uid">
+							RCMDER_UID    		= #rcmder_uid# </isPropertyAvailable>  
+							
+				<isPropertyAvailable prepend="," property="home_page">
+							HOME_PAGE    		= #home_page# </isPropertyAvailable>  
+				<isPropertyAvailable prepend="," property="my_intro">
+							MY_INTRO    		= #my_intro# </isPropertyAvailable>  
+				<isPropertyAvailable prepend="," property="my_photo">
+							MY_PHOTO    		= #my_photo# </isPropertyAvailable> 
+							
+				<isPropertyAvailable prepend="," property="t_follower">
+							T_FOLLOWER    		= #t_follower# </isPropertyAvailable>  
+				<isPropertyAvailable prepend="," property="t_following">
+							T_FOLLOWING    		= #t_following# </isPropertyAvailable> 			
+				<isPropertyAvailable prepend="," property="del_yn">
+							DEL_YN    			= #del_yn# </isPropertyAvailable>
+								
+				<isPropertyAvailable prepend="," property="user_condition">
+							USER_CONDITION	= #user_condition# </isPropertyAvailable>	
+				<isPropertyAvailable prepend="," property="stop_dttm">
+							STOP_DTTM		= #stop_dttm# </isPropertyAvailable>	
+				<isPropertyAvailable prepend="," property="stop_desc">
+							STOP_DESC		= #stop_desc# </isPropertyAvailable>	
+			</dynamic>
+			WHERE P_LOGIN_ID=#p_login_id#
+	</update>
+
+	<!-- 회원 정보 업데이트 -->
+	<update id="memberDAO.updateUser_by_user_uid">
+			UPDATE USER   
+			<dynamic prepend="SET">
+ 	
+				<isPropertyAvailable prepend="," property="user_tp">
+							USER_TP    			= #user_tp# </isPropertyAvailable>   	
+				<isPropertyAvailable prepend="," property="compy_name">			
+							COMPY_NAME    		= #compy_name# </isPropertyAvailable>   	
+				<isPropertyAvailable prepend="," property="compy_num">
+							COMPY_NUM    		= #compy_num# </isPropertyAvailable>   	
+				<isPropertyAvailable prepend="," property="p_name">
+							P_NAME    			= #p_name# </isPropertyAvailable>   		
+				<isPropertyAvailable prepend="," property="p_login_id">
+							P_LOGIN_ID    		= #p_login_id# </isPropertyAvailable>   
+				<isPropertyAvailable prepend="," property="p_pswd">			
+							P_PSWD    			= #p_pswd# </isPropertyAvailable>   	
+				<isPropertyAvailable prepend="," property="post_code">			
+							POST_CODE    		= #post_code# </isPropertyAvailable>   
+				<isPropertyAvailable prepend="," property="road_addr">			
+							ROAD_ADDR    		= #road_addr# </isPropertyAvailable>   
+				<isPropertyAvailable prepend="," property="jibun_addr">			
+							JIBUN_ADDR    		= #jibun_addr# </isPropertyAvailable>   
+				<isPropertyAvailable prepend="," property="detail_addr">			
+							DETAIL_ADDR    		= #detail_addr# </isPropertyAvailable>  
+				<isPropertyAvailable prepend="," property="phone_num">			
+							PHONE_NUM    		= #phone_num# </isPropertyAvailable>   
+
+				<isPropertyAvailable prepend="," property="sns_id">			
+							SNS_ID    		= #sns_id# </isPropertyAvailable>   
+				<isPropertyAvailable prepend="," property="sns_tp">			
+							SNS_TP    		= #sns_tp# </isPropertyAvailable>   
+				<isPropertyAvailable prepend="," property="age">			
+							AGE    		= #age# </isPropertyAvailable>   
+				<isPropertyAvailable prepend="," property="gender">			
+							GENDER    		= #gender# </isPropertyAvailable>   
+				<isPropertyAvailable prepend="," property="r_name">			
+							R_NAME    		= #r_name# </isPropertyAvailable> 
+ 	
+				<isPropertyAvailable prepend="," property="design_yn">			
+							DESIGN_YN    		= #design_yn# </isPropertyAvailable>   
+				<isPropertyAvailable prepend="," property="print_yn">			
+							PRINT_YN    		= #print_yn# </isPropertyAvailable>   
+				<isPropertyAvailable prepend="," property="teacher_yn">			
+							TEACHER_YN    		= #teacher_yn# </isPropertyAvailable>   	
+				<isPropertyAvailable prepend="," property="sum_point">
+							SUM_POINT    		= #sum_point# </isPropertyAvailable>   
+				<isPropertyAvailable prepend="," property="used_point">			
+							USED_POINT    		= #used_point# </isPropertyAvailable>   	
+				<isPropertyAvailable prepend="," property="use_pssb_point">
+							USE_PSSB_POINT    	= #use_pssb_point# </isPropertyAvailable>
+				<isPropertyAvailable prepend="," property="acct_bank">
+							ACCT_BANK    		= #acct_bank# </isPropertyAvailable>   	
+				<isPropertyAvailable prepend="," property="acct_num">
+							ACCT_NUM    		= #acct_num# </isPropertyAvailable>
+				<isPropertyAvailable prepend="," property="acct_name">
+							ACCT_NAME    		= #acct_name# </isPropertyAvailable>   	
+				<isPropertyAvailable prepend="," property="login_cnt">
+							LOGIN_CNT    		= #login_cnt# </isPropertyAvailable>   	
+				<isPropertyAvailable prepend="," property="reg_cert_tp">
+							REG_CERT_TP    		= #reg_cert_tp# </isPropertyAvailable>   	
+				<isPropertyAvailable prepend="," property="reg_cert_num">
+							REG_CERT_NUM    	= #reg_cert_num# </isPropertyAvailable>  
+				<isPropertyAvailable prepend="," property="req_reg_dttm">
+							REQ_REG_DTTM    	= #req_reg_dttm# </isPropertyAvailable>  
+				<isPropertyAvailable prepend="," property="reg_cert_st">
+							REG_CERT_ST    		= #reg_cert_st# </isPropertyAvailable>   	
+				<isPropertyAvailable prepend="," property="lst_login_dttm">
+							LST_LOGIN_DTTM    	= #lst_login_dttm# </isPropertyAvailable>
+				<isPropertyAvailable prepend="," property="rcmder_uid">
+							RCMDER_UID    		= #rcmder_uid# </isPropertyAvailable>  
+							
+				<isPropertyAvailable prepend="," property="home_page">
+							HOME_PAGE    		= #home_page# </isPropertyAvailable>  
+				<isPropertyAvailable prepend="," property="my_intro">
+							MY_INTRO    		= #my_intro# </isPropertyAvailable>  
+				<isPropertyAvailable prepend="," property="my_photo">
+							MY_PHOTO    		= #my_photo# </isPropertyAvailable>  
+							
+				<isPropertyAvailable prepend="," property="t_follower">
+							T_FOLLOWER    		= #t_follower# </isPropertyAvailable>  
+				<isPropertyAvailable prepend="," property="t_following">
+							T_FOLLOWING    		= #t_following# </isPropertyAvailable> 			
+				<isPropertyAvailable prepend="," property="del_yn">
+							DEL_YN    			= #del_yn# </isPropertyAvailable>			
+			</dynamic>
+			WHERE USER_UID=#user_uid#
+            
+	</update>
+	
+	
+    
+    <insert id="memberDAO.ins_portfolio">
+		<selectKey keyProperty="new_ppio_seq" resultClass="int">
+			SELECT IFNULL(MAX(PPIO_SEQ),0)+1  FROM PORTFOLIO
+		</selectKey>
+		
+		<![CDATA[
+			INSERT INTO PORTFOLIO 
+			(	
+					USER_UID		
+				,	PPIO_SEQ			
+				,	PPLIO_TP		
+				,	FILE_NAME		
+				,	SAVE_NAME					
+				,	UPT_DTTM
+			)
+			VALUES 
+			( 
+					#user_uid#		
+				,	#new_ppio_seq#			
+				,	#pplio_tp#		
+				,	#file_name#		
+				,	#save_name#					
+				,	date_format(now(),'%Y%m%d%H%i%s')	
+			)
+		]]>
+	</insert>
+	
+	<delete id="memberDAO.del_portfolio">
+		<![CDATA[
+			DELETE FROM PORTFOLIO 
+			WHERE USER_UID = #user_uid# AND SAVE_NAME = #save_name#
+		]]>
+	</delete>
+	
+	<select id="memberDAO.selectPortfolioList" resultClass="java.util.HashMap">
+        <![CDATA[
+
+            SELECT
+			     PPIO_SEQ    		ppio_seq    	
+			,    FILE_NAME    		file_name    	
+			,    SAVE_NAME    		save_name  					
+            FROM 	PORTFOLIO 
+            WHERE	USER_UID=#user_uid# 
+            AND		PPLIO_TP=#pplio_tp#
+        ]]>
+    </select>
+    
+    <!-- 기업사용자 관리 -->
+    <select id="memberDAO.selectCorpUserList" resultClass="java.util.HashMap">
+        <![CDATA[
+
+            SELECT
+            	P_LOGIN_ID	p_login_id
+            ,	P_PSWD		p_pswd
+            ,	P_NAME		p_name
+            ,	P_PHONE_NUM p_phone_num		
+            ,	UPT_DTTM	upt_dttm	
+            ,	USER_UID	user_uid				
+            FROM 	CORP_USER 
+            WHERE	USER_UID=#user_uid# 
+        ]]>
+    </select>
+    
+	<delete id="memberDAO.deleteCorpUsers">
+		<![CDATA[
+			DELETE FROM CORP_USER 
+			WHERE USER_UID=#user_uid# 
+		]]>
+	</delete>
+
+    <insert id="memberDAO.insertCorpUser">
+		<![CDATA[
+			INSERT INTO CORP_USER 
+			(	
+					P_LOGIN_ID		
+				,	P_PSWD			
+				,	P_NAME		
+				,	P_PHONE_NUM
+				,	UPT_DTTM
+				,	USER_UID
+			)
+			VALUES 
+			( 
+					#p_login_id#		
+				,	#p_pswd#			
+				,	#p_name#		
+				,	#p_phone_num#
+				,	#upt_dttm#
+				,	#user_uid#
+			)
+		]]>
+	</insert>
+
+
+	<!--
+	 * 출력업체 정보조회
+	 -->
+	<select id="memberDAO.selectPrint_corp_info" resultClass="java.util.HashMap">
+        <![CDATA[
+
+            SELECT
+					PRINT_CORP.USER_UID         user_uid         
+				,	PRINT_CORP.HOLD_PRINT_CNT   hold_print_cnt   
+				,	PRINT_CORP.PRINT_QC_ST      print_qc_st      
+				,	PRINT_CORP.T_PRINT_CNT      t_print_cnt      
+				,	PRINT_CORP.SOILD_MTHD       soild_mthd       
+				,	PRINT_CORP.SOILD_MTHD_DESC  soild_mthd_desc  
+				,	PRINT_CORP.LIQD_MTHD        liqd_mthd        
+				,	PRINT_CORP.LIQD_MTHD_DESC   liqd_mthd_desc   
+				,	PRINT_CORP.PWDR_MTHD        pwdr_mthd        
+				,	PRINT_CORP.PWDR_MTHD_DESC   pwdr_mthd_desc   
+				,	PRINT_CORP.SHEET_MTHD       sheet_mthd       
+				,	PRINT_CORP.SHEET_MTHD_DESC  sheet_mthd_desc  
+				,	PRINT_CORP.ETC_MTHD         etc_mthd         
+				,	PRINT_CORP.ETC_MTHD_DESC    etc_mthd_desc    
+				,	PRINT_CORP.PRINT_AGCY       print_agcy       
+				,	PRINT_CORP.SUPT_DEL         supt_del         
+				,	PRINT_CORP.S_COLOR_END      s_color_end      
+				,	PRINT_CORP.COLOR_END        color_end        
+				,	PRINT_CORP.PLA_GENL         pla_genl         
+				,	PRINT_CORP.PLA_FLUO         pla_fluo         
+				,	PRINT_CORP.PLA_WOOD         pla_wood         
+				,	PRINT_CORP.PLA_URTAN        pla_urtan        
+				,	PRINT_CORP.PLA_ATEMP        pla_atemp        
+				,	PRINT_CORP.PLA_LIGHT_TURN   pla_light_turn   
+				,	PRINT_CORP.ABS              abs              
+				,	PRINT_CORP.LIQD_RESIN       liqd_resin       
+				,	PRINT_CORP.PWDR             pwdr             
+				,	PRINT_CORP.PAPER_PRINT      paper_print      
+				,	PRINT_CORP.MIN_ETMT_AMOUNT  min_etmt_amount  
+				,	PRINT_CORP.INTRO_DOC        intro_doc        
+				,	PRINT_CORP.UPT_DTTM         upt_dttm         
+				,	USER.MY_PHOTO				my_photo
+				,	USER.DESIGN_YN				design_yn
+				,	USER.PRINT_YN 				print_yn
+				,	USER.P_NAME 				p_name
+				,	USER.COMPY_NAME 			compy_name
+												
+            FROM 	PRINT_CORP, USER 
+            WHERE	PRINT_CORP.USER_UID=#user_uid#
+            AND		PRINT_CORP.USER_UID = USER.USER_UID 
+        ]]>
+	</select>
+
+	<!--
+	 * 출력업체 정보 등록
+	 -->
+	<insert id="memberDAO.insertPrint_corp_info_reg">
+		
+		<![CDATA[
+			INSERT INTO PRINT_CORP 
+			(	
+					USER_UID        
+				,	HOLD_PRINT_CNT  
+				,	PRINT_QC_ST     
+				,	T_PRINT_CNT     
+				,	SOILD_MTHD      
+				,	SOILD_MTHD_DESC 
+				,	LIQD_MTHD       
+				,	LIQD_MTHD_DESC  
+				,	PWDR_MTHD       
+				,	PWDR_MTHD_DESC  
+				,	SHEET_MTHD      
+				,	SHEET_MTHD_DESC 
+				,	ETC_MTHD        
+				,	ETC_MTHD_DESC   
+				,	PRINT_AGCY      
+				,	SUPT_DEL        
+				,	S_COLOR_END     
+				,	COLOR_END       
+				,	PLA_GENL        
+				,	PLA_FLUO        
+				,	PLA_WOOD        
+				,	PLA_URTAN       
+				,	PLA_ATEMP       
+				,	PLA_LIGHT_TURN  
+				,	ABS             
+				,	LIQD_RESIN      
+				,	PWDR            
+				,	PAPER_PRINT     
+				,	MIN_ETMT_AMOUNT 
+				,	INTRO_DOC       
+				,	UPT_DTTM        
+			)
+			VALUES 
+			( 
+					#user_uid#        
+				,	#hold_print_cnt#  
+				,	#print_qc_st#     
+				,	#t_print_cnt#     
+				,	#soild_mthd#      
+				,	#soild_mthd_desc# 
+				,	#liqd_mthd#       
+				,	#liqd_mthd_desc#  
+				,	#pwdr_mthd#       
+				,	#pwdr_mthd_desc#  
+				,	#sheet_mthd#      
+				,	#sheet_mthd_desc# 
+				,	#etc_mthd#        
+				,	#etc_mthd_desc#   
+				,	#print_agcy#      
+				,	#supt_del#        
+				,	#s_color_end#     
+				,	#color_end#       
+				,	#pla_genl#        
+				,	#pla_fluo#        
+				,	#pla_wood#        
+				,	#pla_urtan#       
+				,	#pla_atemp#       
+				,	#pla_light_turn#  
+				,	#abs#             
+				,	#liqd_resin#      
+				,	#pwdr#            
+				,	#paper_print#     
+				,	#min_etmt_amount# 
+				,	#intro_doc#       
+				,	date_format(now(),'%Y%m%d%H%i%s')	   
+			)
+		]]>
+
+	</insert>
+	
+	<!--
+	 * 출력업체 정보 업데이트
+	 -->
+	<update id="memberDAO.updatePrint_corp_info">
+		UPDATE PRINT_CORP   
+		<dynamic prepend="SET">	
+			<isPropertyAvailable prepend="," property="hold_print_cnt"  >HOLD_PRINT_CNT = #hold_print_cnt#  </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="print_qc_st"     >PRINT_QC_ST    = #print_qc_st#     </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="t_print_cnt"     >T_PRINT_CNT    = #t_print_cnt#     </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="soild_mthd"      >SOILD_MTHD     = #soild_mthd#      </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="soild_mthd_desc" >SOILD_MTHD_DESC= #soild_mthd_desc# </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="liqd_mthd"       >LIQD_MTHD      = #liqd_mthd#       </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="liqd_mthd_desc"  >LIQD_MTHD_DESC = #liqd_mthd_desc#  </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="pwdr_mthd"       >PWDR_MTHD      = #pwdr_mthd#       </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="pwdr_mthd_desc"  >PWDR_MTHD_DESC = #pwdr_mthd_desc#  </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="sheet_mthd"      >SHEET_MTHD     = #sheet_mthd#      </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="sheet_mthd_desc" >SHEET_MTHD_DESC= #sheet_mthd_desc# </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="etc_mthd"        >ETC_MTHD       = #etc_mthd#        </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="etc_mthd_desc"   >ETC_MTHD_DESC  = #etc_mthd_desc#   </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="print_agcy"      >PRINT_AGCY     = #print_agcy#      </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="supt_del"        >SUPT_DEL       = #supt_del#        </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="s_color_end"     >S_COLOR_END    = #s_color_end#     </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="color_end"       >COLOR_END      = #color_end#       </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="pla_genl"        >PLA_GENL       = #pla_genl#        </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="pla_fluo"        >PLA_FLUO       = #pla_fluo#        </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="pla_wood"        >PLA_WOOD       = #pla_wood#        </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="pla_urtan"       >PLA_URTAN      = #pla_urtan#       </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="pla_atemp"       >PLA_ATEMP      = #pla_atemp#       </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="pla_light_turn"  >PLA_LIGHT_TURN = #pla_light_turn#  </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="abs"             >ABS            = #abs#             </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="liqd_resin"      >LIQD_RESIN     = #liqd_resin#      </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="pwdr"            >PWDR           = #pwdr#            </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="paper_print"     >PAPER_PRINT    = #paper_print#     </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="min_etmt_amount" >MIN_ETMT_AMOUNT= #min_etmt_amount# </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="intro_doc"       >INTRO_DOC      = #intro_doc#       </isPropertyAvailable>  
+			<isPropertyAvailable prepend="," property="user_uid"        >UPT_DTTM       = date_format(now(),'%Y%m%d%H%i%s') </isPropertyAvailable>  													       
+		</dynamic>
+		WHERE USER_UID=#user_uid#
+	</update>
+
+	<!--
+	 * 모델러정보 조회
+	 -->
+	<select id="memberDAO.selectModeler_info" resultClass="java.util.HashMap">
+	    <![CDATA[
+            SELECT
+            	MODELER.USER_UID			 user_uid
+			,   MODELER.FIELD_3DSCAN      field_3dscan   
+			,   MODELER.FIELD_BUILD   	  field_build   
+			,   MODELER.FIELD_JOINT   	  field_joint   
+			,   MODELER.FIELD_MEDICAL 	  field_medical 
+			,   MODELER.FIELD_MACHINE 	  field_machine 
+			,   MODELER.FIELD_JEWEL   	  field_jewel   
+			,   MODELER.FIELD_INDUST_D	  field_indust_d
+			,   MODELER.FIELD_MODEL_D 	  field_model_d 
+			,   MODELER.FIELD_CHAR_D  	  field_char_d  
+			,   MODELER.FIELD_ETC     	  field_etc         
+			,	MODELER.FIELD_ETC_DESC    	 field_etc_desc    
+			,	MODELER.WORK_TOOL_CNT     	 work_tool_cnt     
+			,	MODELER.WORK_TOOL_ETC_DESC	 work_tool_etc_desc
+			,	MODELER.INTRO_DOC         	 intro_doc     
+			,	USER.MY_PHOTO				my_photo
+			,	USER.DESIGN_YN				design_yn
+			,	USER.PRINT_YN				print_yn
+			,	USER.P_NAME				p_name
+			,	USER.COMPY_NAME				compy_name
+						    
+            FROM 	MODELER, USER 
+            WHERE	MODELER.USER_UID=#user_uid# 
+            AND		MODELER.USER_UID=USER.USER_UID
+        ]]>
+	</select>
+
+	<!--
+	 * 모델러정보 등록
+	 -->
+	<insert id="memberDAO.modeler_info_reg">
+		<![CDATA[
+			INSERT INTO MODELER 
+			(	
+					USER_UID
+				,   FIELD_3DSCAN  
+				,   FIELD_BUILD   
+				,   FIELD_JOINT   
+				,   FIELD_MEDICAL 
+				,   FIELD_MACHINE 
+				,   FIELD_JEWEL   
+				,   FIELD_INDUST_D
+				,   FIELD_MODEL_D 
+				,   FIELD_CHAR_D  
+				,   FIELD_ETC     
+				,	FIELD_ETC_DESC    
+				,	WORK_TOOL_CNT     
+				,	WORK_TOOL_ETC_DESC
+				,	INTRO_DOC         
+
+			)
+			VALUES 
+			( 
+					#user_uid#
+				,   #field_3dscan#  
+				,   #field_build#   
+				,   #field_joint#   
+				,   #field_medical# 
+				,   #field_machine# 
+				,   #field_jewel#   
+				,   #field_indust_d#
+				,   #field_model_d# 
+				,   #field_char_d#  
+				,   #field_etc#     
+				,	#field_etc_desc#    
+				,	#work_tool_cnt#     
+				,	#work_tool_etc_desc#
+				,	#intro_doc#         
+			)
+		]]>
+	</insert>
+
+	<!--
+	 * 모델러정보 업데이트
+	 -->
+	<update id="memberDAO.updateModeler_info">
+		
+		UPDATE MODELER   
+		<dynamic prepend="SET">	
+
+			<isPropertyAvailable prepend="," property="field_3dscan"       >FIELD_3DSCAN       = #field_3dscan#    </isPropertyAvailable>  
+			<isPropertyAvailable prepend="," property="field_build"        >FIELD_BUILD        = #field_build#     </isPropertyAvailable>  
+			<isPropertyAvailable prepend="," property="field_joint"        >FIELD_JOINT        = #field_joint#     </isPropertyAvailable>  
+			<isPropertyAvailable prepend="," property="field_medical"      >FIELD_MEDICAL      = #field_medical#   </isPropertyAvailable>  
+			<isPropertyAvailable prepend="," property="field_machine"      >FIELD_MACHINE      = #field_machine#   </isPropertyAvailable>  
+			<isPropertyAvailable prepend="," property="field_jewel"        >FIELD_JEWEL        = #field_jewel#     </isPropertyAvailable>  
+			<isPropertyAvailable prepend="," property="field_indust_d"     >FIELD_INDUST_D     = #field_indust_d#  </isPropertyAvailable>  
+			<isPropertyAvailable prepend="," property="field_model_d"      >FIELD_MODEL_D      = #field_model_d#   </isPropertyAvailable>  
+			<isPropertyAvailable prepend="," property="field_char_d"       >FIELD_CHAR_D       = #field_char_d#    </isPropertyAvailable>  
+			<isPropertyAvailable prepend="," property="field_etc"          >FIELD_ETC          = #field_etc#       </isPropertyAvailable>  
+			<isPropertyAvailable prepend="," property="field_etc_desc"     >FIELD_ETC_DESC    = #field_etc_desc#     </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="work_tool_cnt"      >WORK_TOOL_CNT     = #work_tool_cnt#      </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="work_tool_etc_desc" >WORK_TOOL_ETC_DESC= #work_tool_etc_desc# </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="intro_doc"          >INTRO_DOC         = #intro_doc#          </isPropertyAvailable>  												       
+		</dynamic>
+		WHERE USER_UID=#user_uid#
+
+	</update>
+
+	<!--
+	 * 모델링 작업툴 삭제
+	 -->
+	<delete id="memberDAO.deleteWork_tool_kind">
+		<![CDATA[
+			DELETE FROM WORK_TOOL_KIND 
+			WHERE USER_UID=#user_uid#
+		]]>
+	</delete>
+
+	<!--
+	 * 모델링 작업툴 추가
+	 -->
+	<insert id="memberDAO.insertWork_tool_kind">
+		<![CDATA[
+			INSERT INTO WORK_TOOL_KIND 
+			(	
+					USER_UID      
+				,	POSS_WORK_TOOL
+				,	ETC_WORK_TOOL 
+			)
+			VALUES 
+			( 
+					#user_uid#        
+				,	#poss_work_tool#  
+				,	#etc_work_tool#     
+			)
+		]]>
+	</insert>
+	
+	<!--
+	 * 모델링 작업툴 리스트
+	 -->
+    <select id="memberDAO.selectWork_tool_kindList" resultClass="java.util.HashMap">
+        <![CDATA[
+            SELECT
+            	POSS_WORK_TOOL	poss_work_tool
+            ,	ETC_WORK_TOOL	etc_work_tool
+            FROM 	WORK_TOOL_KIND 
+            WHERE	USER_UID=#user_uid# 
+        ]]>
+    </select>
+  
+
+
+
+	<!-- 공지사항 상세조회 -->
+    <select id="memberDAO.selectNotice" resultClass="java.util.HashMap">
+		<![CDATA[
+	      	SELECT
+				    USER.USER_UID        user_uid         
+				 ,  USER.COMPY_NAME      compy_name    
+				 ,  USER.P_NAME          p_name  
+				 ,  USER.MY_PHOTO        my_photo  				 
+				 ,  NOTICE.SVC_TP        svc_tp 
+				 ,  NOTICE.NOTICE_SEQ    notice_seq   
+				 ,  NOTICE.TITLE         title  
+				 ,  NOTICE.CONTS         conts  
+				 ,  NOTICE.HITS          hits
+				 ,  NOTICE.REG_DTTM	     reg_dttm  
+				 ,  NOTICE.DEL_YN        del_yn  
+	 			 ,  NOTICE.FILE_NAME     file_name  
+				 ,  NOTICE.SAVE_NAME     save_name  
+			FROM  	NOTICE, USER
+			WHERE	
+					NOTICE.USER_UID = USER.USER_UID
+			AND		IFNULL(NOTICE.DEL_YN,'N') = 'N'
+			AND		NOTICE.SVC_TP = #svc_tp#
+			AND		NOTICE.NOTICE_SEQ   = #notice_seq#
+		]]>    	 
+    </select>		
+    
+    <!-- 공지사항 추가 -->
+    <insert id="memberDAO.createNotice">
+    	<selectKey keyProperty="new_notice_seq" resultClass="int">
+			SELECT IFNULL(MAX(NOTICE_SEQ),0)+1  FROM NOTICE
+		</selectKey>
+		<![CDATA[
+			INSERT INTO NOTICE 
+			(	
+				   SVC_TP  
+				,  NOTICE_SEQ    
+				,  USER_UID   
+				,  TITLE  
+				,  CONTS   
+				,  HITS 
+				,  REG_DTTM	  
+				,  DEL_YN     
+				,  FILE_NAME  
+				,  SAVE_NAME  
+			)
+			VALUES 
+			( 		
+				   #svc_tp#  
+				,  #new_notice_seq#    
+				,  #user_uid#   
+				,  #title# 				
+				,  #conts#   
+				,  #hits# 
+				,  date_format(now(),'%Y%m%d%H%i%s')	  
+				,  'N'     
+				,  #file_name#  
+				,  #save_name#  
+			)
+		]]>
+	</insert> 	
+	
+    <!-- 공지사항 업데이트 -->
+   	<update id="memberDAO.updateNotice">
+			UPDATE NOTICE
+			<dynamic prepend="SET">
+				<isPropertyAvailable prepend="," property="svc_tp" > SVC_TP = #svc_tp#  </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="notice_seq"   > NOTICE_SEQ   = #notice_seq#    </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="user_uid"  > USER_UID  = #user_uid#   </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="title"  > TITLE  = #title#   </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="conts"  > CONTS  = #conts#   </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="hits"> HITS= #hits# </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="reg_dttm"  > REG_DTTM  = date_format(now(),'%Y%m%d%H%i%s') </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="del_yn"    > DEL_YN    = #del_yn#     </isPropertyAvailable> 
+				
+				<isPropertyAvailable prepend="," property="file_name" > FILE_NAME = #file_name#     </isPropertyAvailable>
+				<isPropertyAvailable prepend="," property="save_name" > SAVE_NAME = #save_name#     </isPropertyAvailable>
+
+			</dynamic>
+			WHERE SVC_TP = #svc_tp# AND NOTICE_SEQ = #notice_seq#   
+	</update>	
+	
+    <!-- 공지사항 삭제 -->
+    <delete id="memberDAO.deleteNotice">
+		<![CDATA[
+			DELETE FROM NOTICE 
+			WHERE	SVC_TP = #svc_tp# AND NOTICE_SEQ = #notice_seq#
+		]]>
+	</delete>
+	
+    <!-- 공지사항 리스트 갯수 -->
+    <select id="memberDAO.selectNotice_TotalCount" resultClass="java.util.HashMap">
+		<![CDATA[
+			SELECT
+				    COUNT(*) tot_count	
+			FROM  	NOTICE, USER
+			WHERE	
+					NOTICE.USER_UID = USER.USER_UID
+			AND		IFNULL(NOTICE.DEL_YN,'N') = 'N'
+			AND		NOTICE.SVC_TP = #svc_tp#
+		]]>  
+    </select>	
+    
+    <!-- 공지사항 리스트 -->
+ 	<select id="memberDAO.selectNotice_List" resultClass="java.util.HashMap">
+		<![CDATA[
+		SELECT * FROM
+		(
+	      	SELECT
+	      			@ROWNUM := @ROWNUM + 1 as rnum
+				 ,  USER.USER_UID         user_uid         
+				 ,  USER.COMPY_NAME       compy_name    
+				 ,  USER.P_NAME           p_name  
+				 ,  USER.MY_PHOTO         my_photo  				 
+				 ,  NOTICE.SVC_TP         svc_tp 
+				 ,  NOTICE.NOTICE_SEQ     notice_seq   
+				 ,  NOTICE.TITLE          title  				 
+				 ,  NOTICE.CONTS          conts  
+				 ,  NOTICE.HITS           hits
+				 ,  NOTICE.REG_DTTM	      reg_dttm  
+				 ,  NOTICE.DEL_YN         del_yn  
+				 
+				 ,  NOTICE.FILE_NAME     file_name  
+				 ,  NOTICE.SAVE_NAME     save_name  
+			FROM  	NOTICE, USER
+			WHERE	
+					NOTICE.USER_UID = USER.USER_UID
+			AND		IFNULL(NOTICE.DEL_YN,'N') = 'N'
+			AND		NOTICE.SVC_TP = #svc_tp#
+			ORDER BY NOTICE.NOTICE_SEQ DESC
+		) T1, (SELECT  @ROWNUM := 0) A
+		limit   #start_index#, #max_ret_count#
+		]]>    	 
+    </select>   
+
+	<!-- QNA 상세조회 -->
+    <select id="memberDAO.selectQNA" resultClass="java.util.HashMap">
+		<![CDATA[
+	      	SELECT
+				    USER.USER_UID     user_uid         
+				 ,  USER.COMPY_NAME   compy_name    
+				 ,  USER.P_NAME       p_name  
+				 ,  USER.MY_PHOTO     my_photo  	
+				 
+				 ,  QNA.QNA_SEQ       qna_seq   
+				 ,  QNA.SVC_TP        svc_tp 
+				 ,  QNA.QNA_TP        qna_tp 
+				 
+				 ,  QNA.TITLE         title  
+				 ,  QNA.CONTS         conts  
+ 				 ,  QNA.UP_QNA_SEQ    up_qna_seq  
+				 ,  QNA.HITS          hits
+
+				 ,  QNA.REG_DTTM	  reg_dttm  
+				 ,  QNA.DEL_YN        del_yn  
+			FROM  	QNA, USER
+			WHERE	
+					QNA.USER_UID = USER.USER_UID
+			AND		QNA.DEL_YN = 'N'
+			AND		QNA.SVC_TP = #svc_tp#
+			AND		QNA.QNA_SEQ   = #qna_seq#
+		]]>    	 
+    </select>		
+
+    <!-- QNA 추가 -->
+    <insert id="memberDAO.createQNA">
+    	<selectKey keyProperty="new_qna_seq" resultClass="int">
+			SELECT IFNULL(MAX(QNA_SEQ),0)+1  FROM QNA
+		</selectKey>
+		<![CDATA[
+			INSERT INTO QNA 
+			(	
+				   QNA_SEQ  
+				,  SVC_TP    
+				,  QNA_TP   
+
+				,  TITLE   
+				,  CONTS  
+				,  UP_QNA_SEQ 
+				,  HITS 
+				
+				,  USER_UID	  
+				,  REG_DTTM    
+				,  DEL_YN	
+			)
+			VALUES 
+			( 	
+				   #new_qna_seq#
+				,  #svc_tp#  
+				,  #qna_tp#    
+
+				,  #title# 
+				,  #conts#   
+				,  #up_qna_seq# 
+				,  #hits# 
+				
+				,  #user_uid#   
+				,  date_format(now(),'%Y%m%d%H%i%s')	  
+				,  'N'     
+			)
+		]]>
+	</insert> 	
+	
+    <!-- QNA 업데이트 -->
+   	<update id="memberDAO.updateQNA">
+			UPDATE QNA
+			<dynamic prepend="SET">
+				<isPropertyAvailable prepend="," property="svc_tp"    > SVC_TP = #svc_tp#  </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="qna_tp"    > QNA_TP = #qna_tp#  </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="user_uid"  > USER_UID  = #user_uid#   </isPropertyAvailable> 
+
+				<isPropertyAvailable prepend="," property="title"     > TITLE  = #title#   </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="conts"     > CONTS  = #conts#   </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="up_qna_seq"> UP_QNA_SEQ= #up_qna_seq# </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="hits"      > HITS= #hits# </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="reg_dttm"  > REG_DTTM  = date_format(now(),'%Y%m%d%H%i%s') </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="del_yn"    > DEL_YN    = #del_yn#     </isPropertyAvailable> 
+			</dynamic>
+			WHERE SVC_TP = #svc_tp# AND QNA_SEQ = #qna_seq#   
+	</update>	
+	
+    <!-- QNA 삭제 -->
+    <delete id="memberDAO.deleteQNA">
+		<![CDATA[
+			DELETE FROM QNA 
+			WHERE	SVC_TP = #svc_tp# AND QNA_SEQ = #qna_seq#   
+		]]>
+	</delete>
+
+	
+    <!-- QNA 리스트 갯수 -->
+    <select id="memberDAO.selectQNA_TotalCount" resultClass="java.util.HashMap">
+		<![CDATA[
+			SELECT
+				    COUNT(*) tot_count	
+			FROM  	QNA LEFT OUTER JOIN USER
+			ON      QNA.USER_UID = USER.USER_UID
+			WHERE	
+					QNA.DEL_YN = 'N'
+			AND		QNA.SVC_TP = #svc_tp#
+			AND		QNA.QNA_TP = #qna_tp#
+		]]>  
+    </select>	
+    
+    <!-- QNA 리스트 -->
+ 	<select id="memberDAO.selectQNA_List" resultClass="java.util.HashMap">
+		<![CDATA[
+		SELECT * FROM
+		(
+	      	SELECT
+	      			@ROWNUM := @ROWNUM + 1 as rnum
+				 ,  USER.USER_UID         user_uid         
+				 ,  USER.COMPY_NAME       compy_name    
+				 ,  USER.P_NAME           p_name  
+				 ,  USER.MY_PHOTO         my_photo  		
+				 
+ 				 ,  QNA.QNA_SEQ       qna_seq   
+				 ,  QNA.SVC_TP        svc_tp 
+				 ,  QNA.QNA_TP        qna_tp 
+				 
+				 ,  QNA.TITLE         title  
+				 ,  QNA.CONTS         conts  
+ 				 ,  QNA.UP_QNA_SEQ    up_qna_seq  
+				 ,  QNA.HITS          hits
+
+				 ,  QNA.REG_DTTM	  reg_dttm  
+				 ,  QNA.DEL_YN        del_yn  
+			FROM  	QNA LEFT OUTER JOIN USER
+			ON      QNA.USER_UID = USER.USER_UID
+			WHERE	
+					QNA.DEL_YN = 'N'
+			AND		QNA.SVC_TP = #svc_tp#
+			AND		QNA.QNA_TP = #qna_tp#
+			ORDER BY QNA.QNA_SEQ DESC
+		) T1, (SELECT  @ROWNUM := 0) A
+		limit   #start_index#, #max_ret_count#
+		]]>    	 
+    </select>       
+
+	<!-- QNA 답변에 대한 리스트 -->  
+	<procedure id="memberDAO.selectQNA_AnswerList" resultClass="java.util.HashMap">
+	<![CDATA[
+      {CALL proc_3dbank_qna(#qna_seq#,#svc_tp#)}
+    ]]>
+	</procedure>
+	
+	
+	<!-- 뉴스&트랜드 상세조회 -->
+    <select id="memberDAO.selectNewsTrand" resultClass="java.util.HashMap">
+		<![CDATA[
+	      	SELECT
+				    USER.USER_UID        user_uid         
+				 ,  USER.COMPY_NAME      compy_name    
+				 ,  USER.P_NAME          p_name  
+				 ,  USER.MY_PHOTO        my_photo  				 
+
+				 ,  NEWS_TRAND.NT_SEQ    nt_seq   
+				 ,  NEWS_TRAND.REG_URL   reg_url   
+				 ,  NEWS_TRAND.OG_TITLE  og_title  
+				 ,  NEWS_TRAND.OG_URL    og_url  
+				 ,  NEWS_TRAND.OG_IMAGE  og_image  
+				 ,  NEWS_TRAND.OG_DESC   og_desc  
+
+				 ,  NEWS_TRAND.HITS      hits
+				 ,  NEWS_TRAND.REG_DTTM	 reg_dttm  
+				 ,  NEWS_TRAND.DEL_YN    del_yn  
+			FROM  	NEWS_TRAND, USER
+			WHERE	
+					NEWS_TRAND.USER_UID = USER.USER_UID
+			AND		IFNULL(NEWS_TRAND.DEL_YN,'N') = 'N'
+			AND		NEWS_TRAND.NT_SEQ   = #nt_seq#
+		]]>    	 
+    </select>		
+    
+    <!-- 뉴스&트랜드 추가 -->
+    <insert id="memberDAO.createNewsTrand">
+    	<selectKey keyProperty="new_nt_seq" resultClass="int">
+			SELECT IFNULL(MAX(NT_SEQ),0)+1  FROM NEWS_TRAND
+		</selectKey>
+		<![CDATA[
+			INSERT INTO NEWS_TRAND 
+			(	
+					NT_SEQ
+				,	REG_URL
+				,	OG_TITLE
+				,	OG_URL 
+				,	OG_IMAGE
+				,	OG_DESC
+
+				,	HITS 
+				,	USER_UID 				
+				,	REG_DTTM	  
+				,	DEL_YN   
+			)
+			VALUES 
+			( 		
+					#new_nt_seq#
+				,	#reg_url#
+				,	#og_title#
+				,	#og_url# 
+				,	#og_image#
+				,	#og_desc#  
+
+				,  #hits# 
+				,  #user_uid# 				
+				,  date_format(now(),'%Y%m%d%H%i%s')	  
+				,  'N'       
+			)
+		]]>
+	</insert> 	
+	
+    <!-- 뉴스&트랜드 업데이트 -->
+   	<update id="memberDAO.updateNewsTrand">
+			UPDATE NEWS_TRAND
+			<dynamic prepend="SET">
+				<isPropertyAvailable prepend="," property="reg_url"  > REG_URL  = #reg_url# </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="og_title" > OG_TITLE = #og_title#    </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="og_url"   > OG_URL   = #og_url#    </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="og_image" > OG_IMAGE = #og_image#    </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="og_desc"  > OG_DESC  = #og_desc#    </isPropertyAvailable> 
+
+				<isPropertyAvailable prepend="," property="user_uid" > USER_UID   = #user_uid#     </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="hits"     > HITS    = #hits#     </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="reg_dttm" > REG_DTTM= date_format(now(),'%Y%m%d%H%i%s') </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="del_yn"   > DEL_YN  = #del_yn#   </isPropertyAvailable> 
+			</dynamic>
+			WHERE NT_SEQ = #nt_seq#   
+	</update>	
+	
+    <!-- 뉴스&트랜드 삭제 -->
+    <delete id="memberDAO.deleteNewsTrand">
+		<![CDATA[
+			DELETE FROM NEWS_TRAND 
+			WHERE  NT_SEQ = #nt_seq#   
+		]]>
+	</delete>
+	
+    <!-- 뉴스&트랜드 리스트 갯수 -->
+    <select id="memberDAO.selectNewsTrand_TotalCount" resultClass="java.util.HashMap">
+		<![CDATA[
+			SELECT
+				    COUNT(*) tot_count	
+			FROM  	NEWS_TRAND, USER
+			WHERE	
+					NEWS_TRAND.USER_UID = USER.USER_UID
+			AND		IFNULL(NEWS_TRAND.DEL_YN,'N') = 'N'
+		]]>  
+    </select>	
+    
+    <!-- 뉴스&트랜드 리스트 -->
+ 	<select id="memberDAO.selectNewsTrand_List" resultClass="java.util.HashMap">
+		<![CDATA[
+		SELECT * FROM
+		(
+	      	SELECT
+	      			@ROWNUM := @ROWNUM + 1 as rnum
+				 ,  USER.USER_UID        user_uid         
+				 ,  USER.COMPY_NAME      compy_name    
+				 ,  USER.P_NAME          p_name  
+				 ,  USER.MY_PHOTO        my_photo  				 
+
+				 ,  NEWS_TRAND.NT_SEQ    nt_seq   
+				 ,  NEWS_TRAND.REG_URL   reg_url   
+				 ,  NEWS_TRAND.OG_TITLE  og_title  
+				 ,  NEWS_TRAND.OG_URL    og_url  
+				 ,  NEWS_TRAND.OG_IMAGE  og_image  
+				 ,  NEWS_TRAND.OG_DESC   og_desc  
+
+				 ,  NEWS_TRAND.HITS      hits
+				 ,  NEWS_TRAND.REG_DTTM	 reg_dttm  
+				 ,  NEWS_TRAND.DEL_YN    del_yn   
+			FROM  	NEWS_TRAND, USER
+			WHERE	
+					NEWS_TRAND.USER_UID = USER.USER_UID
+			AND		IFNULL(NEWS_TRAND.DEL_YN,'N') = 'N'
+			ORDER BY NEWS_TRAND.NT_SEQ DESC
+		) T1, (SELECT  @ROWNUM := 0) A
+		limit   #start_index#, #max_ret_count#
+		]]>    	 
+    </select>  
+    
+    
+	<!-- Follow 추가 -->
+    <insert id="memberDAO.insertFollow">
+		<![CDATA[
+			INSERT INTO FOLLOW_INFO 
+			(	
+					FOLLOWER_USER_UID
+				,	FOLLOWING_USER_UID 
+				,	REG_DTTM   
+			)
+			VALUES 
+			( 		
+					#follower_user_uid#
+				,	#following_user_uid# 
+				,	date_format(now(),'%Y%m%d%H%i%s')	    
+			)
+		]]>
+	</insert> 	
+
+	<!-- Follow 삭제 -->
+    <insert id="memberDAO.deleteFollow">
+		<![CDATA[
+			DELETE 	FROM FOLLOW_INFO 
+			WHERE  	FOLLOWER_USER_UID = #follower_user_uid#   
+			AND		FOLLOWING_USER_UID = #following_user_uid#
+		]]>
+	</insert> 		
+
+	<select id="memberDAO.selectFollow_TotalCount" resultClass="java.util.HashMap">
+		<![CDATA[
+			SELECT
+				    COUNT(*) tot_count	
+			FROM  	FOLLOW_INFO
+			WHERE	
+					(IFNULL(#follower_user_uid#,'') = ''  OR FOLLOWER_USER_UID  = #follower_user_uid#)
+			AND		(IFNULL(#following_user_uid#,'')= ''  OR FOLLOWING_USER_UID = #following_user_uid#)
+		]]>  
+    </select>	
+
+
+	<!-- 보유3D프린터 추가 -->
+    <insert id="memberDAO.insertHold3DPrinter">
+        <selectKey keyProperty="new_hold_prtr_seq" resultClass="int">
+			SELECT IFNULL(MAX(HOLD_PRTR_SEQ),0)+1  FROM HOLD_3D_PRINTER
+		</selectKey>
+		
+		<![CDATA[
+			INSERT INTO HOLD_3D_PRINTER 
+			(	
+					USER_UID
+				,	HOLD_PRTR_SEQ 
+				,	PRINT_MTHD   
+				,	PRINT_MTHD_DESC   
+				,	PRTR_NAME   
+				,	LAYUP_TKN_DTL   
+				,	OUT_MAX_SIZE   																						
+			)
+			VALUES 
+			( 		
+					#user_uid#
+				,	#new_hold_prtr_seq# 
+				,	#print_mthd#   
+				,	#print_mthd_desc#   
+				,	#prtr_name#   
+				,	#layup_tkn_dtl#   
+				,	#out_max_size#     
+			)
+		]]>
+	</insert> 	
+	
+
+    <!-- 보유3D프린터 업데이트 -->
+   	<update id="memberDAO.updateHold3DPrinter">
+			UPDATE HOLD_3D_PRINTER
+			<dynamic prepend="SET">
+				<isPropertyAvailable prepend="," property="user_uid"       > USER_UID      = #user_uid# </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="hold_prtr_seq"  > HOLD_PRTR_SEQ = #hold_prtr_seq#  </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="print_mthd"     > PRINT_MTHD    = #print_mthd# </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="print_mthd_desc"> PRINT_MTHD_DESC = #print_mthd_desc# </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="prtr_name"      > PRTR_NAME     = #prtr_name# </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="layup_tkn_dtl"  > LAYUP_TKN_DTL = #layup_tkn_dtl# </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="out_max_size"   > OUT_MAX_SIZE  = #out_max_size# </isPropertyAvailable> 
+			</dynamic>
+			WHERE USER_UID = #user_uid# AND HOLD_PRTR_SEQ = #hold_prtr_seq# 
+	</update>	
+	
+    <!-- 보유3D프린터 삭제 -->
+    <delete id="memberDAO.deleteHold3DPrinterALL">
+		<![CDATA[
+			DELETE FROM HOLD_3D_PRINTER 
+			WHERE USER_UID = #user_uid# 
+		]]>
+	</delete>
+	
+    <!-- 보유3D프린터 리스트 갯수 -->
+    <select id="memberDAO.selectHold3DPrinter_TotalCount" resultClass="java.util.HashMap">
+		<![CDATA[
+			SELECT
+				    COUNT(*) tot_count	
+			FROM  	HOLD_3D_PRINTER
+			WHERE   USER_UID = #user_uid#
+		]]>  
+    </select>	
+    
+    <!-- 보유3D프린터 리스트 -->
+ 	<select id="memberDAO.selectHold3DPrinter_List" resultClass="java.util.HashMap">
+		<![CDATA[
+	      	SELECT
+				    HOLD_3D_PRINTER.USER_UID        user_uid   
+				 ,  HOLD_3D_PRINTER.HOLD_PRTR_SEQ   hold_prtr_seq   
+				 ,  HOLD_3D_PRINTER.PRINT_MTHD      print_mthd  
+				 ,  HOLD_3D_PRINTER.PRINT_MTHD_DESC      print_mthd_desc  
+				 ,  HOLD_3D_PRINTER.PRTR_NAME       prtr_name  
+				 ,  HOLD_3D_PRINTER.LAYUP_TKN_DTL   layup_tkn_dtl  
+				 ,  HOLD_3D_PRINTER.OUT_MAX_SIZE    out_max_size   
+			FROM  	HOLD_3D_PRINTER
+			WHERE	
+					HOLD_3D_PRINTER.USER_UID = #user_uid#
+		]]>    	 
+    </select>  
+    
+    
+    
+    <!-- 회원리스트 (일반회원 / 디자이너소개 / 출력업체소개) -->
+ 	<select id="memberDAO.selectUserInfo_List" resultClass="java.util.HashMap">
+		<![CDATA[
+		SELECT * FROM
+		(
+	      	SELECT
+	      			@ROWNUM := @ROWNUM + 1 as rnum
+				 ,  (SELECT COUNT(*) FROM MAKE_INFO WHERE MAKE_INFO.MAKER_UID = USER.USER_UID  ) make_cnt
+			     ,  (SELECT COUNT(*) FROM CONTS_3D_INFO WHERE CONTS_3D_INFO.USER_UID = USER.USER_UID AND IFNULL(CONTS_3D_INFO.DEL_YN,'N') = 'N' ) design_cnt
+			     ,  (SELECT COUNT(*) FROM PRINT_HIST WHERE PRINT_HIST.USER_UID = USER.USER_UID AND IFNULL(PRINT_HIST.DEL_YN,'N') = 'N' ) print_cnt
+				 ,  USER.USER_UID        	user_uid         
+				 ,  USER.USER_TP        		user_tp         
+				 ,  USER.USER_CONDITION      user_condition
+				 ,  USER.COMPY_NAME      compy_name    
+				 ,  USER.P_NAME          	p_name  
+				 ,  USER.MY_PHOTO        	my_photo  	
+				 ,  USER.MY_INTRO        	my_intro
+				 ,  USER.T_FOLLOWER      	t_follower
+				 ,  USER.T_FOLLOWING     t_following
+				 ,  USER.DESIGN_YN       	design_yn
+				 ,  USER.PRINT_YN        	print_yn
+				 ,  USER.P_LOGIN_ID      	p_login_id
+				 ,  USER.REG_DTTM      	reg_dttm
+				 ,  USER.STOP_DTTM     	stop_dttm
+				 ,  USER.STOP_DESC      	stop_desc
+				 ,  USER.USE_PSSB_POINT use_pssb_point
+			FROM  	USER
+      
+	        LEFT OUTER JOIN MODELER
+			ON   USER.USER_UID = MODELER.USER_UID
+      
+            LEFT OUTER JOIN HOLD_3D_PRINTER
+			ON   USER.USER_UID = HOLD_3D_PRINTER.USER_UID
+
+			WHERE	IFNULL(USER.DEL_YN,'N') = 'N'
+			  AND   USER.REG_CERT_ST = 'Y'
+			  AND 
+			    (
+			      	IFNULL(#conts_word#,'') = '' OR 
+			      	( USER.MY_INTRO LIKE CONCAT('%',#conts_word#,'%') OR p_name LIKE CONCAT('%',#conts_word#,'%') )
+			    )
+			  AND
+			    (
+					(#inq_user# = '2' AND USER.DESIGN_YN = 'Y')
+					OR
+					(#inq_user# = '3' AND USER.PRINT_YN = 'Y')
+					OR
+					(#inq_user# = '1' )
+				)
+			  AND
+			    (
+			    	(#field_tp# = 'ALL')
+			    	OR
+			        (#inq_user# = '1' AND #field_tp# = '0')
+					OR
+					(#inq_user# = '2' AND #field_tp# = '01' AND IFNULL(MODELER.FIELD_3DSCAN  ,'') = '01')
+					OR
+					(#inq_user# = '2' AND #field_tp# = '02' AND IFNULL(MODELER.FIELD_BUILD   ,'') = '02')
+					OR
+					(#inq_user# = '2' AND #field_tp# = '03' AND IFNULL(MODELER.FIELD_JOINT   ,'') = '03')
+					OR
+					(#inq_user# = '2' AND #field_tp# = '04' AND IFNULL(MODELER.FIELD_MEDICAL ,'') = '04')
+					OR
+					(#inq_user# = '2' AND #field_tp# = '05' AND IFNULL(MODELER.FIELD_MACHINE ,'') = '05')
+					OR
+					(#inq_user# = '2' AND #field_tp# = '06' AND IFNULL(MODELER.FIELD_JEWEL   ,'') = '06')
+					OR
+					(#inq_user# = '2' AND #field_tp# = '07' AND IFNULL(MODELER.FIELD_INDUST_D,'') = '07')
+					OR
+					(#inq_user# = '2' AND #field_tp# = '08' AND IFNULL(MODELER.FIELD_MODEL_D ,'') = '08')
+					OR
+					(#inq_user# = '2' AND #field_tp# = '09' AND IFNULL(MODELER.FIELD_CHAR_D  ,'') = '09')
+					OR
+					(#inq_user# = '2' AND #field_tp# = '99' AND IFNULL(MODELER.FIELD_ETC     ,'') = '99')
+					OR
+					(#inq_user# = '3' AND #field_tp# = IFNULL(HOLD_3D_PRINTER.PRINT_MTHD,'') = '')
+					 
+				)
+			  AND
+			    (
+			    	IFNULL(#inq_user_tp#,'ALL') = 'ALL' OR #inq_user_tp# = USER.USER_TP
+			    )
+			  AND
+			    (
+			    	IFNULL(#user_condition#, 'ALL') = 'ALL' OR #user_condition# = USER.USER_CONDITION
+			    )		
+				GROUP BY  USER.USER_UID    
+		) T1, (SELECT  @ROWNUM := 0) A
+		limit   #start_index#, #max_ret_count#
+		]]>    	 
+    </select>  
+    
+    
+	<!-- 회원리스트 (일반회원 / 디자이너소개 / 출력업체소개) TotalCount -->
+ 	<select id="memberDAO.selectUserInfo_TotalCount" resultClass="java.util.HashMap">
+		<![CDATA[
+		SELECT 
+			COUNT(*) tot_count
+		FROM
+		(
+	      	SELECT 	USER.USER_UID
+			FROM  	USER
+      
+	        LEFT OUTER JOIN MODELER
+			ON   USER.USER_UID = MODELER.USER_UID
+      
+            LEFT OUTER JOIN HOLD_3D_PRINTER
+			ON   USER.USER_UID = HOLD_3D_PRINTER.USER_UID
+
+			WHERE	IFNULL(USER.DEL_YN,'N') = 'N'
+			  AND   	USER.REG_CERT_ST = 'Y'
+			  AND 
+			    (
+			      	IFNULL(#conts_word#,'') = '' OR 
+			      	( USER.MY_INTRO LIKE CONCAT('%',#conts_word#,'%') OR p_name LIKE CONCAT('%',#conts_word#,'%') )
+			    )
+			  AND
+			    (
+					(#inq_user# = '2' AND USER.DESIGN_YN = 'Y')
+					OR
+					(#inq_user# = '3' AND USER.PRINT_YN = 'Y')
+					OR
+					(#inq_user# = '1' )
+				)
+			  AND
+			    (
+			    	(#field_tp# = 'ALL')
+			    	OR
+			        (#inq_user# = '1' AND #field_tp# = '0')
+					OR
+					(#inq_user# = '2' AND #field_tp# = '01' AND IFNULL(MODELER.FIELD_3DSCAN  ,'') = '01')
+					OR
+					(#inq_user# = '2' AND #field_tp# = '02' AND IFNULL(MODELER.FIELD_BUILD   ,'') = '02')
+					OR
+					(#inq_user# = '2' AND #field_tp# = '03' AND IFNULL(MODELER.FIELD_JOINT   ,'') = '03')
+					OR
+					(#inq_user# = '2' AND #field_tp# = '04' AND IFNULL(MODELER.FIELD_MEDICAL ,'') = '04')
+					OR
+					(#inq_user# = '2' AND #field_tp# = '05' AND IFNULL(MODELER.FIELD_MACHINE ,'') = '05')
+					OR
+					(#inq_user# = '2' AND #field_tp# = '06' AND IFNULL(MODELER.FIELD_JEWEL   ,'') = '06')
+					OR
+					(#inq_user# = '2' AND #field_tp# = '07' AND IFNULL(MODELER.FIELD_INDUST_D,'') = '07')
+					OR
+					(#inq_user# = '2' AND #field_tp# = '08' AND IFNULL(MODELER.FIELD_MODEL_D ,'') = '08')
+					OR
+					(#inq_user# = '2' AND #field_tp# = '09' AND IFNULL(MODELER.FIELD_CHAR_D  ,'') = '09')
+					OR
+					(#inq_user# = '2' AND #field_tp# = '99' AND IFNULL(MODELER.FIELD_ETC     ,'') = '99')
+					OR
+					(#inq_user# = '3' AND #field_tp# = IFNULL(HOLD_3D_PRINTER.PRINT_MTHD,'') = '')
+					 
+				)
+			  AND
+			    (
+			    	IFNULL(#inq_user_tp#,'ALL') = 'ALL' OR #inq_user_tp# = USER.USER_TP
+			    )				
+			  AND
+			    (
+			    	IFNULL(#user_condition#, 'ALL') = 'ALL' OR #user_condition# = USER.USER_CONDITION
+			    )				
+				GROUP BY  USER.USER_UID    
+		) AAA
+		]]> 
+    </select>  
+    
+	<!-- 사용자의 summary 정보 :  Followers, Following, Design, Makes, Like, Collections  -->
+	<!-- 
+	<select id="memberDAO.selectUserSummaryEtcInfo" resultClass="java.util.HashMap">
+		<![CDATA[
+
+		SELECT *
+		  FROM (SELECT USER.USER_UID user_uid,
+		               IFNULL(USER.T_FOLLOWER, 0) t_follower,
+		               IFNULL(USER.T_FOLLOWING, 0) t_following,
+		               COUNT(PRINT_HIST.PRINT_HIST_UID) print_cnt
+		          FROM USER , CONTS_3D_INFO, PRINT_HIST
+		         WHERE USER.USER_UID = CONTS_3D_INFO.USER_UID
+		           AND PRINT_HIST.CONTS_UID = CONTS_3D_INFO.CONTS_UID
+		           AND IFNULL(CONTS_3D_INFO.DEL_YN, 'N') = 'N'
+		           AND USER.USER_UID = #user_uid#) A1,
+		       (SELECT COUNT(CONTS_3D_INFO.CONTS_UID) design_cnt,
+		               IFNULL(SUM(CONTS_3D_INFO.T_LIKE_CNT), 0) t_like_cnt,
+		               IFNULL(SUM(CONTS_3D_INFO.T_BMARK), 0) t_bmark
+		          FROM USER , CONTS_3D_INFO
+		         WHERE USER.USER_UID = CONTS_3D_INFO.USER_UID
+		         AND IFNULL(CONTS_3D_INFO.DEL_YN, 'N') = 'N'
+		         AND USER.USER_UID = #user_uid#) A2
+		]]>  
+    </select>
+    -->
+    <select id="memberDAO.selectUserSummaryEtcInfo" resultClass="java.util.HashMap">
+		<![CDATA[
+
+			SELECT *
+			  FROM (SELECT USER.USER_UID user_uid,
+			               IFNULL(USER.T_FOLLOWER, 0) t_follower,
+			               IFNULL(USER.T_FOLLOWING, 0) t_following,
+			               COUNT(PRINT_HIST.PRINT_HIST_UID) print_cnt
+			          FROM USER, CONTS_3D_INFO, PRINT_HIST
+			         WHERE     USER.USER_UID = CONTS_3D_INFO.USER_UID
+			               AND PRINT_HIST.CONTS_UID = CONTS_3D_INFO.CONTS_UID
+			               AND PRINT_HIST.PRINT_TP = '01'
+					       AND IFNULL(CONTS_3D_INFO.DEL_YN, 'N') = 'N'
+					       AND IFNULL(PRINT_HIST.DEL_YN,'N') = 'N'	
+			               AND USER.USER_UID = #user_uid#) A1,
+			               
+			       (SELECT COUNT(CONTS_3D_INFO.CONTS_UID) design_cnt
+			          FROM USER, CONTS_3D_INFO
+			         WHERE     USER.USER_UID = CONTS_3D_INFO.USER_UID
+			               AND IFNULL(CONTS_3D_INFO.DEL_YN, 'N') = 'N'
+			               AND USER.USER_UID = #user_uid#) A2,
+			               
+			       (SELECT SUM(IF (INTEREST_CONTS_3D.LIKE_CLICK_YN = 'Y', 1, 0)) t_like_cnt,
+			               SUM(IF (INTEREST_CONTS_3D.BMARK_YN = 'Y', 1, 0)) t_bmark
+			          FROM CONTS_3D_INFO, INTEREST_CONTS_3D
+			         WHERE     CONTS_3D_INFO.CONTS_UID = INTEREST_CONTS_3D.CONTS_UID
+			               AND IFNULL(CONTS_3D_INFO.DEL_YN, 'N') = 'N'
+			               AND INTEREST_CONTS_3D.USER_UID = #user_uid#) A3
+		]]>  
+    </select>	
+    
+    
+    <!-- Follow 리스트(Followers or Followers) 전체갯수 -->
+    <select id="memberDAO.selectFollow_List_TotalCount" resultClass="java.util.HashMap">
+		<![CDATA[
+			SELECT
+				    COUNT(*) tot_count	
+			FROM	USER
+				,	FOLLOW_INFO
+			WHERE	IFNULL(USER.DEL_YN,'N') = 'N'
+			  AND 
+			    (
+			      	IFNULL(#conts_word#,'') = '' OR 
+			      	( USER.MY_INTRO LIKE CONCAT('%',#conts_word#,'%') OR p_name LIKE CONCAT('%',#conts_word#,'%') )
+			    )
+			  AND
+			    (
+			    	( FOLLOW_INFO.FOLLOWING_USER_UID = USER.USER_UID AND  #info_tp# = 'followers' AND FOLLOW_INFO.FOLLOWER_USER_UID = #user_uid# )
+			    	OR
+			    	( FOLLOW_INFO.FOLLOWER_USER_UID = USER.USER_UID AND #info_tp# = 'following' AND FOLLOW_INFO.FOLLOWING_USER_UID = #user_uid# )
+			    )
+
+		]]>  
+    </select>	
+    
+    
+	<!-- Follow 리스트(Followers or Followers) -->
+ 	<select id="memberDAO.selectFollow_List" resultClass="java.util.HashMap">
+		<![CDATA[
+		SELECT * FROM
+		(
+	      	SELECT
+	      			@ROWNUM := @ROWNUM + 1 as rnum
+				 ,  (SELECT COUNT(*) FROM MAKE_INFO WHERE MAKE_INFO.MAKER_UID = USER.USER_UID  ) make_cnt
+			     ,  (SELECT COUNT(*) FROM CONTS_3D_INFO WHERE CONTS_3D_INFO.USER_UID = USER.USER_UID AND IFNULL(CONTS_3D_INFO.DEL_YN,'N') = 'N' ) design_cnt
+			     ,  (SELECT COUNT(*) FROM PRINT_HIST WHERE PRINT_HIST.USER_UID = USER.USER_UID AND IFNULL(PRINT_HIST.DEL_YN,'N') = 'N' ) print_cnt
+				 ,  USER.USER_UID        user_uid         
+				 ,  USER.COMPY_NAME      compy_name    
+				 ,  USER.P_NAME          p_name  
+				 ,  USER.MY_PHOTO        my_photo  	
+				 ,  USER.MY_INTRO        my_intro
+				 ,  USER.T_FOLLOWER      t_follower
+				 ,  USER.T_FOLLOWING     t_following
+				 ,  USER.DESIGN_YN       design_yn
+				 ,  USER.PRINT_YN        print_yn
+				 ,  USER.P_LOGIN_ID      p_login_id
+				 				 
+			FROM	USER
+				,	FOLLOW_INFO
+			WHERE	IFNULL(USER.DEL_YN,'N') = 'N'
+			  AND 
+			    (
+			      	IFNULL(#conts_word#,'') = '' OR 
+			      	( USER.MY_INTRO LIKE CONCAT('%',#conts_word#,'%') OR p_name LIKE CONCAT('%',#conts_word#,'%') )
+			    )
+			  AND
+			    (
+			    	( FOLLOW_INFO.FOLLOWING_USER_UID = USER.USER_UID AND  #info_tp# = 'followers' AND FOLLOW_INFO.FOLLOWER_USER_UID = #user_uid# )
+			    	OR
+			    	( FOLLOW_INFO.FOLLOWER_USER_UID = USER.USER_UID AND #info_tp# = 'following' AND FOLLOW_INFO.FOLLOWING_USER_UID = #user_uid# )
+			    )
+				GROUP BY  USER.USER_UID    
+		) T1, (SELECT  @ROWNUM := 0) A
+		limit   #start_index#, #max_ret_count#
+		]]>    	 
+    </select>  
+    
+    <insert id="memberDAO.insert_point_info">
+    <![CDATA[
+    	INSERT INTO POINT (
+			POINT_NAME, POINT_OBJECT, POINT_AMOUNT, POINT_AMOUNT_TP, REG_DTTM
+		) VALUES (
+			#point_name#,
+			#point_object#,
+			#point_amount#,
+			#point_amount_tp#,
+			date_format(now(),'%Y%m%d%H%i%s')
+		)
+    ]]>
+    </insert>
+    
+    <select id="memberDAO.select_point_list" resultClass="java.util.HashMap">
+    <![CDATA[
+    	SELECT POINT_SEQ point_seq,
+			POINT_NAME point_name,
+			POINT_OBJECT point_object,
+			POINT_TP point_tp,
+			POINT_AMOUNT point_amount,
+			POINT_AMOUNT_TP point_amount_tp,
+			REG_DTTM reg_dttm,
+			UPT_DTTM upt_dttm
+		FROM POINT
+    ]]>
+    </select>
+    
+    <update id="memberDAO.update_point_info">
+		UPDATE POINT
+		<dynamic prepend="SET">
+			<isPropertyAvailable prepend="," property="point_amount"> POINT_AMOUNT = #point_amount# </isPropertyAvailable>   	
+			<isPropertyAvailable prepend="," property="point_amount_tp"> POINT_AMOUNT_TP = #point_amount_tp# </isPropertyAvailable>   	
+			<isPropertyAvailable prepend="," property="point_seq"> UPT_DTTM = date_format(now(),'%Y%m%d%H%i%s') </isPropertyAvailable>   	
+		</dynamic>
+		WHERE POINT_SEQ = #point_seq#
+	</update>
+	
+	<select id="memberDAO.select_point_trans_list_total_cnt" resultClass="int">
+	<![CDATA[
+		SELECT 	COUNT(TRANS_SEQ)
+		FROM POINT_TRANS
+	]]>
+	</select>
+	
+	<select id="memberDAO.select_point_trans_list" resultClass="java.util.HashMap">
+	<![CDATA[
+		SELECT 	tb1.TRANS_SEQ trans_seq, 
+			tb1.USER_UID user_uid, 
+			tb1.TRANS_AMT trans_amt, 
+			tb1.APPR_YN appr_yn, 
+			tb1.REG_DTTM reg_dttm,
+			tb2.P_NAME p_name,
+			tb2.COMPY_NAME compy_name,
+			tb2.P_LOGIN_ID p_login_id
+		FROM POINT_TRANS AS tb1, `USER` AS tb2
+		WHERE tb1.USER_UID = tb2.USER_UID
+		LIMIT #start_index#, #max_ret_count#
+	]]>
+	</select>
+	
+	<update id="memberDAO.update_point_trans_info"> 
+		UPDATE POINT_TRANS   
+		<dynamic prepend="SET">	
+			<isPropertyAvailable prepend="," property="appr_yn"> APPR_YN = #appr_yn# </isPropertyAvailable>
+			<isPropertyAvailable prepend="," property="trans_seq"> UPT_DTTM = DATE_FORMAT(NOW(), '%Y%m%d%H%i%s') </isPropertyAvailable>  													       
+		</dynamic>
+		WHERE TRANS_SEQ = #trans_seq#
+	</update>
+	
+	<update id="memberDAO.update_user_point"> 
+		UPDATE `USER`
+		<dynamic prepend="SET">	
+			<isPropertyAvailable prepend="," property="add_point"> USE_PSSB_POINT = USE_PSSB_POINT + #add_point# </isPropertyAvailable>
+			<isPropertyAvailable prepend="," property="sub_point"> USE_PSSB_POINT = USE_PSSB_POINT - #sub_point# </isPropertyAvailable>
+		</dynamic>
+		WHERE `USER_UID` = #user_uid#
+	</update>
+	
+	<insert id="memberDAO.insert_point_add_hist">
+	<![CDATA[
+		INSERT INTO `POINT_ADD_HIST` (
+			`USER_UID`, `ADD_TP`, `POINT`, `POINT_SEQ`, `POINT_NAME`, `REG_DTTM`
+	
+		) VALUES (
+			#user_uid#,
+			#add_tp#,
+			#point#,
+			#point_seq#,
+			#point_name#,
+			DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+		)
+	]]>
+	</insert>
+	<select id="memberDAO.company_unpaid_list" resultClass="java.util.HashMap">
+	<![CDATA[
+		SELECT * FROM (
+		SELECT 
+				@ROWNUM := @ROWNUM + 1 AS rnum,
+				SELL_TP, 
+				PAY_AMT, 
+				STTL_AMT, 
+				FEES, 
+				TAX, 
+				SELL_CNT, 
+				USTTL_DT,
+				USER.USER_UID,
+				USER.P_NAME,
+				USER.COMPY_NAME,
+				DEP_ST
+		FROM 	USTTL_INFO INNER JOIN USER ON USER.USER_UID = USTTL_INFO.USER_UID
+		WHERE   (IFNULL(#sell_tp#,'ALL') = 'ALL' OR (SELL_TP = #sell_tp#))
+		AND		DEP_ST IN(1,2,4)
+		AND 	DATE(USTTL_DT) >= DATE(#dttm1#)
+		AND 	DATE(USTTL_DT) <= DATE(#dttm2#)
+		AND 	(
+			    (
+			  	IFNULL(#conts_word#,'') = '' OR 
+			    ( USER.P_NAME LIKE CONCAT('%',#conts_word#,'%'))
+			    )
+		OR		(
+			  	IFNULL(#conts_word#,'') = '' OR 
+			    ( USER.COMPY_NAME LIKE CONCAT('%',#conts_word#,'%'))
+			    )
+			    )	    
+				ORDER BY USTTL_DT DESC
+		) T1, (SELECT  @ROWNUM := 0) A
+		limit   #start_index#, #max_ret_count#
+		]]>
+	</select>
+	
+	<select id="memberDAO.company_unpaid_list_total" resultClass="int">
+		<![CDATA[
+		SELECT
+			    COUNT(*) tot_count	
+		FROM  	USTTL_INFO INNER JOIN USER ON USER.USER_UID = USTTL_INFO.USER_UID
+		WHERE   (IFNULL(#sell_tp#,'ALL') = 'ALL' OR (SELL_TP = #sell_tp#))
+		AND		DEP_ST IN(1,2,4)
+	    AND 	DATE(USTTL_DT) >= DATE(#dttm1#)
+		AND 	DATE(USTTL_DT) <= DATE(#dttm2#)
+		AND 	(
+			    (
+			  	IFNULL(#conts_word#,'') = '' OR 
+			    ( USER.P_NAME LIKE CONCAT('%',#conts_word#,'%'))
+			    )
+		OR		(
+			  	IFNULL(#conts_word#,'') = '' OR 
+			    ( USER.COMPY_NAME LIKE CONCAT('%',#conts_word#,'%'))
+			    )
+			    )	
+				
+		]]>
+    </select>
+    
+    <select id="memberDAO.company_unpaid_descript" resultClass="java.util.HashMap">
+	  <![CDATA[
+	    SELECT * FROM (
+		SELECT 	
+				@ROWNUM := @ROWNUM + 1 AS rnum,
+				B.SELL_TP, 
+				A.PAY_DT, 
+				A.PAY_AMT, 
+				A.STTL_AMT, 
+				A.CSTTL_FEES, 
+				A.CSTTL_TAX, 
+				A.MOID, 
+				C.P_NAME,
+				C.COMPY_NAME,
+				(SELECT MAKE_INFO.MAKE_UID FROM MAKE_INFO WHERE MAKE_INFO.MOID = A.MOID) AS MAKE_UID
+		FROM 	USTTL_DTL_INFO A, USTTL_INFO B, USER C
+		]]>
+			<dynamic prepend="WHERE">
+			 <isEqual property="unpaid_tp" compareValue="1" prepend="">
+                <![CDATA[   
+			 	A.SELL_TP=B.SELL_TP
+		AND 	A.USER_UID=B.USER_UID
+		AND		A.USER_UID=C.USER_UID
+		AND		A.USTTL_DT = B.USTTL_DT
+		AND 	(IFNULL(#sell_tp#,'ALL') = 'ALL' OR (B.SELL_TP = #sell_tp#))
+		AND 	(IFNULL(#dttm#,'') = '' OR (B.USTTL_DT = #dttm#))
+		AND		B.DEP_ST IN(1,2,4)
+		AND 	(
+			    (
+			  	IFNULL(#name#,'') = '' OR 
+			    ( C.P_NAME = #name#)
+			    )
+				OR		
+				(
+			  	IFNULL(#name#,'') = '' OR 
+			    ( C.COMPY_NAME = #name#)
+			    )
+			    )	
+			    ORDER BY A.PAY_DT DESC
+                ]]>
+             </isEqual> 
+             <isEqual property="unpaid_tp" compareValue="2" prepend="">
+                <![CDATA[   
+			 	A.SELL_TP=B.SELL_TP
+		AND		A.USTTL_DT = B.USTTL_DT
+		AND 	A.USER_UID=B.USER_UID
+		AND		A.USER_UID=C.USER_UID 
+		AND 	(IFNULL(#sell_tp#,'ALL') = 'ALL' OR (B.SELL_TP = #sell_tp#))
+		AND		B.DEP_ST IN(1,2,4)
+	    AND 	DATE(A.PAY_DT) >= DATE(#dttm1#)
+		AND 	DATE(A.PAY_DT) <= DATE(#dttm2#)
+		AND 	(
+			    (
+			  	IFNULL(#conts_word#,'') = '' OR 
+			    ( C.P_NAME LIKE CONCAT('%',#conts_word#,'%'))
+			    )
+		OR		(
+			  	IFNULL(#conts_word#,'') = '' OR 
+			    ( C.COMPY_NAME LIKE CONCAT('%',#conts_word#,'%'))
+			    )
+			    )					
+				ORDER BY A.PAY_DT DESC
+           		]]>
+             </isEqual> 
+         </dynamic> 
+		 <![CDATA[      
+		) T1, (SELECT  @ROWNUM := 0) A
+		limit   #start_index#, #max_ret_count#
+		]]>
+	</select>
+
+	<select id="memberDAO.company_unpaid_descript_total" resultClass="int">
+		<![CDATA[
+			SELECT
+				    COUNT(A.MOID) tot_count	
+			FROM  	USTTL_DTL_INFO A, USTTL_INFO B, USER C
+			]]>
+			<dynamic prepend="WHERE">
+			 <isEqual property="unpaid_tp" compareValue="1" prepend="">
+                <![CDATA[   
+			 	A.SELL_TP=B.SELL_TP
+		AND 	A.USER_UID=B.USER_UID
+		AND		A.USER_UID=C.USER_UID 
+		AND		A.USTTL_DT = B.USTTL_DT
+		AND 	(IFNULL(#sell_tp#,'ALL') = 'ALL' OR (B.SELL_TP = #sell_tp#))
+		AND 	(IFNULL(#dttm#,'') = '' OR (B.USTTL_DT = #dttm#))
+		AND		B.DEP_ST IN(1,2,4)
+		AND 	(
+			    (
+			  	IFNULL(#name#,'') = '' OR 
+			    ( C.P_NAME = #name#)
+			    )
+				OR		
+				(
+			  	IFNULL(#name#,'') = '' OR 
+			    ( C.COMPY_NAME = #name#)
+			    )
+			    )	
+			    ORDER BY A.PAY_DT DESC
+                ]]>
+             </isEqual> 
+             <isEqual property="unpaid_tp" compareValue="2" prepend="">
+                <![CDATA[   
+			 	A.SELL_TP=B.SELL_TP
+		AND		A.USTTL_DT = B.USTTL_DT
+		AND 	A.USER_UID=B.USER_UID
+		AND		A.USER_UID=C.USER_UID 
+		AND 	(IFNULL(#sell_tp#,'ALL') = 'ALL' OR (B.SELL_TP = #sell_tp#))
+		AND		B.DEP_ST IN(1,2,4)
+		AND 	DATE(A.PAY_DT) >= DATE(#dttm1#)
+		AND 	DATE(A.PAY_DT) <= DATE(#dttm2#)
+		AND 	(
+			    (
+			  	IFNULL(#conts_word#,'') = '' OR 
+			    ( C.P_NAME LIKE CONCAT('%',#conts_word#,'%'))
+			    )
+				OR		
+				(
+			  	IFNULL(#conts_word#,'') = '' OR 
+			    ( C.COMPY_NAME LIKE CONCAT('%',#conts_word#,'%'))
+			    )
+			    )	
+				ORDER BY A.PAY_DT DESC
+           		]]>
+             </isEqual> 
+         </dynamic> 
+    </select>
+    <select id="memberDAO.company_paid_list" resultClass="java.util.HashMap">
+	<![CDATA[
+		SELECT * FROM (
+		SELECT 
+				@ROWNUM := @ROWNUM + 1 AS rnum,
+				SELL_TP, 
+				PAY_AMT, 
+				STTL_AMT, 
+				FEES, TAX, 
+				SELL_CNT, 
+				USTTL_DT,
+				USER.P_NAME,
+				USER.COMPY_NAME
+		FROM 	USTTL_INFO INNER JOIN USER ON USER.USER_UID = USTTL_INFO.USER_UID
+		WHERE   (IFNULL(#sell_tp#,'ALL') = 'ALL' OR (SELL_TP = #sell_tp#))
+		AND		DEP_ST = 3
+		AND 	DATE(USTTL_DT) >= DATE(#dttm1#)
+		AND 	DATE(USTTL_DT) <= DATE(#dttm2#)
+		AND 	(
+			    (
+			  	IFNULL(#conts_word#,'') = '' OR 
+			    ( USER.P_NAME LIKE CONCAT('%',#conts_word#,'%'))
+			    )
+		OR		(
+			  	IFNULL(#conts_word#,'') = '' OR 
+			    ( USER.COMPY_NAME LIKE CONCAT('%',#conts_word#,'%'))
+			    )
+			    )	    
+				ORDER BY USTTL_DT DESC
+		) T1, (SELECT  @ROWNUM := 0) A
+		limit   #start_index#, #max_ret_count#
+		]]>
+	</select>
+	
+	<select id="memberDAO.company_paid_list_total" resultClass="int">
+		<![CDATA[
+			SELECT
+				    COUNT(*) tot_count	
+			FROM  	USTTL_INFO INNER JOIN USER ON USER.USER_UID = USTTL_INFO.USER_UID
+		WHERE   (IFNULL(#sell_tp#,'ALL') = 'ALL' OR (SELL_TP = #sell_tp#))
+		AND		DEP_ST = 3
+	    AND 	DATE(USTTL_DT) >= DATE(#dttm1#)
+		AND 	DATE(USTTL_DT) <= DATE(#dttm2#)
+		AND 	(
+			    (
+			  	IFNULL(#conts_word#,'') = '' OR 
+			    ( USER.P_NAME LIKE CONCAT('%',#conts_word#,'%'))
+			    )
+		OR		(
+			  	IFNULL(#conts_word#,'') = '' OR 
+			    ( USER.COMPY_NAME LIKE CONCAT('%',#conts_word#,'%'))
+			    )
+			    )	
+				
+		]]>
+    </select>
+    
+    <select id="memberDAO.company_paid_descript" resultClass="java.util.HashMap">
+	  <![CDATA[
+	    SELECT * FROM (
+		SELECT 	
+				@ROWNUM := @ROWNUM + 1 AS rnum,
+				B.SELL_TP, 
+				A.PAY_DT, 
+				A.PAY_AMT, 
+				A.STTL_AMT, 
+				A.CSTTL_FEES, 
+				A.CSTTL_TAX, 
+				A.MOID, 
+				C.P_NAME,
+				C.COMPY_NAME,
+				(SELECT MAKE_INFO.MAKE_UID FROM MAKE_INFO WHERE MAKE_INFO.MOID = A.MOID) AS MAKE_UID
+		FROM 	USTTL_DTL_INFO A, USTTL_INFO B, USER C
+		]]>
+			<dynamic prepend="WHERE">
+			 <isEqual property="unpaid_tp" compareValue="1" prepend="">
+                <![CDATA[   
+			 	A.SELL_TP=B.SELL_TP
+		AND 	A.USER_UID=B.USER_UID
+		AND		A.USER_UID=C.USER_UID
+		AND		A.USTTL_DT = B.USTTL_DT
+		AND 	(IFNULL(#sell_tp#,'ALL') = 'ALL' OR (B.SELL_TP = #sell_tp#))
+		AND 	(IFNULL(#reg_dttm#,'') = '' OR (B.USTTL_DT = #reg_dttm#))
+		AND		B.DEP_ST = 3
+		AND 	(
+			    (
+			  	IFNULL(#conts_word#,'') = '' OR 
+			    ( C.P_NAME LIKE CONCAT('%',#conts_word#,'%'))
+			    )
+		OR		(
+			  	IFNULL(#conts_word#,'') = '' OR 
+			    ( C.COMPY_NAME LIKE CONCAT('%',#conts_word#,'%'))
+			    )
+			    )	
+			    ORDER BY A.PAY_DT DESC
+                ]]>
+             </isEqual> 
+             <isEqual property="unpaid_tp" compareValue="2" prepend="">
+                <![CDATA[   
+			 	A.SELL_TP=B.SELL_TP
+		AND		A.USTTL_DT = B.USTTL_DT
+		AND 	A.USER_UID=B.USER_UID
+		AND		A.USER_UID=C.USER_UID 
+		AND 	(IFNULL(#sell_tp#,'ALL') = 'ALL' OR (B.SELL_TP = #sell_tp#))
+		AND		B.DEP_ST = 3
+	    AND 	DATE(A.PAY_DT) >= DATE(#dttm1#)
+		AND 	DATE(A.PAY_DT) <= DATE(#dttm2#)
+		AND 	(
+			    (
+			  	IFNULL(#conts_word#,'') = '' OR 
+			    ( C.P_NAME LIKE CONCAT('%',#conts_word#,'%'))
+			    )
+		OR		(
+			  	IFNULL(#conts_word#,'') = '' OR 
+			    ( C.COMPY_NAME LIKE CONCAT('%',#conts_word#,'%'))
+			    )
+			    )					
+				ORDER BY A.PAY_DT DESC
+           		]]>
+             </isEqual> 
+         </dynamic> 
+		 <![CDATA[      
+		) T1, (SELECT  @ROWNUM := 0) A
+		limit   #start_index#, #max_ret_count#
+		]]>
+	</select>
+
+	<select id="memberDAO.company_paid_descript_total" resultClass="int">
+		<![CDATA[
+			SELECT
+				    COUNT(A.MOID) tot_count	
+			FROM  	USTTL_DTL_INFO A, USTTL_INFO B, USER C
+			]]>
+			<dynamic prepend="WHERE">
+			 <isEqual property="unpaid_tp" compareValue="1" prepend="">
+                <![CDATA[   
+			 	A.SELL_TP=B.SELL_TP
+		AND 	A.USER_UID=B.USER_UID
+		AND		A.USER_UID=C.USER_UID 
+		AND		A.USTTL_DT = B.USTTL_DT
+		AND 	(IFNULL(#sell_tp#,'ALL') = 'ALL' OR (B.SELL_TP = #sell_tp#))
+		AND 	(IFNULL(#reg_dttm#,'') = '' OR (B.USTTL_DT = #reg_dttm#))
+		AND		B.DEP_ST = 3
+		AND 	(
+			    (
+			  	IFNULL(#conts_word#,'') = '' OR 
+			    ( C.P_NAME LIKE CONCAT('%',#conts_word#,'%'))
+			    )
+				OR		
+				(
+			  	IFNULL(#conts_word#,'') = '' OR 
+			    ( C.COMPY_NAME LIKE CONCAT('%',#conts_word#,'%'))
+			    )
+			    )	
+			    ORDER BY A.PAY_DT DESC
+                ]]>
+             </isEqual> 
+             <isEqual property="unpaid_tp" compareValue="2" prepend="">
+                <![CDATA[   
+			 	A.SELL_TP=B.SELL_TP
+		AND		A.USTTL_DT = B.USTTL_DT
+		AND 	A.USER_UID=B.USER_UID
+		AND		A.USER_UID=C.USER_UID 
+		AND 	(IFNULL(#sell_tp#,'ALL') = 'ALL' OR (B.SELL_TP = #sell_tp#))
+		AND		B.DEP_ST = 3
+		AND 	DATE(A.PAY_DT) >= DATE(#dttm1#)
+		AND 	DATE(A.PAY_DT) <= DATE(#dttm2#)
+		AND 	(
+			    (
+			  	IFNULL(#conts_word#,'') = '' OR 
+			    ( C.P_NAME LIKE CONCAT('%',#conts_word#,'%'))
+			    )
+				OR		
+				(
+			  	IFNULL(#conts_word#,'') = '' OR 
+			    ( C.COMPY_NAME LIKE CONCAT('%',#conts_word#,'%'))
+			    )
+			    )	
+				ORDER BY A.PAY_DT DESC
+           		]]>
+             </isEqual> 
+         </dynamic> 
+    </select>
+    <select id="memberDAO.calculate_target_list" resultClass="java.util.HashMap">
+	<![CDATA[
+		SELECT * FROM (
+		SELECT 
+				@ROWNUM := @ROWNUM + 1 AS rnum,
+				WITHDRAW_INFO.WITHDRAW_DT		withdraw_dt, 
+				WITHDRAW_INFO.USER_UID			user_uid,
+				WITHDRAW_INFO.WITHDRAW_AMT		withdraw_amt,
+				WITHDRAW_INFO.WITHDRAW_APPR_AMT	withdraw_appr_amt,
+				WITHDRAW_INFO.WITHDRAW_FEES		withdraw_fees,
+				WITHDRAW_INFO.DEP_BANK_CODE		dep_bank_code,
+				WITHDRAW_INFO.DEP_BANK_ACCT		dep_bank_acct,
+				WITHDRAW_INFO.REG_DTTM			reg_dttm,
+				WITHDRAW_INFO.DEP_ST			dep_st,
+				WITHDRAW_INFO.AFTER_BALANCE		after_balance, 
+				USER.P_NAME						p_name,
+				USER.COMPY_NAME					compy_name
+		FROM 	WITHDRAW_INFO INNER JOIN USER ON USER.USER_UID = WITHDRAW_INFO.USER_UID
+		WHERE   DEP_ST = 1
+		AND 	DATE(WITHDRAW_DT) >= DATE(#dttm1#)
+		AND 	DATE(WITHDRAW_DT) <= DATE(#dttm2#)
+		AND 	(
+			    (
+			  	IFNULL(#conts_word#,'') = '' OR 
+			    ( USER.P_NAME LIKE CONCAT('%',#conts_word#,'%'))
+			    )
+				OR
+				(
+			  	IFNULL(#conts_word#,'') = '' OR 
+			    ( USER.COMPY_NAME LIKE CONCAT('%',#conts_word#,'%'))
+			    )
+			    )
+				GROUP BY USER.USER_UID, WITHDRAW_INFO.WITHDRAW_DT	    
+				ORDER BY WITHDRAW_INFO.WITHDRAW_DT DESC
+		) T1, (SELECT  @ROWNUM := 0) A
+		limit   #start_index#, #max_ret_count#
+		]]>
+	</select>
+	
+	<select id="memberDAO.calculate_target_list_total" resultClass="int">
+		<![CDATA[
+		SELECT CASE WHEN SUM(cnt) = 'NULL' THEN 0 ELSE SUM(cnt) END AS tot_count FROM
+		(
+		SELECT
+			    COUNT(*) cnt	
+		FROM 	WITHDRAW_INFO INNER JOIN `USER` ON USER.USER_UID = WITHDRAW_INFO.USER_UID
+		WHERE   DEP_ST = 1
+		AND 	DATE(WITHDRAW_DT) >= DATE(#dttm1#)
+		AND 	DATE(WITHDRAW_DT) <= DATE(#dttm2#)
+		AND 	(
+			    (
+			  	IFNULL(#conts_word#,'') = '' OR 
+			    ( USER.P_NAME LIKE CONCAT('%',#conts_word#,'%'))
+			    )
+				OR
+				(
+			  	IFNULL(#conts_word#,'') = '' OR 
+			    ( USER.COMPY_NAME LIKE CONCAT('%',#conts_word#,'%'))
+			    )
+			    )
+				GROUP BY USER.USER_UID, WITHDRAW_INFO.WITHDRAW_DT	    
+				ORDER BY WITHDRAW_INFO.WITHDRAW_DT DESC
+				) AS t_cnt
+		]]>
+    </select>
+     <update id="memberDAO.calculate_target_list_u">
+			UPDATE 	WITHDRAW_INFO  
+			SET 	DEP_ST = 2
+			WHERE 	WITHDRAW_DT = #withdraw_dt#
+			AND		USER_UID = #user_uid#
+	</update>
+    <select id="memberDAO.calculate_deposit_list" resultClass="java.util.HashMap">
+	<![CDATA[
+		SELECT * FROM (
+		SELECT 
+				@ROWNUM := @ROWNUM + 1 AS rnum,
+				WITHDRAW_INFO.WITHDRAW_DT		withdraw_dt, 
+				WITHDRAW_INFO.USER_UID			user_uid,
+				WITHDRAW_INFO.WITHDRAW_AMT		withdraw_amt,
+				WITHDRAW_INFO.WITHDRAW_APPR_AMT	withdraw_appr_amt,
+				WITHDRAW_INFO.WITHDRAW_FEES		withdraw_fees,
+				WITHDRAW_INFO.DEP_BANK_CODE		dep_bank_code,
+				WITHDRAW_INFO.DEP_BANK_ACCT		dep_bank_acct,
+				WITHDRAW_INFO.REG_DTTM			reg_dttm,
+				WITHDRAW_INFO.DEP_ST			dep_st,
+				WITHDRAW_INFO.AFTER_BALANCE		after_balance,
+				USER.ACCT_NAME 					acct_name, 
+				USER.P_NAME						p_name,
+				USER.COMPY_NAME					compy_name
+		FROM 	WITHDRAW_INFO INNER JOIN USER ON USER.USER_UID = WITHDRAW_INFO.USER_UID
+		WHERE   DEP_ST = 2
+		AND 	DATE(WITHDRAW_DT) >= DATE(#dttm1#)
+		AND 	DATE(WITHDRAW_DT) <= DATE(#dttm2#)
+		AND 	(
+			    (
+			  	IFNULL(#conts_word#,'') = '' OR 
+			    ( USER.P_NAME LIKE CONCAT('%',#conts_word#,'%'))
+			    )
+				OR
+				(
+			  	IFNULL(#conts_word#,'') = '' OR 
+			    ( USER.COMPY_NAME LIKE CONCAT('%',#conts_word#,'%'))
+			    )
+			    )
+				GROUP BY USER.USER_UID, WITHDRAW_INFO.WITHDRAW_DT	    
+				ORDER BY WITHDRAW_INFO.WITHDRAW_DT DESC
+		) T1, (SELECT  @ROWNUM := 0) A
+		limit   #start_index#, #max_ret_count#
+		]]>
+	</select>
+	<select id="memberDAO.calculate_deposit_list_total" resultClass="int">
+		<![CDATA[
+		SELECT CASE WHEN SUM(cnt) = 'NULL' THEN 0 ELSE SUM(cnt) END AS tot_count FROM
+		(
+		SELECT
+			    COUNT(*) cnt	
+		FROM 	WITHDRAW_INFO INNER JOIN `USER` ON USER.USER_UID = WITHDRAW_INFO.USER_UID
+		WHERE   DEP_ST = 2
+		AND 	DATE(WITHDRAW_DT) >= DATE(#dttm1#)
+		AND 	DATE(WITHDRAW_DT) <= DATE(#dttm2#)
+		AND 	(
+			    (
+			  	IFNULL(#conts_word#,'') = '' OR 
+			    ( USER.P_NAME LIKE CONCAT('%',#conts_word#,'%'))
+			    )
+				OR
+				(
+			  	IFNULL(#conts_word#,'') = '' OR 
+			    ( USER.COMPY_NAME LIKE CONCAT('%',#conts_word#,'%'))
+			    )
+			    )
+				GROUP BY USER.USER_UID, WITHDRAW_INFO.WITHDRAW_DT	    
+				ORDER BY WITHDRAW_INFO.WITHDRAW_DT DESC
+				) AS t_cnt
+		]]>
+    </select>
+	<update id="memberDAO.calculate_deposit_list_u">
+			UPDATE 	WITHDRAW_INFO
+			SET		DEP_DT = DATE_FORMAT(NOW(),'%Y%m%d%H%i%s'),
+					DEP_ST = 3
+			WHERE	WITHDRAW_DT = #withdraw_dt#
+			AND		USER_UID	= #user_uid#
+	</update>
+	<select id="memberDAO.calculate_deposit_list_s" resultClass="int">
+		<![CDATA[
+		SELECT 	COUNT(*) cnt 
+		FROM 	USTTL_INFO
+		WHERE 	USTTL_DT = #usttl_dt#
+		AND		USER_UID = #user_uid#
+		AND		SELL_TP = #sell_tp#
+		]]>
+    </select>
+    <select id="memberDAO.calculate_excel_list" resultClass="java.util.HashMap">
+	<![CDATA[
+		WITHDRAW_INFO.WITHDRAW_DT		withdraw_dt, 
+				WITHDRAW_INFO.USER_UID			user_uid,
+				WITHDRAW_INFO.WITHDRAW_AMT		withdraw_amt,
+				WITHDRAW_INFO.WITHDRAW_APPR_AMT	withdraw_appr_amt,
+				WITHDRAW_INFO.WITHDRAW_FEES		withdraw_fees,
+				WITHDRAW_INFO.DEP_BANK_CODE		dep_bank_code,
+				WITHDRAW_INFO.DEP_BANK_ACCT		dep_bank_acct,
+				WITHDRAW_INFO.REG_DTTM			reg_dttm,
+				WITHDRAW_INFO.DEP_ST			dep_st,
+				WITHDRAW_INFO.AFTER_BALANCE		after_balance,
+				USER.ACCT_NAME 					acct_name, 
+				USER.P_NAME						p_name,
+				USER.COMPY_NAME					compy_name
+		FROM 	WITHDRAW_INFO INNER JOIN USER ON USER.USER_UID = WITHDRAW_INFO.USER_UID
+		WHERE   DEP_ST = 2
+		AND 	DATE(WITHDRAW_DT) >= DATE(#dttm1#)
+		AND 	DATE(WITHDRAW_DT) <= DATE(#dttm2#)
+			    GROUP BY USER.USER_UID, WITHDRAW_INFO.WITHDRAW_DT 
+				ORDER BY WITHDRAW_INFO.WITHDRAW_DT DESC
+		]]>
+	</select>
+	 <select id="memberDAO.selectAdmin_by_p_login_id" resultClass="java.util.HashMap">
+	<![CDATA[
+	SELECT * FROM(
+		SELECT 
+				ADMIN_ID			admin_id,
+				ADMIN_UID			admin_uid,
+				PSWD				pswd
+		FROM	ADMIN
+		WHERE	ADMIN_ID = #p_login_id#
+		) T1		
+		]]>
+	</select>
+	 <select id="memberDAO.admin_check" resultClass="java.util.HashMap">
+	<![CDATA[
+	SELECT * FROM(
+		SELECT 
+				ADMIN_ID			admin_id,
+				ADMIN_UID			admin_uid,
+				DEP_TARGET			dep_target,
+				DEP_ENROLL			dep_enroll
+		FROM	ADMIN
+		WHERE	ADMIN_ID = #p_login_id#
+		) T1		
+		]]>
+	</select>
+</sqlMap>

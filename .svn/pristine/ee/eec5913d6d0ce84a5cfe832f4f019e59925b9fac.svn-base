@@ -1,0 +1,79 @@
+package com.asia3d.member.service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.web.multipart.MultipartFile;
+
+public interface AjaxMemberService {
+	
+	public Map<String, Object> user_reg(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception;
+	
+	public Map<String, Object>	user_login(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception;
+	
+	public Map<String, Object>	user_photo_download(HashMap<String, Object> jsonMap) throws Exception;
+	
+	public Map<String, Object> my_info_fileupload(HashMap<String, Object> jsonMap, List<MultipartFile> aMultipartFile) throws Exception;
+
+	public Map<String, Object> mail_auth_confirm(HashMap<String, Object> jsonMap) throws Exception;
+
+	public Map<String, Object> print_corp_info_reg(HashMap<String, Object> jsonMap) throws Exception;
+
+	public Map<String, Object> modeler_info_reg(HashMap<String, Object> jsonMap) throws Exception;
+	
+	public Map<String, Object> file_tmp_updownload(HashMap<String, Object> jsonMap, HttpServletRequest request, HttpServletResponse response, List<MultipartFile> aMultipartFile)  throws Exception;
+
+	public Map<String, Object> user_logout(HashMap<String, Object> jsonMap,	HttpServletRequest request) throws Exception;
+
+	public Map<String, Object> notice_reg(HashMap<String, Object> jsonMap, HttpServletRequest request, HttpServletResponse response, List<MultipartFile> aMultipartFile) throws Exception;
+
+	public Map<String, Object> notice_list(HashMap<String, Object> jsonMap,	HttpServletRequest request) throws Exception;
+	
+	public Map<String, Object> qna_reg(HashMap<String, Object> jsonMap,	HttpServletRequest request) throws Exception;
+
+	public Map<String, Object> qna_list(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception;
+
+	public Map<String, Object> news_trand_reg(HashMap<String, Object> jsonMap, HttpServletRequest request)  throws Exception;
+
+	public Map<String, Object> news_trand_list(HashMap<String, Object> jsonMap, HttpServletRequest request)  throws Exception;
+
+	public Map<String, Object> follow_reg(HashMap<String, Object> jsonMap,	HttpServletRequest request)   throws Exception;
+	
+	public Map<String, Object> user_info_list(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception;
+
+	public Map<String, Object> user_info_by_user_uid(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception;
+
+	public Map<String, Object> user_summary_etc_info(HashMap<String, Object> jsonMap, HttpServletRequest request)  throws Exception;
+
+	public Map<String, Object> user_summary_etc_info_list(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception;
+
+	public Map<String, Object> main_info(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception;
+
+	public Map<String, Object> sns_login(HashMap<String, Object> jsonMap, HttpServletRequest request)  throws Exception;
+
+	public Map<String, Object> admin_login(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception;
+
+	public Map<String, Object> point_reg(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception;
+
+	public Map<String, Object> point_trans_reg(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception;
+
+	public Map<String, Object> point_add_hist_reg(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception;
+	
+	public Map<String, Object> company_unpaid_list(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception;
+	
+	public Map<String, Object> company_unpaid_descript(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception;
+	
+	public Map<String, Object> company_paid_list(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception;
+	
+	public Map<String, Object> company_paid_descript(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception;
+
+	public Map<String, Object> calculate_target_list(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception;
+
+	public Map<String, Object> calculate_deposit_list(HashMap<String, Object> jsonMap, HttpServletRequest request, HttpServletResponse response) throws Exception;
+
+	
+}

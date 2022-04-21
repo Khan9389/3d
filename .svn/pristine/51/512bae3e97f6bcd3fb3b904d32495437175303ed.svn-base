@@ -1,0 +1,47 @@
+@font-face {
+  font-family: 'NotoSansKR-Light-Hestia';
+  src: url('fonts/NotoSansKR-Light-Hestia.eot');
+  src: url('fonts/NotoSansKR-Light-Hestia.woff') format('woff'),
+       url('fonts/NotoSansKR-Light-Hestia.otf') format('truetype'),
+       url('fonts/NotoSansKR-Light-Hestia.svg#NotoSansKR-Bold-Hestia') format('svg'),
+       url('fonts/NotoSansKR-Light-Hestia.eot?#iefix') format('embedded-opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'NotoSansKR-Regular-Hestia';
+  src: url('fonts/NotoSansKR-Regular-Hestia.eot');
+  src: url('fonts/NotoSansKR-Regular-Hestia.woff2') format('woff2'),
+       url('fonts/NotoSansKR-Regular-Hestia.woff') format('woff'),
+       url('fonts/NotoSansKR-Regular-Hestia.otf') format('truetype'),
+       url('fonts/NotoSansKR-Regular-Hestia.svg#NotoSansKR-Bold-Hestia') format('svg'),
+       url('fonts/NotoSansKR-Regular-Hestia.eot?#iefix') format('embedded-opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'NotoSansKR-Medium-Hestia';
+  src: url('fonts/NotoSansKR-Medium-Hestia.eot');
+  src: url('fonts/NotoSansKR-Medium-Hestia.woff2') format('woff2'),
+       url('fonts/NotoSansKR-Medium-Hestia.woff') format('woff'),
+       url('fonts/NotoSansKR-Medium-Hestia.otf') format('truetype'),
+       url('fonts/NotoSansKR-Medium-Hestia.svg#NotoSansKR-Bold-Hestia') format('svg'),
+       url('fonts/NotoSansKR-Medium-Hestia.eot?#iefix') format('embedded-opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'NotoSansKR-Bold-Hestia';
+  src: url('fonts/NotoSansKR-Bold-Hestia.eot');
+  src: url('fonts/NotoSansKR-Bold-Hestia.woff2') format('woff2'),
+       url('fonts/NotoSansKR-Bold-Hestia.woff') format('woff'),
+       url('fonts/NotoSansKR-Bold-Hestia.otf') format('truetype'),
+       url('fonts/NotoSansKR-Bold-Hestia.svg#NotoSansKR-Bold-Hestia') format('svg'),
+       url('fonts/NotoSansKR-Bold-Hestia.eot?#iefix') format('embedded-opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+

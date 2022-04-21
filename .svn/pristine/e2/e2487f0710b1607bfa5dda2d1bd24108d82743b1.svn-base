@@ -1,0 +1,168 @@
+<%@ page contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
+
+<link rel="stylesheet" type="text/css" href="/asia3d/main/css/import.css" />
+<script type="text/javascript" src="/asia3d/main/js/TweenMax.min.js"></script>
+<script type="text/javascript" src="/asia3d/main/js/common.js"></script>
+
+<script>
+var date = new Date();
+var first = getDate2(-7);
+var last = getDate2();
+
+$(document).ready(function() {
+	setLoginInfo();
+	
+	$(".admin_gnb_group li").mouseenter(function() {
+		$(this).children("ul").fadeIn();	
+	});
+
+	$(".admin_gnb_group li").mouseleave(function() {
+		$(this).children("ul").fadeOut();
+ 	});
+});
+
+function setLoginInfo() {
+	$('#li_login1, #li_login2').hide();
+	
+	if(<%=isLogin%>) {
+		$('#li_login2').show();
+		console.log("<%=my_photo%>");
+		$('.imgwrap').css({
+			"background-image" : "url('" + "<%=my_photo%>" + "')"
+		});
+	} else {
+		$('#li_login1').show();
+	}
+}
+function com_cal_page(tmp){
+	if(tmp == 1){
+		location.href = "/pay/company_unpaid_list.do?dttm1="+first+"&dttm2="+last+"&sell_tp=ALL";
+	}else if(tmp == 2){
+		location.href = "/pay/company_unpaid_descript.do?dttm1="+first+"&dttm2="+last;
+	}else if(tmp == 3){
+		location.href = "/pay/company_paid_list.do?dttm1="+first+"&dttm2="+last;
+	}else if(tmp == 4){
+		location.href = "/pay/company_paid_descript.do?dttm1="+first+"&dttm2="+last;
+	}else if(tmp == 5){
+		location.href = "/pay/calculate_target_list.do?dttm1="+first+"&dttm2="+last;
+	}else if(tmp == 6){
+		location.href = "/pay/calculate_deposit_list.do?dttm1="+first+"&dttm2="+last;
+	}
+}
+function pg_cal_page(tmp){
+	if(tmp == 1){
+		location.href = "/pay/pay_list.do?dttm1="+first+"&dttm2="+last;
+	}else if(tmp == 2){
+		location.href = "/pay/calculate_list.do?dttm1="+first+"&dttm2="+last;
+	}else if(tmp == 3){
+		location.href = "/pay/deposit_list.do?dttm1="+first+"&dttm2="+last;
+	}else if(tmp == 4){
+		location.href = "/pay/refund_list.do";
+	}
+}
+function doLogout() {
+	var paramJson = new Object();
+	paramJson.service_tp = "user_logout";
+	paramJson.p_login_id = "<%=p_login_id%>";
+	
+	var jsondata = "jsondata=" + JSON.stringify(paramJson);
+	printLog("send data", jsondata);
+	$.ajax({      
+        type : "POST",  
+        url : "/Ajax3DBankController.do",
+        data : jsondata,      
+        success : function(result) {
+			printLog("result data", JSON.stringify(result));
+			
+			if (result.retcode == "000")
+				location.href = "/index.do";
+        }
+    });
+}
+</script>
+
+<dl class="hid">
+    <dt>바로가기 메뉴</dt>
+    <dd><a href="#gnb">주메뉴 바로가기</a></dd>
+    <dd><a href="#container">본문 바로가기</a></dd>
+    <dd><a href="#address">주소 바로가기</a></dd>
+</dl>
+
+<div id="header_wrap">
+    <div class="top_bg">
+        <!--header -->
+        <div id="header">
+            <!-- top_mnu -->
+            <div class="top_mnu">
+                <h1 class="logo"><a href="/member/login.do"><img src="/asia3d/images/common/com_logo.gif" alt="3DBANK"/></a></h1>
+                
+                <div class="top_right">
+					<ul class="top_right_c">
+						<li id="li_login1" class="hiddens" style="display: none;">
+							<p class="login_p"><a href="/member/login.do">로그인</a></p>
+						</li>
+						<li id="li_login2" class="hiddens" style="display: list-item;">
+							<dl class="pwrap">
+								<dt><p class="imgwrap"></p></dt>
+								<dd>
+									<p>You</p>
+									<span class="arrow_area hide"></span>
+								</dd>
+							</dl>
+							<div class="top_right_c_arro_wrap">
+								<div class="arro"><img alt="" src="/asia3d/main/img/temp/arro_up.gif"></div>
+								<ul class="top_right_c_in">
+									<!-- <li onclick="location.href='/mypage/my_info_write.do'">계정정보</li>
+									<li onclick="location.href='/mypage/my_order_list1.do'">나의주문</li>
+									<li onclick="location.href='/mypage/service_order_list1.do'">나의 서비스</li> -->
+									<li onclick="doLogout();">로그아웃</li>
+								</ul>
+							</div>
+						</li>
+					</ul>
+				</div>
+            </div>
+        </div>
+    </div>
+	<div class="admin_gnb">
+		<ul class="admin_gnb_group">
+			<li>회원관리
+				<ul>
+					<li><a href="/member/member_list.do">개인회원 목록</a></li>
+					<li><a href="/member/point_write.do">포인트정책 등록</a></li>
+					<li><a href="/member/trans_list.do">전환신청 목록</a></li>
+					<li><a href="ad_3dprinting_list.html">프린팅검증신청 목록</a></li>
+				</ul>
+			</li>
+			<li>PG정산
+				<ul>
+				<li><a href="#" onclick="pg_cal_page(1)">결제승인 목록</a></li>
+					<li><a href="#" onclick="pg_cal_page(2)">정산통합 목록</a></li>
+					<li><a href="#" onclick="pg_cal_page(3)">정산상세 목록</a></li>
+					<li><a href="#" onclick="pg_cal_page(4)">환불 목록</a></li>
+					
+				</ul></li>
+			<li>업체정산
+				<ul>
+					<li><a href="#" onclick="com_cal_page(1)">입금미완료목록</a></li>
+					<li><a href="#" onclick="com_cal_page(2)">입금미완료상세목록</a></li>
+					<li><a href="#" onclick="com_cal_page(3)">입금완료목록</a></li>
+					<li><a href="#" onclick="com_cal_page(4)">입금완료상세목록</a></li>
+					<li><a href="#" onclick="com_cal_page(5)">입금대상등록</a></li>
+					<li><a href="#" onclick="com_cal_page(6)">입금처리등록</a></li>
+				</ul></li>
+			<li>이벤트관리
+				<ul>
+					<li><a href="/event/cgrp_list.do">콘텐츠그룹 목록</a></li>
+					<li><a href="/event/cgrp_write.do">콘텐츠그룹 등록</a></li>
+					<li><a href="/event/exhibition_list.do">3D전시 목록</a></li>
+					<li><a href="/event/exhibition_write.do">3D전시 등록</a></li>
+				</ul></li>
+			<li>엑셀
+				<ul>
+					<li><a href="/xquery/index.jsp">엑셀다운로드</a></li>
+				</ul></li>
+		</ul>           
+	</div>
+	<!-- //gnb_group -->
+</div>

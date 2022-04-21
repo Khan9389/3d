@@ -1,0 +1,22 @@
+package com.asia3d.calculate.service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.ui.Model;
+import org.springframework.web.bind.support.SessionStatus;
+import org.springframework.web.multipart.MultipartFile;
+
+public interface CalculateService {
+
+	void calculatePayResult(String svc) throws Exception;
+	
+	void calculateSettleResult(String svc) throws Exception;
+
+	void calculateDepositResult() throws Exception;
+}

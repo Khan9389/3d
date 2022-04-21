@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+        http://www.springframework.org/schema/jdbc  http://www.springframework.org/schema/jdbc/spring-jdbc-4.0.xsd">
+
+    <!-- HikariCP : mariaDB -->
+    <bean id="hikariConfig" class="com.zaxxer.hikari.HikariConfig">
+        <property name="dataSourceClassName" value="org.mariadb.jdbc.MySQLDataSource"/>
+        <property name="maximumPoolSize" value="20" />
+        <property name="idleTimeout" value="1" />
+        <property name="dataSourceProperties">
+            <props>
+            	<prop key="url">jdbc:mariadb://36.38.35.74:3306/airpass_exhibition?user=3dbank&amp;password=3dbank123!!&amp;useUnicode=true&amp;characterEncoding=euckr&amp;autoReconnect=true&amp;initializationFailFast=false</prop>
+				<!--<prop key="url">jdbc:mariadb://36.38.35.74:3306/3dbank_db?user=3dbank&amp;password=3dbank123!!&amp;useUnicode=true&amp;characterEncoding=euckr&amp;autoReconnect=true&amp;initializationFailFast=false</prop> -->
+                <!-- Caution !! :  user, password  must be defined directly in jdbc url -->
+                <!--
+                <prop key="user">vdiuser</prop>
+                <prop key="password">vdiuser123</prop>
+                -->
+            </props>
+        </property>
+    </bean>
+    
+    <bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource" destroy-method="shutdown">
+        <constructor-arg ref="hikariConfig"/>
+    </bean>
+</beans>

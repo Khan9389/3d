@@ -1,0 +1,25 @@
+#!/bin/bash
+
+#######################
+# imagemagick
+#######################
+echo ""
+echo "=== start imagemagick ==="
+echo "=== params-s ==="
+echo $1
+echo $2
+echo "=== params-e ==="
+#
+# convert /home/vdiuser/3dbank/was1/root-webapps/demo/stlviewer/models/makeImages/20.stl.png +matte \( +clone  -shade 110x90 -normalize -negate +clone  -compose Plus -composite \) \( -clone 0 -shade 110x50 -normalize -channel BG -fx 0 +channel -matte \) +swap  -compose Multiply -composite  button.gif
+#
+
+#convert \
+	$1	\
+	-raise 8 \
+	-normalize -fx g -solarize 100%	\
+	$2
+
+convert $1 -raise 6 -grayscale Rec601Luma  $2
+
+
+echo "=== finish imagemagick ==="

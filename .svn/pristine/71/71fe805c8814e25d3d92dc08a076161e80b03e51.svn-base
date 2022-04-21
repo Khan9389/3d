@@ -1,0 +1,146 @@
+<%@ page contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ko" xml:lang="ko">
+
+<head>
+	<%@ include file="../comm/util.jsp" %>
+	<meta name="keywords" content="3DBANK" />
+	<script type="text/javascript" charset="utf-8" src="/asia3d/js/jquery.cookie.js"></script>
+	<title><%=title%></title>
+</head>
+
+<body>
+<%
+String page_num = request.getParameter("page_num");
+%>
+
+<script type="text/javascript">
+var mPage = (<%=page_num%>) ? <%=page_num%> : 1;
+var mListInfo = new Array();
+
+$(document).ready(function() {
+	setHistory("trans_list", null);
+	readList();
+});
+
+function clickBtnApprove(tmpPos) {
+	var transInfo = mListInfo.trans_list[tmpPos];
+		
+	var jsonParam = new Object();
+	jsonParam.service_tp = "point_trans_reg";
+	jsonParam.crud_tp = "u";
+	jsonParam.user_uid = transInfo.user_uid;
+	jsonParam.trans_seq = transInfo.trans_seq;
+	jsonParam.sub_point = transInfo.trans_amt;
+	jsonParam.appr_yn = "Y";
+	
+	doCommunication(jsonParam);
+}
+
+// 화면 새로고침
+function refreshPage() {
+	var pageUrl = "/member/trans_list.do?page_num=" + mPage;
+	location.href = pageUrl;
+}
+
+//페이지이동
+function goPage(tmpPage) {
+	mPage = tmpPage;
+	refreshPage();
+}
+
+// 리스트 세팅
+function setList() {
+	for (var i=0; i<mListInfo.trans_list.length; i++) {
+		var approve = "승인됨";
+		var transInfo = mListInfo.trans_list[i];
+		
+		if (transInfo.appr_yn == "N")
+			approve = "<input type='button' class='input_btn' onclick='clickBtnApprove(" + i + ")' value='승인' />"
+		
+		var tmpHtml = 
+			"<tr>" + 
+				"<td>" + parseInt((mPage-1)*20 + (i+1)) + "</td>" + 
+	            "<td class='alignL'>" + getName(transInfo) + "</td>" +
+	            "<td class='alignL'>" + transInfo.p_login_id + "</td>" + 
+	            "<td>" + getText_DateFormat(transInfo.reg_dttm) + "</td>" + 
+	            "<td>" + transInfo.trans_amt + "</td>" +
+	            "<td>" + approve + "</td>" + 
+			"</tr>";
+		$('#tbody_list').append(tmpHtml);	
+	}
+	setPaging(mPage, mListInfo.total_cnt);
+}
+
+function readList() {
+	var jsonParam = new Object(); 
+	jsonParam.service_tp = "point_trans_reg";
+	jsonParam.crud_tp = "r";
+	jsonParam.page_num = "" + mPage;
+	
+	doCommunication(jsonParam);
+}
+
+function doCommunication(jsonParam) {
+	var jsondata = "jsondata=" + JSON.stringify(jsonParam);
+	printLog("send data", jsondata);
+	
+	$.ajax({
+        type : "POST",  
+        url : "/Ajax3DBankController.do",
+        data : jsondata,
+        success : function(result) {
+        	printLog("response data", JSON.stringify(result));
+        	
+        	if (result.retcode == "000") {
+        		if(jsonParam.crud_tp == "u") {
+        			refreshPage();
+        			
+        		} else {
+					mListInfo = result;
+					setList();
+        		}
+			}
+        }
+    });
+}
+</script>
+<%@ include file="../comm/menu.jsp" %>
+
+<div id="container">
+	<div class="SubContents">
+        <!-- //sub_left -->
+        <div class="Acontents">
+             <!--타이틀-->
+            <div class="con-tit1"></div>
+            
+            <div class="clear">
+                <table cellspacing="0" cellpadding="0" border="0" summary="환불테이블" class="table04 mt8" style="text-align:center">
+                    <colgroup>
+	                    <col width="7%" />
+	                    <col width="" />
+	                    <col width="25%" />
+	                    <col width="15%" />
+	                    <col width="10%" />
+	                    <col width="10%" />
+                    </colgroup>
+                    
+                    <thead><tr>
+                    	<th scope="col">No</th>
+                    	<th scope="col">이름</th>
+                    	<th scope="col">아이디</th>
+                    	<th scope="col">신청일자</th>
+                    	<th scope="col">신청금액</th>
+                    	<th class="t_end" scope="col">승인</th>
+					</tr></thead>
+                    <tbody id="tbody_list"></tbody>
+                </table>
+				<div class="paginate clear"></div>
+			</div>	
+		</div>
+	</div>
+</div>
+			
+<%@ include file="../comm/footer.jsp" %>
+</body>
+</html>

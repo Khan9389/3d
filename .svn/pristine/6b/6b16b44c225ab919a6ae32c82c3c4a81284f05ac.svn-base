@@ -1,0 +1,150 @@
+<%@ page contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
+
+<body>
+<script type="text/javascript">
+$(document).ready(function() {
+	
+});
+</script>
+
+<div class="main_wrap bnb_line">
+	<div class="main_contents">
+		<div class="bnb_fot_wrap">
+			<ul class="bnb_fot">
+				<li>회사소개</li>
+				<li>고객센터</li>
+				<li>이용약관</li>
+				<li>개인정보처리방침</li>
+				<li>찾아오시는 길</li>
+			</ul>
+			<ul class="bnb_fot_right">
+				<li>
+					<img src="/asia3d/main/img/fot_bnb01.png" alt="facebook" />
+				</li>
+				<li>
+					<img src="/asia3d/main/img/fot_bnb02.png" alt="instagram" />
+				</li>			
+			</ul>
+		</div>		
+	</div>
+</div>
+<div class="main_wrap">
+	<div class="main_contents">
+		<address>
+			<dl>
+				<dt>
+					<img src="/asia3d/main/img/fot_logo.png" alt=""/>
+				</dt>
+				<dd>
+					서울시 서초구 서초중앙로 63 리더스빌딩 6층 (주)쓰리디뱅크<br>
+					대표<span>김동욱</span>고객지원<span>070-4152-1010</span>Email<span>3dbank@3dbank.xyz</span>사업자등록번호<span>335-86-00161</span><br>
+					Copyright(주)쓰리디뱅크. All rights reserved
+				</dd>
+			</dl>
+		</address>		
+	</div>
+</div>
+
+<!-- 이미지 확대팝업 -->
+<div id="div_pop_enlarge" class="popup_layer hide">
+	<div class="fullpop_layer">
+		<div class="fullpop"><div class="fulltit">
+			<div class="fulltit_name">
+				<dl>
+					<dt><img id="img_profile_enlarge" src="/asia3d/images/phto/no_img.png" alt="프로필이미지" /></dt>
+					<dd class="fulltit_name_copy"><p id="conts_name_enlarge"></p><label id="name_enlarge"></label></dd>
+					<dd class="vbtn">
+						<div class="close"><img class="cursor_hand" src="/asia3d/images/btn_x.png" alt="확대팝업 닫기" onclick="$('#div_pop_enlarge').fadeOut()"/></div>
+					</dd>
+				</dl>	
+			</div>				
+			<div class="fullimg">
+				<div><img id="img_pop_enlarge" alt="확대이미지"></div>
+			</div>
+		</div></div>
+	</div>
+</div>
+<!-- stl 3d viewer -->
+<div id="div_pop2" class="popup_layer hide">
+	<div class="fullpop_layer">
+		<div class="fullpop">	
+			<div class="fulltit">
+				<div class="fulltit_name">
+					<dl>
+						<dt><img id="my_photo3" src="/asia3d/images/phto/no_img.png" alt="로고이미지" /></dt>
+						<dd class="fulltit_name_copy"><p id="conts_name3"></p><label id="p_name3"></label></dd>
+						<dd class="vbtn">
+							<div class="close"><img class="cursor_hand" src="/asia3d/images/btn_x.png" alt="3dviewer 닫기" onclick="clickClose3DView();"/></div>
+						</dd>
+					</dl>	
+				</div>				
+				<div class="fullimg">
+					<iframe id="iframe_3dviewer" width="950" height="620" frameborder=0 scrolling="no"></iframe>
+				</div>
+			</div>
+			<div class="mousedata">
+				<div class="mousedata_img">
+					<ul>
+						<li>Rotation
+						</li>
+						<li>Move
+						</li>
+						<li>Zoom in / out
+						</li>
+					</ul>
+				</div>
+			</div>
+			<div class="fulldata">
+				<div class="data_info">
+					<table width="466" class="hitlist09">
+						<tr>
+						   <th>원본크기</th>
+						   <td id="td_xyz"></td>
+					   </tr>
+					   <tr>
+						   <th>예상 소모량</th>
+						   <td id="td_weight"></td>
+					   </tr>
+						<tr>
+						   <th>예상 볼륨</th>
+						   <td id="td_volume"></td>
+					   </tr>
+					   <tr>
+						   <th>파일 사이즈</th>
+						   <td id="td_size"></td>
+					   </tr>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- obj 3d viewer -->
+<div id="div_pop3" class="popup_layer hide">
+	<div class="fullpop_layer">
+		<div class="fullpop">	
+			<div class="fulltit">
+				<div class="fulltit_name">
+					<dl>
+						<dt><img id="my_photo4" src="/asia3d/images/phto/no_img.png" alt="로고이미지" /></dt>
+						<dd class="fulltit_name_copy"><p id="conts_name4"></p><label id="p_name4"></label></dd>
+						<dd class="vbtn">
+							<div class="close"><img class="cursor_hand" src="/asia3d/images/btn_x.png" alt="3dviewer 닫기" onclick="clickCloseObjViewer();" /></div>
+						</dd>
+					</dl>					
+				</div>				
+				<div class="fullimg">
+					<iframe id="iframe_obj" width="950" height="620" frameborder=0></iframe>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="wrap-loading display-none">
+    <div id="div_progress">
+    	<img src="/asia3d/images/loading.gif" />
+    	<p id="p_percent"></p>
+    </div>
+</div>
+</body>

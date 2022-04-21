@@ -1,0 +1,54 @@
+package com.asia3d.contents.service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.web.bind.support.SessionStatus;
+import org.springframework.web.multipart.MultipartFile;
+
+public interface AjaxContentsService {
+
+	
+	public Map<String, Object> conts_3d_info_reg(HashMap<String, Object> jsonMap, List<MultipartFile> aMultipartFile) throws Exception;
+
+	public Map<String, Object> conts_3d_info_list(HashMap<String, Object> jsonMap, HttpServletRequest request)  throws Exception;
+
+	public Map<String, Object> print_history_info_reg(HashMap<String, Object> jsonMap, List<MultipartFile> aMultipartFile) throws Exception;
+
+	public Map<String, Object> conts_3d_reg_interest(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception;
+
+	public Map<String, Object> print_history_info_list(HashMap<String, Object> jsonMap, HttpServletRequest request)  throws Exception;
+
+	public Map<String, Object> print_hist_interest(HashMap<String, Object> jsonMap, HttpServletRequest request)  throws Exception;
+
+	public Map<String, Object> check_downstlfile(HashMap<String, Object> jsonMap, HttpServletRequest request, HttpServletResponse response) throws Exception;
+
+	public Map<String, Object> hold_loc_list(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception;
+
+	public Map<String, Object> print_corp_list(HashMap<String, Object> jsonMap,	HttpServletRequest request)  throws Exception;
+
+	public Map<String, Object> comment_reg(HashMap<String, Object> jsonMap,	HttpServletRequest request) throws Exception;
+
+	public Map<String, Object> comment_list(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception;
+
+	public Map<String, Object> interest_conts_list(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception;
+
+	public Map<String, Object> download_conts_list(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception;
+
+	public Map<String, Object> upload_conts_list(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception;
+
+	public Map<String, Object> make_downstlfile(HashMap<String, Object> jsonMap, HttpServletRequest request, HttpServletResponse response)  throws Exception;
+
+	public Map<String, Object> cgrp_reg(HashMap<String, Object> jsonMap) throws Exception;
+
+	public Map<String, Object> cgrp_list(HashMap<String, Object> jsonMap) throws Exception;
+
+	public Map<String, Object> disp_reg(HashMap<String, Object> jsonMap, List<MultipartFile> aMultipartFile) throws Exception;
+
+	public Map<String, Object> disp_list(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception;
+
+}

@@ -1,0 +1,1879 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="contentsDAO">
+
+	<insert id="contentsDAO.insertContents3dInfo_reg">
+		<selectKey keyProperty="new_conts_uid" resultClass="int">
+			SELECT IFNULL(MAX(CONTS_UID),0)+1  FROM CONTS_3D_INFO
+		</selectKey>
+		<![CDATA[
+			INSERT INTO CONTS_3D_INFO 
+			(	
+				CONTS_UID   
+			,	CONTS_NAME  
+			,	CONTS_ST    
+			,	CONTS_TP    
+			,	CONTS_TYPE  
+			,	CONTS_MAJOR 
+			,	CONTS_MINOR 
+			,	CONTS_F_TP  
+			,	CONTS_F_CNT 
+			,	CONTS_F_SIZE
+			,	DOWN_F_NAME 
+			,	HITS        
+			,	DOWN_CNT    
+			,	TEXTURE_YN  
+			,	PNT_POSS_YN 
+			,	CONTS_DESC  
+			,	PUB_TP      
+			,	PAY_TP      
+			,	MONEY       
+			,	AREA        
+			,	NATIONAL    
+			,	AGE    
+			,	HOLD_LOC_INPUT     
+			,	HOLD_LOC_TP 
+			,	HOLD_LOC_ID 
+			,	USER_UID    
+			,	P_LOGIN_ID  
+			,	T_LIKE_CNT  
+			,	T_BMARK  
+			,	T_GPA       
+			,	TOTAL_GPA   
+			,	REG_DTTM  			
+			,	UPT_DTTM    
+
+			)
+			VALUES 
+			( 
+				#new_conts_uid#   
+			,	#conts_name#  
+			,	#conts_st#    
+			,	#conts_tp#    
+			,	#conts_type#  
+			,	#conts_major# 
+			,	#conts_minor# 
+			,	#conts_f_tp#  
+			,	#conts_f_cnt# 
+			,	#conts_f_size#
+			,	#down_f_name# 
+			,	#hits#        
+			,	#down_cnt#    
+			,	#texture_yn#  
+			,	#pnt_poss_yn# 
+			,	#conts_desc#  
+			,	#pub_tp#      
+			,	#pay_tp#      
+			,	#money#       
+			,	#area#        
+			,	#national#    
+			,	#age#
+			,	#hold_loc_input#          
+			,	#hold_loc_tp# 
+			,	#hold_loc_id# 
+			,	#user_uid#    
+			,	#p_login_id#  
+			,	#t_like_cnt#  
+			,	#t_bmark#  			
+			,	#t_gpa#       
+			,	#total_gpa#   
+			,	date_format(now(),'%Y%m%d%H%i%s')				
+			,	date_format(now(),'%Y%m%d%H%i%s')	  
+			)
+		]]>
+	</insert>
+
+    <select id="contentsDAO.selectContents3DInfo" resultClass="java.util.HashMap">
+        <![CDATA[
+        SELECT
+     			CONTS_3D_INFO.CONTS_UID     conts_uid   
+			,	CONTS_3D_INFO.CONTS_NAME    conts_name  
+			,	CONTS_3D_INFO.CONTS_ST      conts_st    
+			,	CONTS_3D_INFO.CONTS_TP      conts_tp    
+			,	CONTS_3D_INFO.CONTS_TYPE    conts_type  
+			,	CONTS_3D_INFO.CONTS_MAJOR   conts_major 
+			,	CONTS_3D_INFO.CONTS_MINOR   conts_minor 
+			,	CONTS_3D_INFO.CONTS_F_TP    conts_f_tp  
+			,	CONTS_3D_INFO.CONTS_F_CNT   conts_f_cnt 
+			,	CONTS_3D_INFO.CONTS_F_SIZE  conts_f_size
+			,	CONTS_3D_INFO.DOWN_F_NAME   down_f_name 
+			,	CONTS_3D_INFO.HITS          hits        
+			,	CONTS_3D_INFO.DOWN_CNT      down_cnt    
+			,	CONTS_3D_INFO.TEXTURE_YN    texture_yn  
+			,	CONTS_3D_INFO.PNT_POSS_YN   pnt_poss_yn 
+			,	CONTS_3D_INFO.CONTS_DESC    conts_desc  
+			,	CONTS_3D_INFO.PUB_TP        pub_tp      
+			,	CONTS_3D_INFO.PAY_TP        pay_tp      
+			,	CONTS_3D_INFO.MONEY         money       
+			,	CONTS_3D_INFO.AREA          area        
+			,	CONTS_3D_INFO.NATIONAL      national    
+			,	CONTS_3D_INFO.AGE           age      
+			,	CONTS_3D_INFO.HOLD_LOC_INPUT   hold_loc_input   
+			,	CONTS_3D_INFO.HOLD_LOC_TP   hold_loc_tp 
+			,	CONTS_3D_INFO.HOLD_LOC_ID   hold_loc_id 
+			,	CONTS_3D_INFO.USER_UID      user_uid    
+			,	CONTS_3D_INFO.P_LOGIN_ID    p_login_id  
+			,	CONTS_3D_INFO.T_LIKE_CNT    t_like_cnt  
+			,	CONTS_3D_INFO.T_BMARK       t_bmark  			
+			,	CONTS_3D_INFO.T_GPA         t_gpa       
+			,	CONTS_3D_INFO.TOTAL_GPA     total_gpa   
+			,	CONTS_3D_INFO.UPT_DTTM      upt_dttm
+			,	CONTS_3D_INFO.REG_DTTM      reg_dttm
+			,	CONTS_3D_INFO.C_USER_UID    c_user_uid    
+			,	CONTS_3D_INFO.DEL_YN        del_yn    
+			, 	USER.P_NAME                 p_name  
+	        , 	USER.MY_PHOTO               my_photo
+	        , 	USER.COMPY_NAME             compy_name
+	       		        
+	        ,	( SELECT COUNT(*) FROM PRINT_HIST WHERE CONTS_UID = #conts_uid# AND IFNULL(DEL_YN,'N') = 'N')  print_hist_count
+	        ,	( SELECT HOLD_LOC_NAME FROM HOLD_LOC WHERE HOLD_LOC_ID = CONTS_3D_INFO.HOLD_LOC_ID)  hold_loc_name
+		FROM	CONTS_3D_INFO, USER
+		WHERE	CONTS_3D_INFO.USER_UID = USER.USER_UID
+		AND		CONTS_3D_INFO.CONTS_UID = #conts_uid# 
+        ]]>
+    </select>
+  
+	<select id="contentsDAO.selectContents3DInfoList" resultClass="java.util.HashMap">
+		<![CDATA[
+		SELECT * FROM
+		(
+	      	SELECT
+	     		@ROWNUM := @ROWNUM + 1 as rnum
+	     		,	CONTS_3D_INFO.CONTS_UID     conts_uid   
+				,	CONTS_3D_INFO.CONTS_NAME    conts_name  
+				,	CONTS_3D_INFO.CONTS_ST      conts_st    
+				,	CONTS_3D_INFO.CONTS_TP      conts_tp    
+				,	CONTS_3D_INFO.CONTS_TYPE    conts_type  
+				,	CONTS_3D_INFO.CONTS_MAJOR   conts_major 
+				,	CONTS_3D_INFO.CONTS_MINOR   conts_minor 
+				,	CONTS_3D_INFO.CONTS_F_TP    conts_f_tp  
+				,	CONTS_3D_INFO.CONTS_F_CNT   conts_f_cnt 
+				,	CONTS_3D_INFO.CONTS_F_SIZE  conts_f_size
+				,	CONTS_3D_INFO.DOWN_F_NAME   down_f_name 
+				,	CONTS_3D_INFO.HITS          hits        
+				,	CONTS_3D_INFO.DOWN_CNT      down_cnt    
+				,	CONTS_3D_INFO.TEXTURE_YN    texture_yn  
+				,	CONTS_3D_INFO.PNT_POSS_YN   pnt_poss_yn 
+				,	/*CONTS_3D_INFO.CONTS_DESC*/ 'N/A'    conts_desc  
+				,	CONTS_3D_INFO.PUB_TP        pub_tp      
+				,	CONTS_3D_INFO.PAY_TP        pay_tp      
+				,	CONTS_3D_INFO.MONEY         money       
+				,	CONTS_3D_INFO.AREA          area        
+				,	CONTS_3D_INFO.NATIONAL      national    
+				,	CONTS_3D_INFO.AGE           age   
+				,	CONTS_3D_INFO.HOLD_LOC_INPUT   hold_loc_input      
+				,	CONTS_3D_INFO.HOLD_LOC_TP   hold_loc_tp 
+				,	CONTS_3D_INFO.HOLD_LOC_ID   hold_loc_id 
+				,	CONTS_3D_INFO.USER_UID      user_uid    
+				,	CONTS_3D_INFO.P_LOGIN_ID    p_login_id  
+				,	CONTS_3D_INFO.T_LIKE_CNT    t_like_cnt  
+				,	CONTS_3D_INFO.T_BMARK       t_bmark  			
+				,	CONTS_3D_INFO.T_GPA         t_gpa       
+				,	CONTS_3D_INFO.TOTAL_GPA     total_gpa   
+				,	CONTS_3D_INFO.UPT_DTTM      upt_dttm  
+				,	CONTS_3D_INFO.REG_DTTM		reg_dttm
+				,	CONTS_3D_INFO.C_USER_UID    c_user_uid    
+				,	CONTS_3D_INFO.DEL_YN        del_yn 
+				, 	USER.P_NAME                 p_name  
+		        , 	USER.MY_PHOTO               my_photo 
+		       	, 	USER.COMPY_NAME             compy_name 
+			FROM	CONTS_3D_INFO
+						LEFT OUTER JOIN INTEREST_CONTS_3D
+						ON CONTS_3D_INFO.CONTS_UID = INTEREST_CONTS_3D.CONTS_UID
+				, 	USER
+			WHERE	CONTS_3D_INFO.USER_UID = USER.USER_UID
+			  AND	IFNULL(CONTS_3D_INFO.DEL_YN,'N') = 'N'
+			  AND	
+		  		(
+		  			CONTS_3D_INFO.PUB_TP = '1' OR CONTS_3D_INFO.PUB_TP = '3' OR CONTS_3D_INFO.USER_UID = #user_uid# 
+		  		)
+			  AND 
+			    (
+			      	CONTS_MAJOR = #conts_major# OR IFNULL(#conts_major#,'ALL') = 'ALL'
+			    )
+			  AND 
+			    (
+			      	CONTS_MINOR = #conts_minor# OR IFNULL(#conts_minor#,'ALL') = 'ALL'
+			    )
+			  AND 
+			    (
+			      	IFNULL(#conts_word#,'') = '' OR 
+			      	( CONTS_NAME LIKE CONCAT('%',#conts_word#,'%') OR p_name LIKE CONCAT('%',#conts_word#,'%') )
+			    )	
+			  AND 
+			    (
+			      	CONTS_3D_INFO.USER_UID = #reg_user_uid# OR IFNULL(#reg_user_uid#,'') = ''
+			    )  
+			  AND 
+			    (
+			      	CONTS_3D_INFO.HOLD_LOC_ID = #hold_loc_id# OR IFNULL(#hold_loc_id#,'') = ''
+			    )  		
+			  AND 
+			    (
+			      	CONTS_3D_INFO.PAY_TP = #pay_tp# OR IFNULL(#pay_tp#,'ALL') = 'ALL'
+			    )  	    
+			  AND
+			  	(
+				  	(IFNULL(#like_collect_tp#,'') = '')
+				  	OR
+			  		(#like_collect_tp# = 'like' AND INTEREST_CONTS_3D.LIKE_CLICK_YN = 'Y' AND INTEREST_CONTS_3D.USER_UID = #like_collect_user_uid#)
+			  		OR
+			  		(#like_collect_tp# = 'collect' AND INTEREST_CONTS_3D.BMARK_YN = 'Y' AND INTEREST_CONTS_3D.USER_UID = #like_collect_user_uid#)
+			  	)
+
+				GROUP BY CONTS_3D_INFO.CONTS_UID
+			]]>    	 
+			<dynamic prepend="ORDER BY">
+			 	<isEqual property="sort_tp" compareValue="1" prepend=",">
+			 		<![CDATA[   
+			 		CONTS_3D_INFO.REG_DTTM DESC
+			 		, CONTS_3D_INFO.CONTS_UID DESC
+			 		]]>
+			 	</isEqual> 
+			 	<isEqual property="sort_tp" compareValue="2" prepend=",">
+			 		<![CDATA[   
+			 		T_LIKE_CNT DESC
+			 		]]>
+			 	</isEqual> 
+			 	<isEqual property="sort_tp" compareValue="3" prepend=",">
+			 		<![CDATA[   
+			 		DOWN_CNT DESC
+			 		]]>
+			 	</isEqual> 
+			 	<isEqual property="sort_tp" compareValue="4" prepend=",">
+			 		<![CDATA[   
+			 		HITS DESC
+			 		]]>
+			 	</isEqual> 
+			</dynamic> 
+		
+		<![CDATA[   	
+			
+		) T1, (SELECT  @ROWNUM := 0) A
+		limit   #start_index#, #max_ret_count#
+ 		]]>
+    </select>
+    
+	<select id="contentsDAO.selectContents3DInfoList_TotalCount" resultClass="java.util.HashMap">
+		<![CDATA[
+	      	SELECT
+	     		COUNT(*) tot_count
+	     	FROM
+	     	(
+	     	SELECT 
+	     			CONTS_3D_INFO.CONTS_UID
+			FROM	CONTS_3D_INFO
+						LEFT OUTER JOIN INTEREST_CONTS_3D
+						ON CONTS_3D_INFO.CONTS_UID = INTEREST_CONTS_3D.CONTS_UID
+				, 	USER
+			WHERE	CONTS_3D_INFO.USER_UID = USER.USER_UID
+			  AND	IFNULL(CONTS_3D_INFO.DEL_YN,'N') = 'N'
+			  AND	
+		  		(
+		  			CONTS_3D_INFO.PUB_TP = '1' OR CONTS_3D_INFO.PUB_TP = '3' OR CONTS_3D_INFO.USER_UID = #user_uid# 
+		  		)
+			  AND 
+			    (
+			      	CONTS_MAJOR = #conts_major# OR IFNULL(#conts_major#,'ALL') = 'ALL'
+			    )
+			  AND 
+			    (
+			      	CONTS_MINOR = #conts_minor# OR IFNULL(#conts_minor#,'ALL') = 'ALL'
+			    )
+			  AND 
+			    (
+			      	IFNULL(#conts_word#,'') = '' OR 
+			      	( CONTS_NAME LIKE CONCAT('%',#conts_word#,'%') OR p_name LIKE CONCAT('%',#conts_word#,'%') )
+			    )	
+			  AND 
+			    (
+			      	CONTS_3D_INFO.USER_UID = #reg_user_uid# OR IFNULL(#reg_user_uid#,'') = ''
+			    )  
+			  AND 
+			    (
+			      	CONTS_3D_INFO.HOLD_LOC_ID = #hold_loc_id# OR IFNULL(#hold_loc_id#,'') = ''
+			    )  	
+			  AND 
+			    (
+			      	CONTS_3D_INFO.PAY_TP = #pay_tp# OR IFNULL(#pay_tp#,'ALL') = 'ALL'
+			    )  	    
+			  AND
+			  	(
+				  	(IFNULL(#like_collect_tp#,'') = '')
+				  	OR
+			  		(#like_collect_tp# = 'like' AND INTEREST_CONTS_3D.LIKE_CLICK_YN = 'Y' AND INTEREST_CONTS_3D.USER_UID = #like_collect_user_uid#)
+			  		OR
+			  		(#like_collect_tp# = 'collect' AND INTEREST_CONTS_3D.BMARK_YN = 'Y' AND INTEREST_CONTS_3D.USER_UID = #like_collect_user_uid#)
+			  	)	
+			  	GROUP BY CONTS_3D_INFO.CONTS_UID	
+			 )	A1    		    
+		]]>    	 
+    </select>    
+    
+	<select id="contentsDAO.selectContentsFileList" resultClass="java.util.HashMap">
+        <![CDATA[
+     	SELECT
+			   CONTS_UID        conts_uid       
+			,  CONTS_FILE_SEQ   conts_file_seq  
+			,  CONTS_TP         conts_tp        
+			,  CONTS_FILE_NAME  conts_file_name 
+			,  CONTS_FILE_SIZE  conts_file_size 
+			,  CONTS_SAVE_NAME  conts_save_name 
+			,  CONTS_TITLE      conts_title     
+			,  CONTS_DESC       conts_desc  
+			,  DELEGATE_YN      delegate_yn
+			,  STL_X            stl_x           
+			,  STL_Y            stl_y           
+			,  STL_Z            stl_z           
+			,  STL_THUMNAIL     stl_thumnail    
+			,  STL_VOLUME       stl_volume      
+			,  STL_WEIGHT       stl_weight      
+			,  UPT_DTTM         upt_dttm    
+			,  REG_DTTM         reg_dttm      
+			,  P_LOGIN_ID       p_login_id   
+     	FROM	CONTS_FILE
+     	WHERE	CONTS_UID = #conts_uid#
+     	  AND	IFNULL(DEL_YN,'N') = 'N'
+     	ORDER BY DELEGATE_YN DESC, CONTS_FILE_SEQ ASC
+        ]]>
+    </select>
+
+    <!-- 3D콘텐츠정보 업데이트 -->
+	<update id="contentsDAO.updateContents3DInfo">
+			UPDATE CONTS_3D_INFO   
+			<dynamic prepend="SET">
+				<isPropertyAvailable prepend="," property="conts_name"  > CONTS_NAME  = #conts_name#   </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="conts_st"    > CONTS_ST    = #conts_st#     </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="conts_tp"    > CONTS_TP    = #conts_tp#     </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="conts_type"  > CONTS_TYPE  = #conts_type#   </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="conts_major" > CONTS_MAJOR = #conts_major#  </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="conts_minor" > CONTS_MINOR = #conts_minor#  </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="conts_f_tp"  > CONTS_F_TP  = #conts_f_tp#   </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="conts_f_cnt" > CONTS_F_CNT = #conts_f_cnt#  </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="conts_f_size"> CONTS_F_SIZE= #conts_f_size# </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="down_f_name" > DOWN_F_NAME = #down_f_name#  </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="hits"        > HITS        = #hits#         </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="down_cnt"    > DOWN_CNT    = #down_cnt#     </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="texture_yn"  > TEXTURE_YN  = #texture_yn#   </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="pnt_poss_yn" > PNT_POSS_YN = #pnt_poss_yn#  </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="conts_desc"  > CONTS_DESC  = #conts_desc#   </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="pub_tp"      > PUB_TP      = #pub_tp#       </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="pay_tp"      > PAY_TP      = #pay_tp#       </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="money"       > MONEY       = #money#        </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="area"        > AREA        = #area#         </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="national"    > NATIONAL    = #national#     </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="age"         > AGE         = #age#          </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="hold_loc_input" > HOLD_LOC_INPUT = #hold_loc_input#  </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="hold_loc_tp" > HOLD_LOC_TP = #hold_loc_tp#  </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="hold_loc_id" > HOLD_LOC_ID = #hold_loc_id#  </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="user_uid"    > USER_UID    = #user_uid#     </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="p_login_id"  > P_LOGIN_ID  = #p_login_id#   </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="t_like_cnt"  > T_LIKE_CNT  = #t_like_cnt#   </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="t_bmark"     > T_BMARK     = #t_bmark#      </isPropertyAvailable> 				
+				<isPropertyAvailable prepend="," property="t_gpa"       > T_GPA       = #t_gpa#        </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="total_gpa"   > TOTAL_GPA   = #total_gpa#    </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="conts_uid"   > UPT_DTTM   = date_format(now(),'%Y%m%d%H%i%s')</isPropertyAvailable>
+			</dynamic>
+			WHERE CONTS_UID = #conts_uid#   
+	</update>
+    
+    
+	<insert id="contentsDAO.insertContentsFile">
+		<selectKey keyProperty="new_conts_file_seq" resultClass="int">
+			SELECT IFNULL(MAX(CONTS_FILE_SEQ),0)+1  FROM CONTS_FILE
+		</selectKey>
+		<![CDATA[
+			INSERT INTO CONTS_FILE 
+			(	
+				   CONTS_UID       
+				,  CONTS_FILE_SEQ  
+				,  CONTS_TP        
+				,  CONTS_FILE_NAME 
+				,  CONTS_FILE_SIZE 
+				,  CONTS_SAVE_NAME 
+				,  CONTS_TITLE     
+				,  CONTS_DESC  
+				,  DELEGATE_YN    
+				,  STL_X           
+				,  STL_Y           
+				,  STL_Z           
+				,  STL_THUMNAIL    
+				,  STL_VOLUME      
+				,  STL_WEIGHT      
+				,  UPT_DTTM    
+				,  REG_DTTM 				    
+				,  P_LOGIN_ID      
+   
+			)
+			VALUES 
+			( 		
+					#conts_uid#      
+				,	#new_conts_file_seq# 
+				,	#conts_tp#       
+				,	#conts_file_name#
+				,	#conts_file_size#
+				,	#conts_save_name#
+				,	#conts_title#    
+				,	#conts_desc#  
+				,	#delegate_yn#   
+				,	#stl_x#          
+				,	#stl_y#          
+				,	#stl_z#          
+				,	#stl_thumnail#   
+				,	#stl_volume#     
+				,	#stl_weight#     
+				,	date_format(now(),'%Y%m%d%H%i%s')     
+				,	date_format(now(),'%Y%m%d%H%i%s')  
+				,	#p_login_id# 
+			)
+		]]>
+	</insert>
+
+	<select id="contentsDAO.selectContentsFile" resultClass="java.util.HashMap">
+        <![CDATA[
+     	SELECT
+				   CONTS_UID        conts_uid       
+				,  CONTS_FILE_SEQ   conts_file_seq  
+				,  CONTS_TP         conts_tp        
+				,  CONTS_FILE_NAME  conts_file_name 
+				,  CONTS_FILE_SIZE  conts_file_size 
+				,  CONTS_SAVE_NAME  conts_save_name 
+				,  CONTS_TITLE      conts_title     
+				,  CONTS_DESC       conts_desc  
+				,  DELEGATE_YN      delegate_yn    
+				,  STL_X            stl_x           
+				,  STL_Y            stl_y           
+				,  STL_Z            stl_z           
+				,  STL_THUMNAIL     stl_thumnail    
+				,  STL_VOLUME       stl_volume      
+				,  STL_WEIGHT       stl_weight      
+				,  UPT_DTTM         upt_dttm        
+				,  REG_DTTM         reg_dttm  				
+				,  P_LOGIN_ID       p_login_id     
+     	FROM	CONTS_FILE
+     	WHERE	CONTS_UID = #conts_uid#
+     	AND		CONTS_FILE_SEQ = #conts_file_seq#
+        ]]>
+    </select>
+ 
+ 	<update id="contentsDAO.updateContentsFile">
+			UPDATE CONTS_FILE
+			<dynamic prepend="SET">
+
+				<isPropertyAvailable prepend="," property="conts_tp"		> CONTS_TP       = #conts_tp#		</isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="conts_file_name"	> CONTS_FILE_NAME= #conts_file_name#</isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="conts_file_size"	> CONTS_FILE_SIZE= #conts_file_size#</isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="conts_save_name"	> CONTS_SAVE_NAME= #conts_save_name#</isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="conts_title"		> CONTS_TITLE    = #conts_title#	</isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="conts_desc"		> CONTS_DESC     = #conts_desc#		</isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="delegate_yn"		> DELEGATE_YN    = #delegate_yn#	</isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="stl_x"			> STL_X          = #stl_x#			</isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="stl_y"			> STL_Y          = #stl_y#			</isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="stl_z"			> STL_Z          = #stl_z#			</isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="stl_thumnail"	> STL_THUMNAIL   = #stl_thumnail#	</isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="stl_volume"		> STL_VOLUME     = #stl_volume#		</isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="stl_weight"		> STL_WEIGHT     = #stl_weight#		</isPropertyAvailable> 
+
+				<isPropertyAvailable prepend="," property="upt_dttm"       > UPT_DTTM       = date_format(now(),'%Y%m%d%H%i%s') </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="p_login_id"     > P_LOGIN_ID     = #p_login_id#      </isPropertyAvailable> 
+				
+			</dynamic>
+			WHERE CONTS_UID = #conts_uid# AND CONTS_FILE_SEQ = #conts_file_seq#
+	</update>	 
+  
+    	
+    <delete id="contentsDAO.deleteContentsFile">
+		<![CDATA[
+			DELETE FROM CONTS_FILE 
+			WHERE	CONTS_UID = #conts_uid#
+     		AND		CONTS_SAVE_NAME = #conts_save_name#
+		]]>
+	</delete>
+
+    <delete id="contentsDAO.deleteContentsNotFileALL">
+		<![CDATA[
+			DELETE FROM CONTS_FILE 
+			WHERE	CONTS_UID = #conts_uid#
+     		AND		IFNULL(CONTS_SAVE_NAME,'') = ''
+		]]>
+		<isNotEqual property="conts_file_seq_list" compareValue="ALL" prepend="AND">
+ 		CONTS_FILE_SEQ NOT IN ($conts_file_seq_list$)
+ 		</isNotEqual> 
+ 		
+	</delete>
+
+	<!-- 출력이력 등록 -->
+	<insert id="contentsDAO.insertPrintHistoryInfo">
+		<selectKey keyProperty="new_print_hist_uid" resultClass="int">
+			SELECT IFNULL(MAX(PRINT_HIST_UID),0)+1  FROM PRINT_HIST
+		</selectKey>
+		<![CDATA[
+			INSERT INTO PRINT_HIST 
+			(	
+					PRINT_HIST_UID
+				,	PRINT_TP      
+				,	PRINT_DT      
+				,	PRINT_MTHD    
+				,	PRINT_SIZE    
+				,	PRINT_ASSMT   
+				,	PRTR_NAME     
+				,	LAYER_H       
+				,	FILL_DNSTY    
+				,	PRINT_SPEED   
+				,	MATERIAL_TP   
+				,	CONTS_UID     
+				,	MAKE_UID      
+				,	USER_UID      
+				,	FP_SVC_TP      
+				,	FP_PRINT_AMT      
+				,	FP_ETMT_E_DT      
+				,	FP_ETMT_DESC      
+				,	UPT_DTTM     
+				,	REG_DTTM 
+			)
+			VALUES 
+			( 		
+					#new_print_hist_uid#
+				,	#print_tp#      
+				,	#print_dt#      
+				,	#print_mthd#    
+				,	#print_size#    
+				,	#print_assmt#   
+				,	#prtr_name#     
+				,	#layer_h#       
+				,	#fill_dnsty#    
+				,	#print_speed#   
+				,	#material_tp#   
+				,	#conts_uid#     
+				,	#make_uid#      
+				,	#user_uid#      
+				,	#fp_svc_tp#      
+				,	#fp_print_amt#      
+				,	#fp_etmt_e_dt#      
+				,	#fp_etmt_desc#      
+				,	date_format(now(),'%Y%m%d%H%i%s') 
+				,	date_format(now(),'%Y%m%d%H%i%s') 
+			)
+		]]>
+	</insert>
+	
+	<!-- 출력이력 조회 -->
+	<select id="contentsDAO.selectPrintHistoryInfo" resultClass="java.util.HashMap">
+        <![CDATA[
+     	SELECT
+				    PRINT_HIST.PRINT_HIST_UID       print_hist_uid
+				,   PRINT_HIST.MAKE_UID             make_uid      
+				,   PRINT_HIST.USER_UID             user_uid      
+				,   PRINT_HIST.PRINT_DT             print_dt      
+				,   PRINT_HIST.PRINT_MTHD           print_mthd    
+				,   PRINT_HIST.PRINT_SIZE           print_size    
+				,   PRINT_HIST.PRINT_TP             print_tp      
+				,   PRINT_HIST.PRINT_ASSMT          print_assmt   
+				,   PRINT_HIST.CONTS_UID            conts_uid     
+				,   PRINT_HIST.PRTR_NAME            prtr_name     
+				,   PRINT_HIST.LAYER_H              layer_h       
+				,   PRINT_HIST.FILL_DNSTY           fill_dnsty    
+				,   PRINT_HIST.PRINT_SPEED          print_speed   
+				,   PRINT_HIST.MATERIAL_TP          material_tp   
+				,   PRINT_HIST.UPT_DTTM             upt_dttm      
+				,   PRINT_HIST.REG_DTTM             reg_dttm   
+							
+		    	,	CONTS_3D_INFO.CONTS_NAME    conts_name  
+				,	CONTS_3D_INFO.CONTS_ST      conts_st    
+				,	CONTS_3D_INFO.CONTS_TP      conts_tp    
+				,	CONTS_3D_INFO.CONTS_TYPE    conts_type  
+				,	CONTS_3D_INFO.CONTS_MAJOR   conts_major 
+				,	CONTS_3D_INFO.CONTS_MINOR   conts_minor
+				 
+				,	CONTS_3D_INFO.HITS          hits   
+				,	CONTS_3D_INFO.DOWN_CNT      down_cnt   				
+				,	CONTS_3D_INFO.T_LIKE_CNT    t_like_cnt  
+				,	CONTS_3D_INFO.T_BMARK       t_bmark  			
+				,	CONTS_3D_INFO.T_GPA         t_gpa       
+				,	CONTS_3D_INFO.TOTAL_GPA     total_gpa
+				
+				, 	FP_SVC_TP						fp_svc_tp
+				, 	FP_PRINT_AMT				fp_print_amt
+				, 	FP_ETMT_E_DT				fp_etmt_e_dt
+				, 	FP_ETMT_DESC				fp_etmt_desc
+				
+				, 	USER.P_NAME                 	p_name  
+		        , 	USER.MY_PHOTO             	my_photo 
+				, 	USER.COMPY_NAME         	compy_name 
+				, 	USER.P_LOGIN_ID            	p_login_id 
+				, 	USER.HOME_PAGE            home_page 
+						           
+		FROM	PRINT_HIST, CONTS_3D_INFO, USER
+		WHERE	PRINT_HIST.USER_UID  = USER.USER_UID
+		AND		PRINT_HIST.CONTS_UID = CONTS_3D_INFO.CONTS_UID
+		AND 
+	    (
+	      	PRINT_HIST.PRINT_HIST_UID = #print_hist_uid# OR IFNULL(#print_hist_uid#,'') = ''
+	    ) 
+   			AND 
+	    (
+	      	PRINT_HIST.CONTS_UID = #conts_uid# OR IFNULL(#conts_uid#,'') = ''
+	    ) 
+	    AND 
+	    (
+	      	PRINT_HIST.PRINT_TP = #print_tp# OR IFNULL(#print_tp#,'') = ''
+	    ) 
+	    LIMIT 1
+        ]]>
+    </select>
+    
+    
+    
+    <!-- 출력이력 업데이트 -->
+	<update id="contentsDAO.updatePrintHistoryInfo">
+			UPDATE PRINT_HIST
+			<dynamic prepend="SET">
+				<isPropertyAvailable prepend="," property="print_tp"> PRINT_TP   = #print_tp#    </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="print_dt"> PRINT_DT   = #print_dt#    </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="print_mthd"> PRINT_MTHD = #print_mthd#  </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="print_size"> PRINT_SIZE = #print_size#  </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="print_assmt"> PRINT_ASSMT= #print_assmt# </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="prtr_name"> PRTR_NAME  = #prtr_name#   </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="layer_h"> LAYER_H    = #layer_h#     </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="fill_dnsty"> FILL_DNSTY = #fill_dnsty#  </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="print_speed"> PRINT_SPEED= #print_speed# </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="material_tp"> MATERIAL_TP= #material_tp# </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="conts_uid"> CONTS_UID  = #conts_uid#   </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="make_uid"> MAKE_UID   = #make_uid#    </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="user_uid"> USER_UID   = #user_uid#    </isPropertyAvailable>
+				
+				<isPropertyAvailable prepend="," property="fp_svc_tp"> FP_SVC_TP = #fp_svc_tp#    </isPropertyAvailable>
+				<isPropertyAvailable prepend="," property="fp_print_amt"> FP_PRINT_AMT = #fp_print_amt#    </isPropertyAvailable>
+				<isPropertyAvailable prepend="," property="fp_etmt_e_dt"> FP_ETMT_E_DT = #fp_etmt_e_dt#    </isPropertyAvailable>
+				<isPropertyAvailable prepend="," property="fp_etmt_desc"> FP_ETMT_DESC = #fp_etmt_desc#    </isPropertyAvailable>
+				
+				<isPropertyAvailable prepend="," property="hits"> HITS = #hits#        </isPropertyAvailable>
+				<isPropertyAvailable prepend="," property="t_like_cnt"> T_LIKE_CNT = #t_like_cnt#  </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="t_gpa"> T_GPA = #t_gpa#       </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="total_gpa"> TOTAL_GPA = #total_gpa#   </isPropertyAvailable> 
+																				
+				<isPropertyAvailable prepend="," property="upt_dttm"> UPT_DTTM   = date_format(now(),'%Y%m%d%H%i%s') </isPropertyAvailable> 
+			</dynamic>
+			WHERE PRINT_HIST_UID = #print_hist_uid#   
+	</update>	
+	
+    <!-- 출력이력 삭제 -->
+	<delete id="contentsDAO.deletePrintHistoryInfo">
+			DELETE FROM PRINT_HIST WHERE PRINT_HIST_UID = #print_hist_uid#   
+	</delete>	
+	
+	
+	<!-- [주문,출력정보등록]콘텐츠추가정보 등록 -->
+	<insert id="contentsDAO.insertContentsImg">
+		<selectKey keyProperty="new_conts_seq" resultClass="int">
+			SELECT IFNULL(MAX(CONTS_SEQ),0)+1  FROM CONTS_IMG
+		</selectKey>
+		<![CDATA[
+			INSERT INTO CONTS_IMG 
+			(	
+					CONTS_UID      
+				,	CONTS_SEQ      
+				,	CONTS_TP       
+				,	CONTS_FILE_NAME
+				,	CONTS_SAVE_NAME
+				,	CONTS_TITLE    
+				,	CONTS_DESC     
+				,	IMG_ST         
+				,	NOTE           
+				,	UPT_DTTM       
+				,	P_LOGIN_ID
+				,	PRINT_HIST_UID
+			)
+			VALUES 
+			( 		
+					#conts_uid#      
+				,	#new_conts_seq#      
+				,	#conts_tp#       
+				,	#conts_file_name#
+				,	#conts_save_name#
+				,	#conts_title#    
+				,	#conts_desc#     
+				,	#img_st#         
+				,	#note#           
+				,	date_format(now(),'%Y%m%d%H%i%s')    
+				,	#p_login_id#  
+				,	#print_hist_uid#
+			)
+		]]>
+	</insert>
+	
+	
+	<!-- [주문,출력정보등록]콘텐츠추가정보 업데이트  -->
+	<update id="contentsDAO.updateContentsImg">
+			UPDATE CONTS_IMG
+			<dynamic prepend="SET">
+				<isPropertyAvailable prepend="," property="conts_tp"       > CONTS_TP       = #conts_tp#        </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="conts_file_name"> CONTS_FILE_NAME= #conts_file_name# </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="conts_save_name"> CONTS_SAVE_NAME= #conts_save_name# </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="conts_title"    > CONTS_TITLE    = #conts_title#     </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="conts_desc"     > CONTS_DESC     = #conts_desc#      </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="img_st"         > IMG_ST         = #img_st#          </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="note"           > NOTE           = #note#            </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="upt_dttm"       > UPT_DTTM       = date_format(now(),'%Y%m%d%H%i%s') </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="p_login_id"     > P_LOGIN_ID     = #p_login_id#      </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="print_hist_uid" > PRINT_HIST_UID = #print_hist_uid#  </isPropertyAvailable> 
+			</dynamic>
+			WHERE CONTS_UID = #conts_uid# AND CONTS_SEQ = #conts_seq#
+	</update>	
+	
+
+	<!-- [주문,출력정보등록]콘텐츠추가정보 리스트조회 -->
+	<select id="contentsDAO.selectContentsImgList" resultClass="java.util.HashMap">
+        <![CDATA[
+     	SELECT
+					CONTS_UID          conts_uid       
+				,	CONTS_SEQ      	   conts_seq       
+				,	CONTS_TP       	   conts_tp        
+				,	CONTS_FILE_NAME	   conts_file_name 
+				,	CONTS_SAVE_NAME	   conts_save_name 
+				,	CONTS_TITLE    	   conts_title     
+				,	CONTS_DESC     	   conts_desc      
+				,	IMG_ST         	   img_st          
+				,	NOTE           	   note            
+				,	UPT_DTTM       	   upt_dttm        
+				,	P_LOGIN_ID   	   p_login_id      
+				,	PRINT_HIST_UID     print_hist_uid  
+     	FROM	CONTS_IMG
+     	WHERE	CONTS_UID = #conts_uid#
+     	AND		(
+     				CONTS_TP  = #conts_tp# OR IFNULL(#conts_tp#,'') = ''
+     			)
+     	     	AND
+     	     	(
+     				PRINT_HIST_UID  = #print_hist_uid# OR IFNULL(#print_hist_uid#,'') = ''
+     			)
+     	ORDER BY CONTS_SEQ ASC
+        ]]>
+    </select>
+    
+    
+	<!-- [주문,출력정보등록]콘텐츠추가정보 삭제 -->
+	<delete id="contentsDAO.deleteContentsImg">
+			DELETE FROM CONTS_IMG 
+			WHERE 	CONTS_UID = #conts_uid# 
+			AND		CONTS_SAVE_NAME = #conts_save_name#  
+	</delete>	
+
+    <delete id="contentsDAO.deleteContentsImgNotFileALL">
+		<![CDATA[
+			DELETE FROM CONTS_IMG 
+			WHERE	CONTS_UID = #conts_uid#
+     		AND		IFNULL(CONTS_SAVE_NAME,'') = ''
+		]]> 
+      	<isNotEqual property="conts_seq_list" compareValue="ALL" prepend="AND">
+ 		CONTS_SEQ NOT IN ($conts_seq_list$)
+ 		</isNotEqual> 
+  		
+	</delete>
+
+	<!-- 
+	============= 3D콘텐츠정보-관심정보 ==========  
+	-->
+
+	<!-- 3D콘텐츠정보-관심정보 조회(좋아요,평점,즐겨찾기,조회수,다운로드수) -->
+	<select id="contentsDAO.selectConts3dRegInterestInfo" resultClass="java.util.HashMap">
+        <![CDATA[
+			SELECT 
+			        LIKE_CLICK_YN my_like_click_yn
+			      , IFNULL(GPA,0) my_gpa
+			      , BMARK_YN my_bmark_yn
+			      , IFNULL(HITS,0) hits		
+                  , IFNULL(DOWN_CNT,0) down_cnt		      
+			FROM  INTEREST_CONTS_3D
+			WHERE CONTS_UID = #conts_uid#
+			AND   USER_UID  = #user_uid#
+        ]]>
+    </select>
+    
+    <!-- 3D콘텐츠정보-관심정보 조회(좋아요,평점,즐겨찾기,조회수,다운로드수) -->
+	<select id="contentsDAO.selectConts3dRegInterestInfoSum" resultClass="java.util.HashMap">
+        <![CDATA[
+      SELECT *, t_gpa/sum_gpa_count total_gpa
+      FROM(
+			SELECT 
+		          COUNT(CONTS_UID) user_count 
+		        , IFNULL(SUM(IF(LIKE_CLICK_YN = 'Y', 1, 0)),0) t_like_cnt
+		        , IFNULL(SUM(GPA),0) t_gpa
+		        , IFNULL(SUM(IF(GPA > 0, 1, 0)),0) sum_gpa_count
+		        , IFNULL(SUM(IF(BMARK_YN = 'Y', 1, 0)),0) t_bmark
+		        , IFNULL(SUM(HITS), 0) hits
+		        , IFNULL(SUM(DOWN_CNT), 0) down_cnt
+          	FROM  INTEREST_CONTS_3D
+  			WHERE CONTS_UID = #conts_uid#
+  		) AA		
+        ]]>
+    </select>
+   
+   	<!-- 3D콘텐츠정보-관심정보 등록(좋아요,평점,즐겨찾기,조회수,다운로드수) -->
+	<insert id="contentsDAO.insertConts3dRegInterestInfo">
+		<![CDATA[
+			INSERT INTO INTEREST_CONTS_3D 
+			(	
+					CONTS_UID      
+				,	USER_UID      
+				,	LIKE_CLICK_YN       
+				,	GPA
+				,	BMARK_YN 
+				,	HITS 		
+				,	DOWN_CNT 							
+				,	UPT_DTTM 
+			)
+			VALUES 
+			( 		
+					#conts_uid#      
+				,	#user_uid#  
+				,	#like_click_yn# 
+				,	#gpa#  
+				,	#bmark_yn#
+				,	#hits#			
+				,	#down_cnt#							
+				,	date_format(now(),'%Y%m%d%H%i%s')
+			)
+		]]>
+	</insert> 
+
+    <!-- 3D콘텐츠정보-관심정보 업데이트(좋아요,평점,즐겨찾기,조회수,다운로드수) -->
+	<update id="contentsDAO.updateConts3dRegInterestInfo">
+			UPDATE INTEREST_CONTS_3D
+			<dynamic prepend="SET">
+				<isPropertyAvailable prepend="," property="conts_uid"     > CONTS_UID    = #conts_uid#     </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="user_uid"      > USER_UID     = #user_uid#      </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="like_click_yn" > LIKE_CLICK_YN= #like_click_yn# </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="gpa"           > GPA          = #gpa#           </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="bmark_yn"      > BMARK_YN     = #bmark_yn#      </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="hits"          > HITS         = #hits#          </isPropertyAvailable> 		
+				<isPropertyAvailable prepend="," property="down_cnt"      > DOWN_CNT     = #down_cnt#      </isPropertyAvailable> 								
+				<isPropertyAvailable prepend="," property="upt_dttm"      > UPT_DTTM     = date_format(now(),'%Y%m%d%H%i%s') </isPropertyAvailable> 
+			</dynamic>
+			WHERE CONTS_UID = #conts_uid#   
+			  AND USER_UID = #user_uid#
+	</update>	
+
+	<!-- 
+	============= 출력이력-관심정보 ==========  
+	-->
+
+	<!-- 출력이력-관심정보 조회(좋아요,평점,조회수) -->
+	<select id="contentsDAO.selectPrintHistoryInterestInfo" resultClass="java.util.HashMap">
+        <![CDATA[
+			SELECT 
+			        LIKE_CLICK_YN my_like_click_yn
+			      , GPA my_gpa
+			      , HITS hits
+			FROM  INTEREST_PRINT_HIST
+			WHERE PRINT_HIST_UID = #print_hist_uid#
+			AND   USER_UID  = #user_uid#
+        ]]>
+    </select>
+    
+    <!-- 출력이력-관심정보 조회(좋아요,평점,조회수) -->
+	<select id="contentsDAO.selectPrintHistoryInterestInfoSum" resultClass="java.util.HashMap">
+        <![CDATA[
+      SELECT *, t_gpa/sum_gpa_count total_gpa
+      FROM(
+			SELECT 
+		          COUNT(CONTS_UID) user_count 
+		        , IFNULL(SUM(IF(LIKE_CLICK_YN = 'Y', 1, 0)),0) t_like_cnt
+		        , IFNULL(SUM(GPA),0) t_gpa
+		        , IFNULL(SUM(IF(GPA > 0, 1, 0)),0) sum_gpa_count
+		        , IFNULL(SUM(HITS),0) hits
+          	FROM  INTEREST_PRINT_HIST
+  			WHERE PRINT_HIST_UID = #print_hist_uid#
+  		) AA		
+        ]]>
+    </select>
+   
+   	<!-- 출력이력-관심정보 등록(좋아요,평점,조회수) -->
+	<insert id="contentsDAO.insertPrintHistoryInterestInfo">
+		<![CDATA[
+			INSERT INTO INTEREST_PRINT_HIST 
+			(	
+					PRINT_HIST_UID      
+				,	USER_UID      
+				,	LIKE_CLICK_YN       
+				,	GPA
+				,	HITS 
+				,	UPT_DTTM 
+			)
+			VALUES 
+			( 		
+					#print_hist_uid#      
+				,	#user_uid#  
+				,	#like_click_yn# 
+				,	#gpa#  
+				,	#hits#
+				,	date_format(now(),'%Y%m%d%H%i%s')
+			)
+		]]>
+	</insert> 
+
+    <!-- 출력이력-관심정보 업데이트(좋아요,평점,조회수) -->
+	<update id="contentsDAO.updatePrintHistoryInterestInfo">
+			UPDATE INTEREST_PRINT_HIST
+			<dynamic prepend="SET">
+				<isPropertyAvailable prepend="," property="print_hist_uid"> PRINT_HIST_UID = #print_hist_uid# </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="user_uid"      > USER_UID       = #user_uid#      </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="like_click_yn" > LIKE_CLICK_YN  = #like_click_yn# </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="gpa"           > GPA            = #gpa#           </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="hits"          > HITS           = #hits#          </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="upt_dttm"      > UPT_DTTM       = date_format(now(),'%Y%m%d%H%i%s') </isPropertyAvailable> 
+			</dynamic>
+			WHERE PRINT_HIST_UID = #print_hist_uid#   
+			  AND USER_UID = #user_uid#
+	</update>	
+
+
+	<!-- 출력이력 정보 리스트 -->
+	<select id="contentsDAO.selectPrintHistoryInfoList" resultClass="java.util.HashMap">
+		<![CDATA[
+		SELECT * FROM
+		(
+	      	SELECT
+	     		@ROWNUM := @ROWNUM + 1 as rnum
+	     		,   PRINT_HIST.PRINT_HIST_UID       print_hist_uid
+				,   PRINT_HIST.MAKE_UID             make_uid      
+				,   PRINT_HIST.USER_UID             user_uid      
+				,   PRINT_HIST.PRINT_DT             print_dt      
+				,   PRINT_HIST.PRINT_MTHD           print_mthd    
+				,   PRINT_HIST.PRINT_SIZE           print_size    
+				,   PRINT_HIST.PRINT_TP             print_tp      
+				,   PRINT_HIST.PRINT_ASSMT          print_assmt   
+				,   PRINT_HIST.CONTS_UID            conts_uid     
+				,   PRINT_HIST.PRTR_NAME            prtr_name     
+				,   PRINT_HIST.LAYER_H              layer_h       
+				,   PRINT_HIST.FILL_DNSTY           fill_dnsty    
+				,   PRINT_HIST.PRINT_SPEED          print_speed   
+				,   PRINT_HIST.MATERIAL_TP          material_tp   
+				,   PRINT_HIST.FP_SVC_TP          fp_svc_tp   
+				,   PRINT_HIST.FP_PRINT_AMT          fp_print_amt   
+				,   PRINT_HIST.FP_ETMT_E_DT          fp_etmt_e_dt   
+				,   PRINT_HIST.UPT_DTTM             upt_dttm      
+			
+		    	,	CONTS_3D_INFO.CONTS_NAME    conts_name  
+				,	CONTS_3D_INFO.CONTS_ST      conts_st    
+				,	CONTS_3D_INFO.CONTS_TP      conts_tp    
+				,	CONTS_3D_INFO.CONTS_TYPE    conts_type  
+				,	CONTS_3D_INFO.CONTS_MAJOR   conts_major 
+				,	CONTS_3D_INFO.CONTS_MINOR   conts_minor
+				 
+				,	CONTS_3D_INFO.HITS          hits   
+				,	CONTS_3D_INFO.DOWN_CNT      down_cnt   				
+				,	CONTS_3D_INFO.T_LIKE_CNT    t_like_cnt  
+				,	CONTS_3D_INFO.T_BMARK       t_bmark  			
+				,	CONTS_3D_INFO.T_GPA         t_gpa       
+				,	CONTS_3D_INFO.TOTAL_GPA     total_gpa   
+				
+				, 	USER.P_NAME                 p_name  
+		        , 	USER.MY_PHOTO               my_photo 
+		       	, 	USER.COMPY_NAME               compy_name 
+			
+			FROM	PRINT_HIST, CONTS_3D_INFO, USER
+			WHERE	PRINT_HIST.USER_UID  = USER.USER_UID
+			AND		PRINT_HIST.CONTS_UID = CONTS_3D_INFO.CONTS_UID
+			AND
+			(
+				PRINT_TP = #print_tp# OR IFNULL(#print_tp#,'ALL') = 'ALL'
+			)
+			AND 
+		    (
+		      	PRINT_HIST.CONTS_UID = #conts_uid# OR IFNULL(#conts_uid#,'') = ''
+		    )		
+	       	AND IFNULL(CONTS_3D_INFO.DEL_YN, 'N') = 'N'
+	       	AND IFNULL(PRINT_HIST.DEL_YN,'N') = 'N'		
+			AND 
+		    (
+		      	CONTS_MAJOR = #conts_major# OR IFNULL(#conts_major#,'ALL') = 'ALL'
+		    )
+		  	AND 
+		    (
+		      	CONTS_MINOR = #conts_minor# OR IFNULL(#conts_minor#,'ALL') = 'ALL'
+		    )
+		  	AND 
+		    (
+		      	IFNULL(#conts_word#,'') = '' OR 
+		      	( CONTS_NAME LIKE CONCAT('%',#conts_word#,'%') OR p_name LIKE CONCAT('%',#conts_word#,'%') )
+		    )	
+		  	AND 
+		    (
+		      	PRINT_HIST.USER_UID = #reg_user_uid# OR IFNULL(#reg_user_uid#,'') = ''
+		    )	
+
+		]]>
+		    <dynamic prepend="ORDER BY">
+			 	<isEqual property="sort_tp" compareValue="1" prepend=",">
+			 		<![CDATA[   
+			 		PRINT_HIST.REG_DTTM DESC
+			 		, PRINT_HIST.PRINT_HIST_UID DESC
+			 		]]>
+			 	</isEqual> 
+			 	<isEqual property="sort_tp" compareValue="2" prepend=",">
+			 		<![CDATA[   
+			 		T_LIKE_CNT DESC
+			 		]]>
+			 	</isEqual> 
+			 	<isEqual property="sort_tp" compareValue="3" prepend=",">
+			 		<![CDATA[   
+			 		TOTAL_GPA DESC
+			 		]]>
+			 	</isEqual> 
+			 	<isEqual property="sort_tp" compareValue="4" prepend=",">
+			 		<![CDATA[   
+			 		HITS DESC
+			 		]]>
+			 	</isEqual> 			 	
+			</dynamic> 
+		<![CDATA[   			
+		) T1, (SELECT  @ROWNUM := 0) A
+	 	limit   #start_index#, #max_ret_count#
+	 	]]>
+    </select>	 
+    
+    
+	<!-- 출력이력 정보 총갯수 -->
+	<select id="contentsDAO.selectPrintHistoryInfoList_TotalCount" resultClass="java.util.HashMap">
+		<![CDATA[
+	      	SELECT	COUNT(*) tot_count
+			FROM	PRINT_HIST, CONTS_3D_INFO, USER
+			WHERE	PRINT_HIST.USER_UID  = USER.USER_UID
+			AND		PRINT_HIST.CONTS_UID = CONTS_3D_INFO.CONTS_UID
+			AND
+			( 		
+				PRINT_TP = #print_tp# OR IFNULL(#print_tp#,'ALL') = 'ALL'
+			) 
+			AND 
+		    (
+		      	PRINT_HIST.CONTS_UID = #conts_uid# OR IFNULL(#conts_uid#,'') = ''
+		    )		
+	       	AND IFNULL(CONTS_3D_INFO.DEL_YN, 'N') = 'N'
+	       	AND IFNULL(PRINT_HIST.DEL_YN,'N') = 'N'		
+			AND 
+		    (
+		      	CONTS_MAJOR = #conts_major# OR IFNULL(#conts_major#,'ALL') = 'ALL'
+		    )
+		  	AND 
+		    (
+		      	CONTS_MINOR = #conts_minor# OR IFNULL(#conts_minor#,'ALL') = 'ALL'
+		    )
+		  	AND 
+		    (
+		      	IFNULL(#conts_word#,'') = '' OR 
+		      	( CONTS_NAME LIKE CONCAT('%',#conts_word#,'%') OR p_name LIKE CONCAT('%',#conts_word#,'%') )
+		    )	
+		    AND 
+		    (
+		      	PRINT_HIST.USER_UID = #reg_user_uid# OR IFNULL(#reg_user_uid#,'') = ''
+		    )
+		    
+	 	]]>
+    </select>	  
+    
+    <!-- 3D콘텐츠정보 삭제 -->
+	<update id="contentsDAO.deleteContents3DInfo">
+			UPDATE CONTS_3D_INFO SET DEL_YN = 'Y'
+			WHERE CONTS_UID = #conts_uid#  
+	</update>
+
+    <!-- 3D콘텐츠정보 삭제 : 콘텐츠파일 삭제 -->
+	<update id="contentsDAO.deleteCONTS_FILE">
+			UPDATE CONTS_FILE SET DEL_YN = 'Y'
+			WHERE CONTS_UID = #conts_uid#   
+	</update>
+
+	<!-- 3D콘텐츠정보 삭제 : 출력이력 삭제 -->
+	<update id="contentsDAO.deletePRINT_HIST_by_conts_uid">
+			UPDATE PRINT_HIST SET DEL_YN = 'Y'
+			WHERE CONTS_UID = #conts_uid#    
+	</update>	
+	
+	<!-- 3D콘텐츠정보 삭제 : [주문,출력정보등록]콘텐츠추가정보 삭제 -->
+	<update id="contentsDAO.deleteCONTS_IMG_by_conts_uid">
+			UPDATE CONTS_IMG SET DEL_YN = 'Y'
+			WHERE CONTS_UID = #conts_uid#    
+	</update>	
+	
+	<!-- 출력이력 삭제 -->
+	<update id="contentsDAO.deletePRINT_HIST_by_print_hist_uid">
+			UPDATE PRINT_HIST SET DEL_YN = 'Y'
+			WHERE PRINT_HIST_UID = #print_hist_uid#  
+	</update>	
+	
+	<!-- 출력이력 삭제 : [주문,출력정보등록]콘텐츠추가정보 삭제 -->
+	<update id="contentsDAO.deleteCONTS_IMG_by_print_hist_uid">
+			UPDATE CONTS_IMG SET DEL_YN = 'Y'
+			WHERE PRINT_HIST_UID = #print_hist_uid#    
+	</update>	
+	
+	
+	<!-- 소장처 총갯수 -->
+	<select id="contentsDAO.selectHold_loc_TotalCount" resultClass="java.util.HashMap">
+		<![CDATA[
+			SELECT 
+			      COUNT(*) tot_count
+			FROM  HOLD_LOC
+			WHERE 
+		    (
+		      	IFNULL(#area_cd#,'ALL') = 'ALL' 
+		      	]]> 
+		      	<isNotEqual property="area_cd" compareValue="ALL" prepend="OR">
+		 		AREA_CD IN ($area_cd$)
+		 		</isNotEqual> 
+  				<![CDATA[			
+		    )
+			AND 
+		    (
+		      	IFNULL(#hold_loc_id#,'') = '' OR HOLD_LOC_ID = #hold_loc_id#
+		    )	
+		    AND 
+		    (
+		      	IFNULL(#conts_word#,'') = '' OR HOLD_LOC_NAME LIKE CONCAT('%',#conts_word#,'%')
+		    )	
+		    
+			]]>  
+    </select>		 
+    
+	<!-- 소장처 리스트 -->
+	<select id="contentsDAO.selectHold_loc_List" resultClass="java.util.HashMap">
+		<![CDATA[
+		SELECT * FROM
+		(
+	      	SELECT
+			   @ROWNUM := @ROWNUM + 1 as rnum
+			,  HOLD_LOC_ID     hold_loc_id   
+			,  HOLD_LOC_NAME   hold_loc_name 
+			,  HOLD_LOC_KIND   hold_loc_kind 
+			,  HOLD_LOC_TP	   hold_loc_tp   
+			,  TMPT_IMG		   tmpt_img      
+			,  IMG1			   img1          
+			,  IMG2			   img2          
+			,  IMG3			   img3          
+			,  GUIDE_IMG	   guide_img     
+			,  GALLY_DESC	   gally_desc    
+			,  URL			   url           
+			,  AREA_CD		   area_cd       
+			,  ADDR			   addr          
+			,  LOC_GPS		   loc_gps       
+			,  REG_DTTM		   reg_dttm      
+			,  UPT_DTTM		   upt_dttm     
+			FROM	 HOLD_LOC
+			WHERE 
+		    (
+		      	IFNULL(#area_cd#,'ALL') = 'ALL'
+	     		]]> 
+	      		<isNotEqual property="area_cd" compareValue="ALL" prepend="OR">
+	 			AREA_CD IN ($area_cd$)
+	 			</isNotEqual> 
+				<![CDATA[
+		    )
+		    AND 
+			(
+			  	IFNULL(#hold_loc_id#,'') = '' OR HOLD_LOC_ID = #hold_loc_id#
+			)
+			AND 
+		    (
+		      	IFNULL(#conts_word#,'') = '' OR HOLD_LOC_NAME LIKE CONCAT('%',#conts_word#,'%')
+		    )	
+			ORDER BY HOLD_LOC_NAME	
+		) T1, (SELECT  @ROWNUM := 0) A
+	    limit   #start_index#, #max_ret_count#
+		]]>    	 
+    </select>		
+    
+	
+	<!-- 출력업체 총갯수 -->
+	<select id="contentsDAO.selectPrint_Corp_TotalCount" resultClass="java.util.HashMap">
+		<![CDATA[
+			SELECT 
+			      	COUNT(*) tot_count		      
+			FROM  	PRINT_CORP, USER
+			WHERE	
+					PRINT_CORP.USER_UID = USER.USER_UID
+			AND		IFNULL(USER.DEL_YN,'N') = 'N'
+			AND     (
+		      			IFNULL(#conts_word#,'') = '' 
+		      			OR USER.COMPY_NAME LIKE CONCAT('%',#conts_word#,'%') 
+		      			OR PRINT_CORP.INTRO_DOC LIKE CONCAT('%',#conts_word#,'%')
+		    		)	
+		    ORDER BY USER.COMPY_NAME
+			]]>  
+    </select>		 
+    
+	<!-- 출력업체 리스트 -->
+	<select id="contentsDAO.selectPrint_Corp_List" resultClass="java.util.HashMap">
+		<![CDATA[
+		SELECT * FROM
+		(
+	      	SELECT
+			        @ROWNUM := @ROWNUM + 1 as rnum
+				,	USER.USER_UID               user_uid         
+				,	USER.COMPY_NAME             compy_name    
+				,	PRINT_CORP.HOLD_PRINT_CNT   hold_print_cnt   
+				,	PRINT_CORP.PRINT_QC_ST      print_qc_st      
+				,	PRINT_CORP.T_PRINT_CNT      t_print_cnt      
+				,	PRINT_CORP.SOILD_MTHD       soild_mthd       
+				,	PRINT_CORP.SOILD_MTHD_DESC  soild_mthd_desc  
+				,	PRINT_CORP.LIQD_MTHD        liqd_mthd        
+				,	PRINT_CORP.LIQD_MTHD_DESC   liqd_mthd_desc   
+				,	PRINT_CORP.PWDR_MTHD        pwdr_mthd        
+				,	PRINT_CORP.PWDR_MTHD_DESC   pwdr_mthd_desc   
+				,	PRINT_CORP.SHEET_MTHD       sheet_mthd       
+				,	PRINT_CORP.SHEET_MTHD_DESC  sheet_mthd_desc  
+				,	PRINT_CORP.ETC_MTHD         etc_mthd         
+				,	PRINT_CORP.ETC_MTHD_DESC    etc_mthd_desc    
+				,	PRINT_CORP.PRINT_AGCY       print_agcy       
+				,	PRINT_CORP.SUPT_DEL         supt_del         
+				,	PRINT_CORP.S_COLOR_END      s_color_end      
+				,	PRINT_CORP.COLOR_END        color_end        
+				,	PRINT_CORP.PLA_GENL         pla_genl         
+				,	PRINT_CORP.PLA_FLUO         pla_fluo         
+				,	PRINT_CORP.PLA_WOOD         pla_wood         
+				,	PRINT_CORP.PLA_URTAN        pla_urtan        
+				,	PRINT_CORP.PLA_ATEMP        pla_atemp        
+				,	PRINT_CORP.PLA_LIGHT_TURN   pla_light_turn   
+				,	PRINT_CORP.ABS              abs              
+				,	PRINT_CORP.LIQD_RESIN       liqd_resin       
+				,	PRINT_CORP.PWDR             pwdr             
+				,	PRINT_CORP.PAPER_PRINT      paper_print      
+				,	PRINT_CORP.MIN_ETMT_AMOUNT  min_etmt_amount  
+				,	PRINT_CORP.INTRO_DOC        intro_doc        
+				,	PRINT_CORP.UPT_DTTM         upt_dttm  
+			FROM  	PRINT_CORP, USER
+			WHERE	
+					PRINT_CORP.USER_UID = USER.USER_UID
+			AND		IFNULL(USER.DEL_YN,'N') = 'N'
+			AND     (
+		      			IFNULL(#conts_word#,'') = '' 
+		      			OR USER.COMPY_NAME LIKE CONCAT('%',#conts_word#,'%') 
+		      			OR PRINT_CORP.INTRO_DOC LIKE CONCAT('%',#conts_word#,'%')
+		    		)	
+		    ORDER BY USER.COMPY_NAME
+		) T1, (SELECT  @ROWNUM := 0) A
+		limit   #start_index#, #max_ret_count#
+		]]>    	 
+    </select>		
+    
+    <!-- 코멘트 상세조회 -->
+    <select id="contentsDAO.selectComment" resultClass="java.util.HashMap">
+		<![CDATA[
+	      	SELECT
+				    USER.USER_UID         user_uid         
+				 ,  USER.COMPY_NAME       compy_name    
+				 ,  USER.P_NAME           p_name  
+				 ,  USER.MY_PHOTO         my_photo  				 
+				 ,  COMMENT.CONTS_UID     conts_uid 
+				 ,  COMMENT.CMT_SEQ       cmt_seq   
+				 ,  COMMENT.CMT_TP        cmt_tp   
+				 ,  COMMENT.USER_UID      user_uid  
+				 ,  COMMENT.CONTENTS      contents  
+				 ,  COMMENT.UP_CMT_SEQ    up_cmt_seq
+				 ,  COMMENT.REG_DTTM	  reg_dttm
+				 ,  COMMENT.PRINT_HIST_UID      print_hist_uid  
+				 ,  COMMENT.DEL_YN        del_yn  
+			FROM  	COMMENT, USER
+			WHERE	
+					COMMENT.USER_UID = USER.USER_UID
+			AND		IFNULL(COMMENT.DEL_YN,'N') = 'N'
+			AND		COMMENT.CONTS_UID = #conts_uid#
+			AND		COMMENT.CMT_SEQ   = #cmt_seq#
+			AND		COMMENT.CMT_TP   = #cmt_tp#
+		]]>    	 
+    </select>		
+    
+    <!-- 코멘트 추가 -->
+    <insert id="contentsDAO.createComment">
+    	<selectKey keyProperty="new_cmt_seq" resultClass="int">
+			SELECT IFNULL(MAX(CMT_SEQ),0)+1  FROM COMMENT
+		</selectKey>
+		<![CDATA[
+			INSERT INTO COMMENT 
+			(	
+				   CONTS_UID  
+				,  CMT_SEQ   
+				,  CMT_TP 
+				,  USER_UID   
+				,  CONTENTS   
+				,  UP_CMT_SEQ 
+				,  REG_DTTM	  
+				,  PRINT_HIST_UID
+				,  DEL_YN     
+			)
+			VALUES 
+			( 		
+				   #conts_uid#  
+				,  #new_cmt_seq#    
+				,  #cmt_tp#
+				,  #user_uid#   
+				,  #contents#   
+				,  #up_cmt_seq# 
+				,  date_format(now(),'%Y%m%d%H%i%s')	  
+				,  #print_hist_uid#
+				,  'N'     
+			)
+		]]>
+	</insert> 	
+	
+    <!-- 코멘트 업데이트 -->
+   	<update id="contentsDAO.updateComment">
+			UPDATE COMMENT
+			<dynamic prepend="SET">
+				<isPropertyAvailable prepend="," property="conts_uid" > CONTS_UID = #conts_uid#  </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="cmt_seq"   > CMT_SEQ   = #cmt_seq#    </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="cmt_tp"    > CMT_TP    = #cmt_tp#     </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="user_uid"  > USER_UID  = #user_uid#   </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="contents"  > CONTENTS  = #contents#   </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="up_cmt_seq"> UP_CMT_SEQ= #up_cmt_seq# </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="reg_dttm"  > REG_DTTM  = date_format(now(),'%Y%m%d%H%i%s') </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="print_hist_uid" > PRINT_HIST_UID = #print_hist_uid#  </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="del_yn"    > DEL_YN    = #del_yn#     </isPropertyAvailable> 
+			</dynamic>
+			WHERE CONTS_UID = #conts_uid# AND CMT_SEQ = #cmt_seq#   
+	</update>	
+	
+    <!-- 코멘트 삭제 -->
+    <delete id="contentsDAO.deleteComment">
+		<![CDATA[
+			DELETE FROM COMMENT 
+			WHERE	CONTS_UID = #conts_uid# AND CMT_SEQ = #cmt_seq#  AND CMT_TP = #cmt_tp# 
+		]]>
+	</delete>
+	
+    <!-- 코멘트 리스트 갯수 -->
+    <select id="contentsDAO.selectComment_TotalCount" resultClass="java.util.HashMap">
+		<![CDATA[
+			SELECT
+				    COUNT(*) tot_count	
+			FROM  	COMMENT, USER
+			WHERE	
+					COMMENT.USER_UID = USER.USER_UID
+			AND		IFNULL(COMMENT.DEL_YN,'N') = 'N'
+			AND		COMMENT.CONTS_UID = #conts_uid#
+			AND     (#cmt_tp# = '1' OR (#cmt_tp# = '2' AND COMMENT.PRINT_HIST_UID = #print_hist_uid#))
+		]]>  
+    </select>	
+    
+    <!-- 코멘트 리스트 -->
+ 	<select id="contentsDAO.selectComment_List" resultClass="java.util.HashMap">
+		<![CDATA[
+		SELECT * FROM
+		(
+	      	SELECT
+	      			@ROWNUM := @ROWNUM + 1 as rnum
+				 ,  USER.USER_UID         user_uid         
+				 ,  USER.COMPY_NAME       compy_name    
+				 ,  USER.P_NAME           p_name  
+				 ,  USER.P_LOGIN_ID       p_login_id  
+				 ,  USER.MY_PHOTO         my_photo  
+				 
+				 ,  COMMENT.CONTS_UID     conts_uid 
+				 ,  COMMENT.CMT_SEQ       cmt_seq   
+				 ,  COMMENT.CMT_TP        cmt_tp   
+				 ,  COMMENT.CONTENTS      contents  
+				 ,  COMMENT.UP_CMT_SEQ    up_cmt_seq
+				 ,  COMMENT.REG_DTTM	  reg_dttm
+				 ,  COMMENT.PRINT_HIST_UID      print_hist_uid  
+				 ,  COMMENT.DEL_YN        del_yn  
+			FROM  	COMMENT, USER
+			WHERE	
+					COMMENT.USER_UID = USER.USER_UID
+			AND		IFNULL(COMMENT.DEL_YN,'N') = 'N'
+			AND		COMMENT.CONTS_UID = #conts_uid#
+			AND     (#cmt_tp# = '1' OR (#cmt_tp# = '2' AND COMMENT.PRINT_HIST_UID = #print_hist_uid#))
+			ORDER BY COMMENT.CMT_SEQ DESC
+		) T1, (SELECT  @ROWNUM := 0) A
+		limit   #start_index#, #max_ret_count#
+		]]>    	 
+    </select>   
+
+
+	<!-- 관심콘텐츠 리스트 -->
+	<select id="contentsDAO.selectInterestConts_List" resultClass="java.util.HashMap">
+		<![CDATA[
+		SELECT * FROM
+		(
+	      	SELECT
+	     		@ROWNUM := @ROWNUM + 1 as rnum
+
+				,   CONTS_FILE.CONTS_UID        conts_uid       
+				,   CONTS_FILE.CONTS_FILE_SEQ	conts_file_seq  
+				,   CONTS_FILE.CONTS_TP			file_conts_tp        
+				,   CONTS_FILE.CONTS_FILE_NAME	conts_file_name  
+				,   CONTS_FILE.CONTS_FILE_SIZE	conts_file_size 
+				,   CONTS_FILE.CONTS_SAVE_NAME	conts_save_name 
+				,   CONTS_FILE.CONTS_TITLE		conts_title     
+				,   CONTS_FILE.CONTS_DESC		conts_desc 
+				,   CONTS_FILE.DELEGATE_YN		delegate_yn
+				     
+				,   CONTS_FILE.STL_X			stl_x           
+				,   CONTS_FILE.STL_Y			stl_y           
+				,   CONTS_FILE.STL_Z			stl_z           
+				,   CONTS_FILE.STL_THUMNAIL		stl_thumnail    
+				,   CONTS_FILE.STL_VOLUME		stl_volume      
+				,   CONTS_FILE.STL_WEIGHT		stl_weight      
+				,   CONTS_FILE.UPT_DTTM			upt_dttm        
+				,   CONTS_FILE.P_LOGIN_ID		p_login_id      
+				,   CONTS_FILE.DEL_YN			del_yn          
+			
+		    	,	CONTS_3D_INFO.CONTS_NAME    conts_name  
+				,	CONTS_3D_INFO.CONTS_ST      conts_st    
+				,	CONTS_3D_INFO.CONTS_TP      conts_tp    
+				,	CONTS_3D_INFO.CONTS_TYPE    conts_type  
+				,	CONTS_3D_INFO.CONTS_MAJOR   conts_major 
+				,	CONTS_3D_INFO.CONTS_MINOR   conts_minor
+				 
+				,	CONTS_3D_INFO.HITS          hits   
+				,	CONTS_3D_INFO.DOWN_CNT      down_cnt   				
+				,	CONTS_3D_INFO.T_LIKE_CNT    t_like_cnt  
+				,	CONTS_3D_INFO.T_BMARK       t_bmark  			
+				,	CONTS_3D_INFO.T_GPA         t_gpa       
+				,	CONTS_3D_INFO.TOTAL_GPA     total_gpa   
+				, 	USER.P_NAME                 p_name  
+		        , 	USER.MY_PHOTO               my_photo 
+			
+			FROM	CONTS_FILE, CONTS_3D_INFO, USER
+			WHERE	CONTS_3D_INFO.USER_UID  = USER.USER_UID
+			AND		CONTS_FILE.CONTS_UID = CONTS_3D_INFO.CONTS_UID
+	
+			AND	IFNULL(CONTS_3D_INFO.DEL_YN,'N') = 'N'		
+			AND	IFNULL(CONTS_FILE.DEL_YN,'N')    = 'N'	
+    
+			AND	CONTS_FILE.STL_THUMNAIL DESC, CONTS_FILE.STL_THUMNAIL IS NOT NULL	
+			
+			AND 
+		    (
+		      	CONTS_3D_INFO.CONTS_UID = #conts_uid# OR IFNULL(#conts_uid#,'') = ''
+		    )		
+			AND 
+		    (
+		      	IFNULL(#conts_word#,'') = '' OR 
+		      	( CONTS_NAME LIKE CONCAT('%',#conts_word#,'%') OR p_name LIKE CONCAT('%',#conts_word#,'%') )
+		    )	
+		    
+		    GROUP BY CONTS_FILE.CONTS_UID
+			ORDER BY CONTS_FILE.DELEGATE_YN DESC, CONTS_FILE.CONTS_FILE_SEQ ASC	
+		
+		) T1, (SELECT  @ROWNUM := 0) A
+	 	limit   #start_index#, #max_ret_count#
+	 	]]>
+    </select>
+
+
+	<!-- 다운로드콘텐츠 리스트 -->
+	<select id="contentsDAO.selectDownloadConts_List" resultClass="java.util.HashMap">
+		<![CDATA[
+		SELECT * FROM
+		(
+	      	SELECT
+	     		@ROWNUM := @ROWNUM + 1 as rnum
+	     		,   PRINT_HIST.PRINT_HIST_UID	print_hist_uid
+				,   PRINT_HIST.MAKE_UID			make_uid      
+				,   PRINT_HIST.USER_UID			user_uid      
+				,   PRINT_HIST.PRINT_DT			print_dt      
+				,   PRINT_HIST.PRINT_MTHD		print_mthd    
+				,   PRINT_HIST.PRINT_SIZE		print_size    
+				,   PRINT_HIST.PRINT_TP			print_tp      
+				,   PRINT_HIST.PRINT_ASSMT		print_assmt   
+				,   PRINT_HIST.CONTS_UID		conts_uid     
+				,   PRINT_HIST.PRTR_NAME		prtr_name     
+				,   PRINT_HIST.LAYER_H			layer_h       
+				,   PRINT_HIST.FILL_DNSTY		fill_dnsty    
+				,   PRINT_HIST.PRINT_SPEED		print_speed   
+				,   PRINT_HIST.MATERIAL_TP		material_tp   
+				,   PRINT_HIST.UPT_DTTM             upt_dttm      
+			
+		    	,	CONTS_3D_INFO.CONTS_NAME    conts_name  
+				,	CONTS_3D_INFO.CONTS_ST      conts_st    
+				,	CONTS_3D_INFO.CONTS_TP      conts_tp    
+				,	CONTS_3D_INFO.CONTS_TYPE    conts_type  
+				,	CONTS_3D_INFO.CONTS_MAJOR   conts_major 
+				,	CONTS_3D_INFO.CONTS_MINOR   conts_minor
+				 
+				,	CONTS_3D_INFO.HITS          hits   
+				,	CONTS_3D_INFO.DOWN_CNT      down_cnt   				
+				,	CONTS_3D_INFO.T_LIKE_CNT    t_like_cnt  
+				,	CONTS_3D_INFO.T_BMARK       t_bmark  			
+				,	CONTS_3D_INFO.T_GPA         t_gpa       
+				,	CONTS_3D_INFO.TOTAL_GPA     total_gpa   
+				, 	USER.P_NAME                 p_name  
+		        , 	USER.MY_PHOTO               my_photo 
+			
+			FROM	PRINT_HIST, CONTS_3D_INFO, USER
+			WHERE	PRINT_HIST.USER_UID  = USER.USER_UID
+			AND		PRINT_HIST.CONTS_UID = CONTS_3D_INFO.CONTS_UID
+			AND 
+		    (
+		      	PRINT_HIST.CONTS_UID = #conts_uid# OR IFNULL(#conts_uid#,'') = ''
+		    )		
+			AND	IFNULL(PRINT_HIST.DEL_YN,'N') = 'N'		
+		  	AND 
+		    (
+		      	IFNULL(#conts_word#,'') = '' OR 
+		      	( CONTS_NAME LIKE CONCAT('%',#conts_word#,'%') OR p_name LIKE CONCAT('%',#conts_word#,'%') )
+		    )	
+		
+		) T1, (SELECT  @ROWNUM := 0) A
+	 	limit   #start_index#, #max_ret_count#
+	 	]]>
+    </select>
+
+	<!-- 업로드콘텐츠 리스트 -->
+	<select id="contentsDAO.selectUploadConts_List" resultClass="java.util.HashMap">
+		<![CDATA[
+		SELECT * FROM
+		(
+	      	SELECT
+	     		@ROWNUM := @ROWNUM + 1 as rnum
+	     		,   PRINT_HIST.PRINT_HIST_UID	print_hist_uid
+				,   PRINT_HIST.MAKE_UID			make_uid      
+				,   PRINT_HIST.USER_UID			user_uid      
+				,   PRINT_HIST.PRINT_DT			print_dt      
+				,   PRINT_HIST.PRINT_MTHD		print_mthd    
+				,   PRINT_HIST.PRINT_SIZE		print_size    
+				,   PRINT_HIST.PRINT_TP			print_tp      
+				,   PRINT_HIST.PRINT_ASSMT		print_assmt   
+				,   PRINT_HIST.CONTS_UID		conts_uid     
+				,   PRINT_HIST.PRTR_NAME		prtr_name     
+				,   PRINT_HIST.LAYER_H			layer_h       
+				,   PRINT_HIST.FILL_DNSTY		fill_dnsty    
+				,   PRINT_HIST.PRINT_SPEED		print_speed   
+				,   PRINT_HIST.MATERIAL_TP		material_tp   
+				,   PRINT_HIST.UPT_DTTM             upt_dttm      
+			
+		    	,	CONTS_3D_INFO.CONTS_NAME    conts_name  
+				,	CONTS_3D_INFO.CONTS_ST      conts_st    
+				,	CONTS_3D_INFO.CONTS_TP      conts_tp    
+				,	CONTS_3D_INFO.CONTS_TYPE    conts_type  
+				,	CONTS_3D_INFO.CONTS_MAJOR   conts_major 
+				,	CONTS_3D_INFO.CONTS_MINOR   conts_minor
+				 
+				,	CONTS_3D_INFO.HITS          hits   
+				,	CONTS_3D_INFO.DOWN_CNT      down_cnt   				
+				,	CONTS_3D_INFO.T_LIKE_CNT    t_like_cnt  
+				,	CONTS_3D_INFO.T_BMARK       t_bmark  			
+				,	CONTS_3D_INFO.T_GPA         t_gpa       
+				,	CONTS_3D_INFO.TOTAL_GPA     total_gpa   
+				, 	USER.P_NAME                 p_name  
+		        , 	USER.MY_PHOTO               my_photo 
+			
+			FROM	PRINT_HIST, CONTS_3D_INFO, USER
+			WHERE	PRINT_HIST.USER_UID  = USER.USER_UID
+			AND		PRINT_HIST.CONTS_UID = CONTS_3D_INFO.CONTS_UID
+			AND 
+		    (
+		      	PRINT_HIST.CONTS_UID = #conts_uid# OR IFNULL(#conts_uid#,'') = ''
+		    )		
+			AND	IFNULL(PRINT_HIST.DEL_YN,'N') = 'N'		
+		  	AND 
+		    (
+		      	IFNULL(#conts_word#,'') = '' OR 
+		      	( CONTS_NAME LIKE CONCAT('%',#conts_word#,'%') OR p_name LIKE CONCAT('%',#conts_word#,'%') )
+		    )	
+		
+		) T1, (SELECT  @ROWNUM := 0) A
+	 	limit   #start_index#, #max_ret_count#
+	 	]]>
+    </select>	
+    
+	<!-- DELEGATE_YN 값을 새로 업데이트한다. -->
+	<!--
+			delegateInfo = new HashMap();
+			delegateInfo.put("conts_uid", jsonMap.get("conts_uid"));
+			delegateInfo.put("conts_file_seq", jsonMap.get("delegate_conts_file_seq"));
+			delegateInfo.put("conts_tp", jsonMap.get("01")); // 01:업로드한 stl, jpg등 모든파일
+			delegateInfo.put("delegate_yn", "Y");
+			ajaxContentsDAO.updateContentsFile_Delegate_yn(jsonMap); 
+	 -->
+	
+   	<update id="contentsDAO.updateContentsFile_Delegate_yn">
+			UPDATE	CONTS_FILE
+			SET 	DELEGATE_YN = #delegate_yn#
+			WHERE 	CONTS_UID   = #conts_uid# 
+			AND 	CONTS_TP    = '01'
+			AND		(	CONTS_FILE_SEQ = #conts_file_seq# OR IFNULL(#conts_file_seq#,'') = '' )
+	</update>	
+	
+	<insert id="contentsDAO.insert_cgrp">
+		<![CDATA[
+			INSERT INTO CGRP (	
+				   CGRP_NAME       
+				,  GRP_SQL  
+				,  GRP_DESC
+				,  GRP_USE_YN 
+				,  CONTS_CNT 
+				,  REG_DTTM
+				
+			) VALUES (
+				#cgrp_name#
+				, #grp_sql#
+				, #grp_desc#
+				, #grp_use_yn#
+				, #conts_cnt#
+				, DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+			)
+		]]>
+	</insert>
+	
+	<update id="contentsDAO.update_cgrp">
+			UPDATE CGRP   
+			<dynamic prepend="SET">
+				<isPropertyAvailable prepend="," property="cgrp_name"> CGRP_NAME = #cgrp_name#   </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="grp_sql"> GRP_SQL = #grp_sql#     </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="grp_desc"> GRP_DESC = #grp_desc#     </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="grp_use_yn"> GRP_USE_YN = #grp_use_yn#   </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="conts_cnt"> CONTS_CNT = #conts_cnt#  </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="udp_dttm"> UDP_DTTM = #udp_dttm#  </isPropertyAvailable> 
+			</dynamic>
+			WHERE CGRP_ID = #cgrp_id#
+	</update>
+	
+	<select id="contentsDAO.select_cgrp_contents_uid" resultClass="java.util.HashMap">
+		SELECT CONTS_UID conts_uid 
+		FROM CONTS_3D_INFO
+		WHERE $grp_sql$
+	</select>
+	
+	<delete id="contentsDAO.delete_cgrp">
+	<![CDATA[
+		DELETE FROM CGRP
+		WHERE CGRP_ID = #cgrp_id#;
+	]]>
+	</delete>
+	
+	<select id="contentsDAO.select_cgrp_info" resultClass="java.util.HashMap">
+	<![CDATA[
+		SELECT 	tb1.CGRP_ID 	cgrp_id, 
+					CGRP_NAME		cgrp_name, 
+					GRP_USE_YN	grp_use_yn, 
+					GRP_SQL			grp_sql,
+					GRP_DESC		grp_desc,
+					CONTS_CNT	conts_cnt, 
+					DISP_ST			disp_st, 
+					DISP_NAME		disp_name, 
+					tb2.UPT_DTTM		upt_dttm 
+		FROM CGRP tb1
+		LEFT JOIN DISPLAY tb2
+		ON tb1.cgrp_id = tb2.cgrp_id
+		WHERE tb1.CGRP_ID = #cgrp_id#
+		AND DISP_ID = #disp_id#
+	]]>
+	</select>
+	
+	<select id="contentsDAO.select_cgrp_list" resultClass="java.util.HashMap">
+		<![CDATA[
+		SELECT * FROM (
+			SELECT tb1.CGRP_ID		cgrp_id, 
+						CGRP_NAME		cgrp_name, 
+						GRP_USE_YN	grp_use_yn, 
+						CONTS_CNT	conts_cnt, 
+						DISP_ID			disp_id, 
+						DISP_ST			disp_st, 
+						DISP_NAME		disp_name, 
+						UPT_DTTM 		upt_dttm
+			FROM CGRP tb1
+			LEFT JOIN DISPLAY tb2
+			ON tb1.cgrp_id = tb2.cgrp_id
+			WHERE 1=1
+			AND (
+				tb1.GRP_USE_YN = #grp_use_yn# OR IFNULL(#grp_use_yn#, 'ALL') = 'ALL'
+			) AND (
+				IFNULL(#conts_word#, '') = '' OR (
+					CGRP_NAME LIKE CONCAT('%', #conts_word#, '%') OR DISP_NAME LIKE CONCAT('%', #conts_word#, '%') 
+				)
+			)
+		) tb3
+	    LIMIT #start_index#, #max_ret_count#
+	]]>
+	</select>
+	
+	<select id="contentsDAO.select_cgrp_total_cnt" resultClass="int">
+		SELECT COUNT(tb1.CGRP_ID) 
+		FROM CGRP tb1
+		LEFT JOIN DISPLAY tb2
+		ON tb1.cgrp_id = tb2.cgrp_id
+		WHERE 1=1
+		AND (
+			tb1.GRP_USE_YN = #grp_use_yn# OR IFNULL(#grp_use_yn#, 'ALL') = 'ALL'
+		) AND (
+			IFNULL(#conts_word#, '') = '' OR (
+				CGRP_NAME LIKE CONCAT('%', #conts_word#, '%') OR DISP_NAME LIKE CONCAT('%', #conts_word#, '%') 
+			)
+		)
+	</select>
+	
+	<insert id="contentsDAO.insert_disp_info">
+		<selectKey keyProperty="new_disp_id" resultClass="int">
+			SELECT IFNULL(MAX(DISP_ID),0)+1  FROM DISPLAY
+		</selectKey>
+		<![CDATA[
+			INSERT INTO DISPLAY (
+				DISP_ID, CGRP_ID, DISP_NAME, DISP_ST, DISP_S_DT, DISP_E_DT, DISP_DESC, TEMP_TP, REG_DTTM
+			) VALUES (
+				#new_disp_id#,
+				#cgrp_id#,
+				#disp_name#,
+				#disp_st#,
+				#disp_s_dt#,
+				#disp_e_dt#,
+				#disp_desc#,
+				#temp_tp#,
+				DATE_FORMAT(NOW(),'%Y%m%d%H%i%s')
+			)
+		]]>
+	</insert>
+	
+	<insert id="contentsDAO.insert_disp_file">
+	<![CDATA[
+		INSERT INTO DISP_FILE (
+			DISP_ID, DISP_TP, DISP_SAVE_NAME, DISP_FILE_NAME, DELEGATE_YN, DEL_YN, REG_DTTM
+		) VALUES (
+			#disp_id#,
+			#disp_tp#,
+			#disp_save_name#,
+			#disp_file_name#,
+			#delegate_yn#,
+			'N',
+			DATE_FORMAT(NOW(),'%Y%m%d%H%i%s')
+		)
+	]]>
+	</insert>
+	
+	<update id="contentsDAO.update_disp_info">
+		UPDATE DISPLAY   
+		<dynamic prepend="SET">
+			<isPropertyAvailable prepend="," property="disp_id"> 	REG_DTTM = DATE_FORMAT(NOW(),'%Y%m%d%H%i%s') </isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="cgrp_id"> 		CGRP_ID = #cgrp_id# 			</isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="disp_name"> 	DISP_NAME = #disp_name# 	</isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="disp_st"> 		DISP_ST = #disp_st# 			</isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="disp_s_dt"> 		DISP_S_DT = #disp_s_dt# 	</isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="disp_e_dt"> 		DISP_E_DT = #disp_e_dt# 	</isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="disp_desc"> 		DISP_DESC = #disp_desc# 	</isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="temp_tp"> 		TEMP_TP = #temp_tp# 		</isPropertyAvailable> 
+		</dynamic>
+		WHERE DISP_ID = #disp_id#  
+	</update>
+	
+	<delete id="contentsDAO.delete_disp_file">
+		<![CDATA[
+			DELETE FROM DISP_FILE 
+			WHERE	DISP_ID = #disp_id#
+     		AND DISP_SAVE_NAME = #disp_save_name# OR IFNULL(#disp_save_name#,'') = ''
+		]]>
+	</delete>
+	
+	<delete id="contentsDAO.delete_disp_file_all">
+		<![CDATA[
+			DELETE FROM DISP_FILE 
+			WHERE	DISP_ID = #disp_id#
+		]]>
+		<isNotEqual property="disp_file_seq_list" compareValue="ALL" prepend="AND">
+ 			DISP_FILE_SEQ NOT IN ($disp_file_seq_list$)
+ 		</isNotEqual>
+	</delete>
+	
+	<update id="contentsDAO.update_disp_file_delegate_all">
+		<![CDATA[
+			UPDATE DISP_FILE 
+			SET DELEGATE_YN = 'N'
+			WHERE DISP_ID = #disp_id#
+		]]>
+	</update>
+	
+	<update id="contentsDAO.update_disp_file">
+		UPDATE DISP_FILE   
+		<dynamic prepend="SET">
+			<isPropertyAvailable prepend="," property="disp_file_seq"> 	UPT_DTTM = DATE_FORMAT(NOW(),'%Y%m%d%H%i%s') </isPropertyAvailable>
+			<isPropertyAvailable prepend="," property="disp_tp"> 		DISP_TP = #disp_tp# 					</isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="delegate_yn"> 	DELEGATE_YN = #delegate_yn# 		</isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="del_yn"> 			DEL_YN = #del_yn# 						</isPropertyAvailable> 
+		</dynamic>
+		WHERE DISP_ID = #disp_id#  
+		AND DISP_FILE_SEQ = #disp_file_seq#
+	</update>
+	
+	<select id="contentsDAO.select_disp_info" resultClass="java.util.HashMap">
+	<![CDATA[
+		SELECT 	DISP_ID 		disp_id, 
+			DISP_NAME 		disp_name,
+			DISP_ST 			disp_st,
+			DISP_S_DT 			disp_s_dt,
+			DISP_E_DT 			disp_e_dt,
+			DISP_DESC 			disp_desc,
+			TEMP_TP 			temp_tp,
+			CGRP.CGRP_ID 	cgrp_id,
+			CGRP.CGRP_NAME cgrp_name
+		FROM DISPLAY, CGRP
+		WHERE DISPLAY.CGRP_ID = CGRP.CGRP_ID
+		AND DISP_ID = #disp_id#
+	]]>
+	</select>
+	
+	<select id="contentsDAO.select_disp_file_list" resultClass="java.util.HashMap">
+	<![CDATA[
+		SELECT DISP_FILE_SEQ 	disp_file_seq,
+			DISP_FILE.DISP_TP 		disp_file_tp,
+			DISP_SAVE_NAME 		disp_save_name, 
+			DISP_FILE_NAME 			disp_file_name, 
+			DISP_FILE_SIZE 			disp_file_size,
+			DELEGATE_YN 				delegate_yn,
+			DEL_YN 						del_yn,
+			DISP_FILE.REG_DTTM	reg_dttm
+		FROM DISP_FILE, DISPLAY
+		WHERE DISP_FILE.DISP_ID = DISPLAY.DISP_ID
+		AND DEL_YN = 'N'
+		AND DISP_FILE.DISP_ID = #disp_id#
+		ORDER BY disp_file_seq
+	]]>
+	</select>
+	
+	<delete id="contentsDAO.delete_disp_info">
+	<![CDATA[
+		DELETE FROM DISPLAY
+		WHERE DISP_ID = #disp_id#
+	]]>
+	</delete>
+	
+	<select id="contentsDAO.select_disp_list" resultClass="java.util.HashMap">
+	<![CDATA[
+		SELECT * FROM 
+			(SELECT DISP_ID 		disp_id, 
+						DISP_NAME 		disp_name,
+						DISP_ST 			disp_st,
+						DISP_S_DT 			disp_s_dt,
+						DISP_E_DT 			disp_e_dt,
+						DISP_DESC 			disp_desc,
+						TEMP_TP 			temp_tp,
+						CGRP.CGRP_ID 	cgrp_id,
+						CGRP.CGRP_NAME cgrp_name
+			FROM DISPLAY, CGRP
+			WHERE DISPLAY.CGRP_ID = CGRP.CGRP_ID
+			AND (DISPLAY.DISP_ST = #disp_st# OR IFNULL(#disp_st#, 'ALL') = 'ALL' )
+			AND (	IFNULL(#conts_word#, '') = '' 
+					OR DISPLAY.DISP_NAME LIKE CONCAT('%', #conts_word#, '%') 
+					OR CGRP.CGRP_NAME LIKE CONCAT('%', #conts_word#, '%'))
+		) AS tb1
+		LIMIT #start_index#, #max_ret_count#
+	]]>
+	</select>
+	
+	<select id="contentsDAO.select_disp_list_total_cnt" resultClass="int">
+	<![CDATA[
+		SELECT COUNT(disp_id) total_cnt FROM  
+			(SELECT DISP_ID 				disp_id, 
+						DISP_NAME 		disp_name,
+						DISP_ST 			disp_st,
+						DISP_S_DT 			disp_s_dt,
+						DISP_E_DT 			disp_e_dt,
+						DISP_DESC 			disp_desc,
+						TEMP_TP 			temp_tp,
+						CGRP.CGRP_ID 	cgrp_id,
+						CGRP.CGRP_NAME cgrp_name
+			FROM DISPLAY, CGRP
+			WHERE DISPLAY.CGRP_ID = CGRP.CGRP_ID) AS tb1
+	]]>
+	</select>
+	
+</sqlMap>

@@ -1,0 +1,255 @@
+package com.asia3d.calculate.service.impl;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import kr.co.nicepay.module.lite.NicePayWebConnector;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.asia3d.calculate.service.CalculateService;
+import com.asia3d.contents.service.impl.stl.Meshconvs;
+import com.asia3d.contents.service.impl.stl.STL2Images;
+import com.asia3d.contents.service.impl.stl.STL2LoaderXYZ;
+import com.asia3d.contents.service.impl.stl.STL2VolumeWeightCalculator;
+import com.asia3d.member.service.impl.AjaxMemberDAO;
+import com.asia3d.ordermade.service.AjaxOrderMadeService;
+import com.asia3d.util.DateUtil;
+import com.asia3d.util.FileUtil;
+import com.asia3d.util.Log;
+import com.asia3d.util.PropertyUtil;
+import com.asia3d.util.StrUtil;
+import com.asia3d.util.ZIPCompress;
+
+
+@Service("calculateService")
+public class CalculateServiceImpl implements CalculateService {
+	
+	private String PROP_FILE = "/property/3dbank.properties";
+	
+	private String PG_NICEPAY = "https://pg.nicepay.co.kr/desa/NiceFileDownload.jsp";
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(CalculateServiceImpl.class);
+	
+	@Autowired
+	private AjaxMemberDAO ajaxMemberDAO;
+	
+	@Autowired
+	private CalculateDAO calculateDAO;
+	
+	@Resource(name = "messageSource")
+	MessageSource messageSource;
+
+	/*
+	 * 1.거래대사 요청 
+	 * @see com.asia3d.calculate.service.CalculateService#calculatePayResult()
+	 */
+	@Override
+	public void calculatePayResult(String svc) throws Exception {
+		 
+		Hashtable pHash = new Hashtable();
+		pHash.put("type", 	0);
+		pHash.put("svc",    svc);
+		pHash.put("mid",	"3dbank000m");
+		pHash.put("pid",	"3dbank9!");
+		pHash.put("fd",		"20160725");
+		pHash.put("td",		"20160725");
+		
+		TransHttpPostData transHttpPostData = new TransHttpPostData(PG_NICEPAY);
+				
+		transHttpPostData.submitData(pHash);
+		ArrayList alist = transHttpPostData.getResult();
+		for(int iline=0;iline<alist.size();iline++) {
+			String array[] = ((String)alist.get(iline)).split("\\|");
+			System.out.println(">>>>>["+alist.get(iline) +"][" + array.length + "]");
+			if("10".equals(array[0])) {
+				updateCalculatePayResult(pHash, array);
+			}
+		}
+	}
+
+	/*
+	 * 거래대사 요청 정보를 업데이트한다. 
+	 */
+	private void updateCalculatePayResult(Hashtable pHash, String[] array) {
+		// TODO Auto-generated method stub
+		HashMap map = new HashMap();
+		
+		map.put("cpay_auth_dt"  , array[1]);
+		map.put("cpay_cancel_dt", array[2]);
+		map.put("cpay_tid"      , array[3]);
+		map.put("cpay_org_tid"  , array[4]);
+		map.put("cpay_goodsname", array[5]);
+		map.put("cpay_amt"      , array[6]);
+		map.put("cpay_st"       , array[7]);
+		map.put("cpay_authcode" , array[8]);
+		map.put("cpay_order_num", array[9]);
+		
+		if("BK0001".equals(pHash.get("svc"))) { // 계좌이체
+			map.put("cpay_msub_id"  , (array.length >= 11 ? array[10] : null));
+		}
+		
+		/*
+		map.put("cpay_cbank_cd" , array[idx++]);
+		map.put("cpay_acctnum"  , array[idx++]);
+		map.put("cpay_inq_dttm" , array[idx++]);
+		*/
+
+		map.put("tid", map.get("cpay_tid"));
+		map.put("mid", pHash.get("mid"));
+		map.put("cpay_inq_dttm", DateUtil.getDateNTimeByForm("yyyyMMddHHmmss"));
+	
+		int ret = calculateDAO.updatePAY_APPR_INFO(map);
+		System.out.println("# calculateDAO.updatePAY_APPR_INFO ret=[" + ret + "]");
+	}
+
+	/*
+	 * 2. 정산대사 요청 
+	 * @see com.asia3d.calculate.service.CalculateService#calculateSettleResult()
+	 */
+	@Override
+	public void calculateSettleResult(String svc) throws Exception {
+		Hashtable pHash = new Hashtable();
+		pHash.put("type", 	1);
+		pHash.put("svc",    svc);
+		pHash.put("mid",	"3dbank000m");
+		pHash.put("pid",	"3dbank9!");
+		pHash.put("sd",		"20160407");
+		
+		TransHttpPostData transHttpPostData = new TransHttpPostData(PG_NICEPAY);
+				
+		transHttpPostData.submitData(pHash);
+		ArrayList alist = transHttpPostData.getResult();
+		for(int iline=0;iline<alist.size();iline++) {
+			String array[] = ((String)alist.get(iline)).split("\\|");
+			System.out.println(">>>>>["+alist.get(iline) +"][" + array.length + "]");
+			if("10".equals(array[0])) {
+				updateCalculateSettleResult(pHash, array);
+			}
+		}
+	}
+	
+	/*
+	 * 정산대사 요청 정보를 업데이트한다. 
+	 */
+	private void updateCalculateSettleResult(Hashtable pHash, String[] array) {
+		// TODO Auto-generated method stub
+		HashMap map = new HashMap();
+		
+		map.put("tid" 			, array[1]);
+		
+		if(!"CD0001".equals(pHash.get("svc"))) { // 신용카드가 아니면..
+			map.put("csttl_msub_id" , array[2]);	
+
+			map.put("csttl_sttl_dt" , array[3]);
+			map.put("csttl_st"      , array[4]);
+			map.put("csttl_tr_tp"   , array[5]);
+			map.put("csttl_ac_dt"   , array[6]);
+			map.put("csttl_ac_amt"  , array[7]);
+			map.put("csttl_fees"    , array[8]);
+			map.put("csttl_tax"     , array[9]);	
+		}
+		else { // 신용카드면..
+			map.put("csttl_sttl_dt" , array[2]);
+			map.put("csttl_st"      , array[3]);
+			map.put("csttl_tr_tp"   , array[4]);
+			map.put("csttl_ac_dt"   , array[5]);
+			map.put("csttl_ac_amt"  , array[6]);
+			map.put("csttl_fees"    , array[7]);
+			map.put("csttl_tax"     , array[8]);	
+		}
+
+		map.put("mid", pHash.get("mid"));
+		map.put("csttl_inq_dttm", DateUtil.getDateNTimeByForm("yyyyMMddHHmmss"));
+		map.put("proc_st", "02");
+		
+		int ret = calculateDAO.updatePAY_APPR_INFO(map);
+		System.out.println("# calculateDAO.updatePAY_APPR_INFO ret=[" + ret + "]");
+		
+	}
+	
+
+	/*
+	 * 3. 입금대사
+	 * @see com.asia3d.calculate.service.CalculateService#calculateDepositResult()
+	 */
+	@Override
+	public void calculateDepositResult() throws Exception {
+		Hashtable pHash = new Hashtable();
+		pHash.put("type", 	2);
+		pHash.put("svc",	"IN0001"); // IN0001	입금내역 확정금액
+		pHash.put("mid",	"3dbank000m");
+		pHash.put("pid",	"3dbank9!");
+		pHash.put("sd",		"20160407");
+		
+		TransHttpPostData transHttpPostData = new TransHttpPostData(PG_NICEPAY);
+				
+		transHttpPostData.submitData(pHash);
+		ArrayList alist = transHttpPostData.getResult();
+		for(int iline=0;iline<alist.size();iline++) {
+			String array[] = ((String)alist.get(iline)).split("\\|");
+			System.out.println(">>>>>["+alist.get(iline) +"][" + array.length + "]");
+			if("10".equals(array[0])) {
+				insertCalculateDepositResult(pHash, array);
+			}
+		}
+	}
+	
+	/*
+	 * 입금대사 요청 정보를 생성한다. 
+	 */
+	private void insertCalculateDepositResult(Hashtable pHash, String[] array) {
+		// TODO Auto-generated method stub
+		HashMap map = new HashMap();
+		
+		/*
+		1	전문종류		A/N	2			거래정보 라인 표시, 고정값(10)		
+		2	정산ID		A	10			정산대상 ID		
+		3	입금일자		N	8			입금내역에 대한 요청일자		
+		4	승인건수		N	14			입금내역에 포함된 승인건수		
+		5	승인금액		N	14			입금내역에 포함된 승인금액		
+		6	취소건수		N	14			입금내역에 포함된 취소건수		
+		7	취소금액		N	14			입금내역에 포함된 취소금액		
+		8	지급보류금액		N	14			입금일자에 대한 지급보류 설정금액		
+		9	지급보류해제금액		N	14			입금일자에 대한 지급보류 해제금액		
+		10	상계금액		N	14			입금일자에 대한 상계금액		
+		11	수수료		N	14			입금내역에 대한 수수료		
+		12	부가세		N	14			입금내역에 대한 부가세		
+		13	입금금액		N	14			총 입금금액		
+		*/
+	
+		map.put("sttl_id" 		, array[1]);  
+		map.put("dep_dt" 		, array[2]);     
+		map.put("auth_cnt" 		, array[3]);        
+		map.put("auth_amt" 		, array[4]);     
+		map.put("cancel_cnt" 	, array[5]);    
+		map.put("cancel_amt" 	, array[6]);    
+		map.put("hold_pay_amt" 	, array[7]);   
+		map.put("hold_cpay_amt" , array[8]);
+		map.put("offset_amt" 	, array[9]);    
+		map.put("fees" 			, array[10]);         
+		map.put("tax" 			, array[11]);           
+		map.put("dep_amt" 		, array[12]);      
+		map.put("mid" 			, pHash.get("mid"));
+
+		calculateDAO.insertPAY_DEPOSIT_INFO(map);
+		System.out.println("# calculateDAO.insertCalculateDepositResult");
+		
+	}
+	
+}

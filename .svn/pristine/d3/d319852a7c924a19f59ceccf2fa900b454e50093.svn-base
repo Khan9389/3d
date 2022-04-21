@@ -1,0 +1,148 @@
+<%@ page contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ko" xml:lang="ko">
+
+<head>
+	<%@ include file="../comm/util.jsp" %>
+	<meta name="keywords" content="3DBANK" />
+	<script type="text/javascript" charset="utf-8" src="/asia3d/js/jquery.cookie.js"></script>
+	<title><%=title%></title>
+</head>
+
+<body>
+<%
+String page_num = request.getParameter("page_num");
+%>
+
+<script type="text/javascript">
+var mPage = (<%=page_num%>) ? <%=page_num%> : 1;
+var mListInfo = new Array();
+
+$(document).ready(function() {
+	setHistory("refund_list", null);
+	readList();
+});
+
+function refundSave(tmpSeq){
+	var accept = $('#accept_tp').val();
+	var jsonParam = new Object();
+	
+	jsonParam.service_tp = "refund_list";
+	jsonParam.crud_tp = "u";
+	jsonParam.page_num = "" + mPage;
+	jsonParam.appr_yn = accept;
+	jsonParam.refund_seq = tmpSeq;
+	doCommunication(jsonParam);
+	
+}	
+// 화면 새로고침
+function refreshPage() {
+	var pageUrl = "/pay/refund_list.do?page_num=" + mPage;
+	location.href = pageUrl;
+}
+
+//페이지이동
+function goPage(tmpPage) {
+	mPage = tmpPage;
+	refreshPage();
+}
+
+// 리스트 세팅
+function setList() {
+	for (var i=0; i<mListInfo.refund_list.length; i++) {
+		var refundInfo = mListInfo.refund_list[i];
+		var sName = (refundInfo.s_compy_name) ? refundInfo.s_compy_name : refundInfo.s_p_name; 
+		var apprName = (refundInfo.appr_yn == "Y") ? "승인" : "미승인";
+		
+		var tmpHtml = 
+			"<tr>" + 
+				"<td>" + parseInt((mPage-1)*20 + (i+1)) + "</td>" + 
+	            "<td class='alignL'><a href='/pay/refund_info.do?make_uid=" + refundInfo.make_uid + "'>" + getDecodeTxt2(refundInfo.refund_desc) + "</a></td>" +
+	            "<td>" + getName(refundInfo) + "</td>" + 
+	            "<td>" + sName + "</td>" + 
+	            "<td>" + getText_Money(refundInfo.pay_amount) + "</td>" +
+	            "<td>" + getText_Money(refundInfo.refund_amount) + "</td>" +
+	            "<td>" + getText_ProcSt(refundInfo.refund_st) + "</td>" +
+	            "<td>" + apprName +"</td>" + 
+	            "<td>" + getText_DateFormat(refundInfo.reg_dttm) + "</td>" +
+			"</tr>";
+		$('#tbody_list').append(tmpHtml);	
+	}
+	setPaging(mPage, mListInfo.tot_count);
+}
+
+function readList() {
+	var jsonParam = new Object(); 
+	jsonParam.service_tp = "refund_list";
+	jsonParam.page_num = "" + mPage;
+	doCommunication(jsonParam);
+}
+
+function doCommunication(jsonParam) {
+	var jsondata = "jsondata=" + JSON.stringify(jsonParam);
+	printLog("send data", jsondata);
+	
+	$.ajax({
+        type : "POST",  
+        url : "/Ajax3DBankController.do",
+        data : jsondata,
+        success : function(result) {
+        	printLog("response data", JSON.stringify(result));
+        	
+        	if (result.retcode == "000") {
+        		if(jsonParam.crud_tp == "u"){
+        			refreshPage();
+        		} else {
+					mListInfo = result;
+					setList();
+        		}
+			}
+        }
+    });
+}
+</script>
+
+<%@ include file="../comm/menu.jsp" %>
+
+<div id="container">
+	<div class="SubContents">
+        <!-- //sub_left -->
+        <div class="Acontents">
+             <!--타이틀-->
+            <div class="con-tit1"></div>
+            <div class="clear">
+                <table cellspacing="0" cellpadding="0" border="0" summary="환불테이블" class="table04 mt8" style="text-align:center">
+                    <colgroup>
+	                    <col width="5%" />
+	                    <col width="" />
+	                    <col width="15%" />
+	                    <col width="15%" />
+	                    <col width="10%" />
+	                    <col width="10%" />
+	                    <col width="10%" />
+	                    <col width="10%" />
+	                    <col width="10%" />
+                    </colgroup>
+                    
+                    <thead><tr>
+                    	<th scope="col">No</th>
+                    	<th scope="col">사유</th>
+                    	<th scope="col">구매자</th>
+                    	<th scope="col">판매자</th>
+                    	<th scope="col">구매가격</th>
+                    	<th scope="col">환불가격</th>
+                    	<th scope="col">환불단계</th>
+                    	<th scope="col">승인여부</th>
+                    	<th scope="col" class="t_end">신청일자</th>
+					</tr></thead>
+                    <tbody id="tbody_list"></tbody>
+                </table>
+				<div class="paginate clear"></div>
+			</div>	
+		</div>
+	</div>
+</div>
+			
+<%@ include file="../comm/footer.jsp" %>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Insert title here</title>
+</head>
+<%
+String targetposturl = "/Ajax3DBankMultipartController.do" ;
+%>
+
+<a href=index.jsp >일반 연동(Multipart 제외)</a>
+<br>
+<!-- 
+<script language="javascript" src="http://ajax.googleapis.com/ajax/libs/prototype/1.7.1.0/prototype.js"></script>
+-->
+
+<script src="jquery-1.3.2.min.js"></script>
+<script src="jquery.form.js"></script>
+<script language="javascript">
+<!--
+  $(document).ready(function(){
+     
+    $('#frm').ajaxForm({
+            beforeSubmit: function(a,f,o) {
+                //o.dataType = $('#uploadResponseType')[0].value;
+                //$('#uploadOutput').html('Submitting...');
+                o.dataType = 'html';
+                document.all.res_json.value = 'Submitting...';
+            },
+            success: function(data) {
+                //var $out = $('#uploadOutput');
+                //$out.html('Form success handler received: <strong>' + typeof data + '</strong>');
+                if (typeof data == 'object' && data.nodeType)
+                    data = elementToString(data.documentElement, true);
+                else if (typeof data == 'object')
+                    data = objToString(data);
+                //$out.append('<div><pre>'+ data +'</pre></div>');
+                //alert(data);
+                document.all.res_json.value = data;
+            }
+        });
+     
+    });
+    
+function setReqdata(jsondata)
+{
+  document.getElementById("req_json").value = jsondata;
+}
+
+function change_input()
+{
+  document.all.res_json.value = '';
+  service_tp = frm.service_tp.value;
+
+}
+
+function f_enable(f_id, enable)
+{
+  try
+  {
+    document.frm.elements[f_id].value = '';
+  }
+  catch(e) {}
+  
+  try
+  {
+    if(enable == true)
+    {
+      document.getElementById('div_' + f_id).style.display = 'block';
+      document.frm.elements[f_id].disabled = false;
+    }
+    else
+    {
+      document.getElementById('div_' + f_id).style.display = 'none';
+      document.frm.elements[f_id].disabled = true;
+    }
+  }catch(e){}
+}
+//-->
+</script>
+
+
+<body onLoad="javascript:change_input();">
+<br>
+<form name="frm" id="frm" action="<%= targetposturl %>" method="POST" enctype="multipart/form-data">
+  <input type="hidden" name="MAX_FILE_SIZE" value="10000000" />
+ 
+  <input type="file" name="stl_file" size="60" /> - stl_file // 3d모델 소스파일..<br>
+   
+  <input type="file" name="file[]" size="60" /> - file[] // 압축된파일/이미지/동영상 등등..<br>
+  <input type="file" name="file[]" size="60" /> - file[] // 압축된파일/이미지/동영상 등등..<br>
+  <input type="file" name="file[]" size="60" /> - file[] // 압축된파일/이미지/동영상 등등..<br>
+  <input type="file" name="file[]" size="60" /> - file[] // 압축된파일/이미지/동영상 등등..<br>
+  <input type="file" name="file[]" size="60" /> - file[] // 압축된파일/이미지/동영상 등등..<br>
+  <input type="file" name="file[]" size="60" /> - file[] // 압축된파일/이미지/동영상 등등..<br>
+  <input type="file" name="file[]" size="60" /> - file[] // 압축된파일/이미지/동영상 등등..<br>
+  <input type="file" name="file[]" size="60" /> - file[] // 압축된파일/이미지/동영상 등등..<br>
+  <br><br>
+
+
+<textarea rows="10" cols="100" id="jsondata" name="jsondata">
+{
+  "service_tp":""  // I:서비스구분
+,  "p_login_id":"user01@gmail.com" // I:일반사용자로그인ID
+,  "user_uid":"9"  //로그인 후는 회원UID 셋팅
+
+}
+</textarea> - jsondata // jsondata<br>
+
+<br><br>
+<input type="submit" value="== 서버로전송 ==" />  (전송 URL : <%= targetposturl %>)
+
+<br>
+</form>
+    <br><br> 결과값 JSON<br> 
+  <textarea rows="10" cols="100" id="res_json" name="res_json" readonly></textarea>
+</body>
+</html>
+
+<hr>
+<pre>
+
+============ 연동규격 정리 ===============

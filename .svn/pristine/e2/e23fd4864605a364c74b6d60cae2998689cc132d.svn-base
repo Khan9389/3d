@@ -1,0 +1,564 @@
+var Thingiview = function(n) {
+    this.width = window.innerWidth;
+    this.height = window.innerHeight;
+    this.containerId = n;
+    this.models = [];
+    this.fogColor = 13290186;
+    this.scale = 1;
+    this.init()
+};
+Thingiview.prototype.init = function() {
+    var o = this,
+        r, n;
+    this.container = document.getElementById(this.containerId);
+    this.container.style.WebkitTouchCallout = "none";
+    this.container.style.WebkitUserSelect = "none";
+    this.container.style.KhtmlUserSelect = "none";
+    this.container.style.MozUserSelect = "none";
+    this.container.style.userSelect = "none";
+    this.container.innerHTML = "";
+    this.scene = new THREE.Scene;
+    this.camera = new THREE.PerspectiveCamera(37.8, this.width / this.height, 1, 1e5);
+    this.camera.position.z = 300;
+    this.camera.position.y = -500;
+    this.camera.position.x = -500;
+    this.camera.up = new THREE.Vector3(0, 0, 1);
+    this.controls = new THREE.NormalControls(this.camera, this.container);
+    this.reflectCamera = new THREE.CubeCamera(.1, 5e3, 512);
+    this.scene.add(this.reflectCamera);
+    r = new THREE.MeshPhongMaterial({
+        color: 0,
+        emissive: 16777215,
+        shading: THREE.SmoothShading,
+        fog: !1,
+        side: THREE.BackSide
+    });
+    n = new THREE.Mesh(new THREE.CubeGeometry(1e3, 1e3, 1e3), r);
+    n.name = "skybox";
+    this.scene.add(n);
+    var e = new THREE.MeshPhongMaterial({
+            color: 8947848,
+            wireframe: !1,
+            envMap: this.reflectCamera.renderTarget
+        }),
+        t = 1e3,
+        i = 1e3,
+        u = Math.floor(t / 10),
+        f = Math.floor(i / 10);
+    this.plane = new THREE.Mesh(new THREE.PlaneGeometry(t, i, u, f), e);
+    this.plane.name = "plane";
+    this.plane.receiveShadow = !0;
+    this.scene.add(this.plane);
+    this.wirePlane = new THREE.Mesh(new THREE.PlaneGeometry(t, i, u, f), new THREE.MeshPhongMaterial({
+        emissive: 16777215,
+        color: 0,
+        wireframe: !0,
+        wireframeLinewidth: 2
+    }));
+    this.wirePlane.name = "planewire";
+    this.wirePlane.receiveShadow = !0;
+    this.wirePlane.position.z = this.plane.position.z + .01;
+    this.scene.add(this.wirePlane);
+    this.scene.fog = new THREE.FogExp2(this.fogColor, .007);
+    this.renderer = new THREE.WebGLRenderer({
+        preserveDrawingBuffer: !0,
+        antialias: !0
+    });
+    this.renderer.setSize(this.width, this.height);
+    this.renderer.setClearColor(13290186, 1);
+    this.container.appendChild(this.renderer.domElement);
+    this.initLights()
+};
+Thingiview.prototype.resize = function(n, t) {
+    this.width = n;
+    this.height = t;
+    this.camera.aspect = n / t;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize(n, t)
+};
+Thingiview.prototype.initLights = function() {
+    this.spotLight = new THREE.SpotLight(16777215, .7, 0);
+    this.spotLight.position.set(-700, 1e3, 1e3);
+    this.spotLight.castShadow = !1;
+    this.scene.add(this.spotLight);
+    this.pointLights = [];
+    pointLight = new THREE.PointLight(10592672, .5, 0);
+    pointLight.position.set(3200, -3900, 3500);
+    this.scene.add(pointLight);
+    this.pointLights.push(pointLight)
+};
+Thingiview.prototype.centerCamera = function() {
+    var t = undefined,
+        r = 0,
+        n = new THREE.Box3,
+        u;
+    this.scene.traverse(function(i) {
+        var f, u;
+        if (i instanceof THREE.Mesh) {
+            if (i.name == "skybox" || i.name == "plane" || i.name == "planewire") return;
+            r += 1;
+            i.geometry.computeBoundingBox();
+            i.geometry.boundingBox.min.applyMatrix4(i.matrixWorld);
+            i.geometry.boundingBox.max.applyMatrix4(i.matrixWorld);
+            i.geometry.boundingBox.min.x += i.position.x;
+            i.geometry.boundingBox.min.y += i.position.y;
+            i.geometry.boundingBox.min.z += i.position.z;
+            i.geometry.boundingBox.max.x += i.position.x;
+            i.geometry.boundingBox.max.y += i.position.y;
+            i.geometry.boundingBox.max.z += i.position.z;
+            f = i.geometry.boundingBox.center();
+            f.z /= 2;
+            n.min.x = Math.min(n.min.x, i.geometry.boundingBox.min.x);
+            n.min.y = Math.min(n.min.y, i.geometry.boundingBox.min.y);
+            n.min.z = Math.min(n.min.z, i.geometry.boundingBox.min.z);
+            n.max.x = Math.max(n.max.x, i.geometry.boundingBox.max.x);
+            n.max.y = Math.max(n.max.y, i.geometry.boundingBox.max.y);
+            n.max.z = Math.max(n.max.z, i.geometry.boundingBox.max.z);
+            
+			Thingiview.prototype.compute_vol(i.geometry);
+
+            t === undefined ? u = f.clone() : (u = new THREE.Vector3, u.sub(f, t), u.divideScalar(r + 1), u.add(t));
+            t = u
+        }
+    });
+    this.controls.desiredCameraTarget = t;
+    this.controls.desiredCameraTarget.x = this.controls.desiredCameraTarget.y = 0;
+    var f = (n.max.x - n.min.x) / 2 / Math.tan(this.controls.camera.fov * this.controls.camera.aspect * Math.PI / 360),
+        e = (n.max.y - n.min.y) / 2 / Math.tan(this.controls.camera.fov * this.controls.camera.aspect * Math.PI / 360),
+        o = (n.max.z - n.min.z) / 2 / Math.tan(this.controls.camera.fov * Math.PI / 360),
+        i = Math.max(Math.max(f, e), o);
+    i *= 1.7 * this.scale;
+    u = this.controls.target.clone().sub(this.camera.position).normalize().multiplyScalar(i);
+    this.controls.desiredCameraPosition = t.clone().sub(u);
+    this.controls.maxDistance = i * 10
+};
+Thingiview.prototype.addModel = function(n) {
+    var i, t;
+    for (material = new THREE.MeshPhongMaterial({
+            wrapAround: !0,
+            wrapRGB: new THREE.Vector3(0, 1, 1),
+            color: 15658734,
+            specular: 16777215,
+            shading: THREE.SmoothShading,
+            shininess: 150,
+            fog: !1,
+            side: THREE.DoubleSide
+        }), mesh = new THREE.Mesh(n, material), mesh.geometry.computeBoundingBox(), i = mesh.geometry.boundingBox.max.clone().sub(mesh.geometry.boundingBox.min), maxDim = Math.max(Math.max(i.x, i.y), i.z), this.scale = 100 / maxDim, mesh.position.x = -(mesh.geometry.boundingBox.min.x + mesh.geometry.boundingBox.max.x) / 2 * this.scale, mesh.position.y = -(mesh.geometry.boundingBox.min.y + mesh.geometry.boundingBox.max.y) / 2 * this.scale, mesh.position.z = -mesh.geometry.boundingBox.min.z * this.scale, this.scene.add(mesh), this.models.push(mesh), t = 0; t < this.models.length; t++) this.models[t].scale.x = this.models[t].scale.y = this.models[t].scale.z = this.scale;
+    return this.wirePlane.scale.x = this.wirePlane.scale.y = this.wirePlane.scale.z = this.scale, this.plane.scale.x = this.plane.scale.y = this.plane.scale.z = this.scale, this.centerCamera(), volume
+};
+Thingiview.prototype.render = function() {
+    if (this.visible != !1) {
+        var n = Date.now();
+        this.timeElapsed = this.lastRenderTime == undefined ? 0 : n - this.lastRenderTime;
+        this.lastRenderTime = n;
+        this.controls.dirty = !1;
+        this.controls.update(this.timeElapsed);
+        this.reflectCamera.position.z = -this.camera.position.z;
+        this.reflectCamera.position.y = this.camera.position.y;
+        this.reflectCamera.position.x = this.camera.position.x;
+        this.scene.traverse(function(n) {
+            (n.name == "plane" || n.name == "planewire") && (n.visible = !1);
+            n.name == "skybox" && (n.visible = !0)
+        });
+        this.reflectCamera.updateCubeMap(this.renderer, this.scene);
+        this.scene.traverse(function(n) {
+            (n.name == "plane" || n.name == "planewire") && (n.visible = !0);
+            n.name == "skybox" && (n.visible = !1)
+        });
+        this.renderer.render(this.scene, this.camera)
+    }
+};
+Thingiview.prototype.compute_vol = function(n) {
+/*
+    for (var i, r, u, f, e, o, s, h, c, a = n.faces.length, l = 0, t = 0; t < a; t++) 
+		i = n.vertices[n.faces[t].a].x, 
+		f = n.vertices[n.faces[t].a].y, 
+		s = n.vertices[n.faces[t].a].z, 
+
+		r = n.vertices[n.faces[t].b].x, 
+		e = n.vertices[n.faces[t].b].y, 
+		h = n.vertices[n.faces[t].b].z, 
+
+		u = n.vertices[n.faces[t].c].x, 
+		o = n.vertices[n.faces[t].c].y, 
+		c = n.vertices[n.faces[t].c].z, 
+
+		l += (-u * e * s + r * o * s + u * f * h - i * o * h - r * f * c + i * e * c) / 6;
+		volume = Math.abs(l)
+*/
+volume = 0
+};
+THREE.NormalControls = function(n, t) {
+    this.target = new THREE.Vector3(0, 0, 0);
+    this.camera = n;
+    this.element = t !== undefined ? t : document;
+    this.camera.lookAt(this.target);
+    this.keyboard = [];
+    this.mouseButton = [];
+    this.prevMousePos = [0, 0];
+    this.desiredCameraPosition = undefined;
+    this.desiredCameraTarget = undefined;
+    this.minDistance = .5;
+    this.maxDistance = Infinity;
+    this.n00bMode = !0;
+    this.dirty = !0;
+    this.addEventListeners();
+    this.zoomFlag = 0
+};
+THREE.NormalControls.prototype.update = function(n) {
+    var r, u, t, i;
+    this.n00bMode && (r = this.getRoll(), Math.abs(r) < .4 && (u = new THREE.Matrix4, u.makeRotationAxis(this.target.clone().sub(this.camera.position).normalize(), -r), this.camera.up.applyMatrix4(u)));
+    n = Math.min(n, 50);
+    this.desiredCameraPosition != undefined && (t = this.desiredCameraPosition.clone().sub(this.camera.position), i = t.length(), i > .1 ? t.multiplyScalar(Math.min(Math.max(n / 100, .01), 1)) : this.desiredCameraPosition = undefined, this.camera.position.add(t));
+    this.desiredCameraTarget != undefined && (t = this.desiredCameraTarget.clone().sub(this.target), i = t.length(), i > .1 ? t.multiplyScalar(Math.min(Math.max(n / 100, .01), 1)) : this.desiredCameraTarget = undefined, this.target.add(t));
+    this.camera.lookAt(this.target)
+};
+THREE.NormalControls.prototype.addEventListeners = function() {
+    var n = this;
+    this.element.addEventListener("mousemove", function(t) {
+        n.onMouseMove(t);
+        n.updateMousePos(t)
+    }, !1);
+    this.element.addEventListener("mousedown", function(t) {
+        n.mouseButton[t.button] = !0;
+        n.updateMousePos(t);
+        n.desiredCameraPosition = undefined;
+        n.desiredCameraTarget = undefined
+    }, !1);
+    this.element.addEventListener("mouseup", function(t) {
+        n.mouseButton[t.button] = !1;
+        n.updateMousePos(t);
+        n.desiredCameraPosition = undefined;
+        n.desiredCameraTarget = undefined
+    }, !1);
+    this.element.addEventListener("mouseover", function(t) {
+        n.updateMousePos(t)
+    }, !1);
+    this.element.addEventListener("mouseout", function(t) {
+        for (var i = 0; i < n.mouseButton.length; i++) n.mouseButton[i] = !1;
+        n.updateMousePos(t)
+    }, !1);
+    this.element.addEventListener("mousewheel", function(t) {
+        return n.mouseWheel(t), n.desiredCameraPosition = undefined, t.preventDefault(), !1
+    }, !1);
+    this.element.addEventListener("touchstart", function(t) {
+        n.updateTouchPos(t);
+        n.desiredCameraPosition = undefined;
+        n.desiredCameraTarget = undefined
+    }, !1);
+    this.element.addEventListener("touchend", function(t) {
+        n.updateTouchPos(t);
+        n.desiredCameraPosition = undefined;
+        n.desiredCameraTarget = undefined
+    }, !1);
+    this.element.addEventListener("touchmove", function(t) {
+        n.onTouchMove(t);
+        n.updateTouchPos(t)
+    }, !1);
+    this.element.addEventListener("DOMMouseScroll", function(t) {
+        return n.mouseWheel(t), n.desiredCameraPosition = undefined, t.preventDefault(), !1
+    }, !1);
+    this.element.addEventListener("contextmenu", function(n) {
+        return n.preventDefault(), !1
+    }, !1);
+    window.addEventListener("keydown", function(t) {
+        n.keyboard[t.which] = !0
+    }, !1);
+    window.addEventListener("keyup", function(t) {
+        n.keyboard[t.which] = !1
+    }, !1)
+};
+THREE.NormalControls.prototype.mouseWheel = function(n) {
+    var t = 0;
+    console.log(n.wheelDelta);
+    t = n.wheelDelta === undefined ? -40 * n.detail : n.wheelDelta;
+    this.zoom(t * .001);
+    this.dirty = !0
+};
+THREE.NormalControls.prototype.updateMousePos = function(n) {
+    n.clientX !== undefined && n.clientY !== undefined && (this.prevMousePos[0] = n.clientX, this.prevMousePos[1] = n.clientY)
+};
+THREE.NormalControls.prototype.updateTouchPos = function(n) {
+    n.touches[0].clientX !== undefined && n.touches[0].clientY !== undefined && n.touches.length == 1 && (n.preventDefault(), this.prevMousePos[0] = n.touches[0].clientX, this.prevMousePos[1] = n.touches[0].clientY)
+};
+THREE.NormalControls.prototype.onTouchMove = function(n) {
+    var f = [n.touches[0].clientX - this.prevMousePos[0], n.touches[0].clientY - this.prevMousePos[1]],
+        t;
+    switch (n.touches.length) {
+        case 1:
+            t = -.005;
+            this.rotateAroundTarget(f[0] * t, f[1] * t);
+            break;
+        case 2:
+            var i = 0,
+                r = new THREE.Vector2(n.touches[0].pageX, n.touches[0].pageY),
+                u = new THREE.Vector2(n.touches[1].pageX, n.touches[1].pageY),
+                e = r.distanceTo(u);
+            e > this.zoomFlag ? (i = 30, this.zoomFlag = r.distanceTo(u)) : (i = -30, this.zoomFlag = r.distanceTo(u));
+            this.zoom(i * .001)
+    }
+    self.dirty = !0
+};
+THREE.NormalControls.prototype.onMouseMove = function(n) {
+    var i = [n.clientX - this.prevMousePos[0], n.clientY - this.prevMousePos[1]],
+        r, t;
+    if (this.mouseButton[0] && this.keyboard[82]) r = new THREE.Matrix4, r.makeRotationAxis(this.target.clone().sub(this.camera.position).normalize(), i[0] * .005), this.camera.up.applyMatrix4(r);
+    else if (this.mouseButton[2] || this.mouseButton[0] && this.keyboard[16]) t = .01 * Math.pow(this.target.clone().sub(this.camera.position).lengthSq(), 1 / 3), t = Math.max(t, .01), this.translate(new THREE.Vector3(i[0] * t, i[1] * t, 0));
+    else if (this.mouseButton[0]) t = -.005, this.rotateAroundTarget(i[0] * t, i[1] * t);
+    else return;
+    self.dirty = !0
+};
+THREE.NormalControls.prototype.getRoll = function() {
+    var n = new THREE.Matrix4,
+        r = this.target.clone().sub(this.camera.position),
+        i, t;
+    return n.makeRotationZ(-Math.atan2(r.y, r.x)), i = r.clone(), i.applyMatrix4(n), t = this.camera.up.clone(), t.applyMatrix4(n), n.makeRotationY(Math.atan2(i.z, i.x)), t.applyMatrix4(n), Math.atan2(t.z, t.y) - Math.PI / 2
+};
+THREE.NormalControls.prototype.translate = function(n) {
+    var t = this.target.clone();
+    t.sub(this.camera.position);
+    var i = new THREE.Vector3,
+        e = new THREE.Vector3(0, n.x, 0),
+        u = new THREE.Vector3(0, 0, n.y),
+        f = new THREE.Vector3(0, 0, 0),
+        r = new THREE.Matrix4;
+    n.x && (r.makeRotationZ(Math.atan2(t.y, t.x)), e.applyMatrix4(r));
+    n.y && (u = t.clone().cross({
+        x: 0,
+        y: 0,
+        z: 1
+    }).cross(t), u.normalize().multiplyScalar(n.y));
+    n.z && (f.sub(this.target, this.camera.position), f.normalize().multiplyScalar(n.z));
+    i = e.clone().add(u).add(f);
+    r.makeRotationAxis(this.target.clone().sub(this.camera.position).normalize(), this.getRoll());
+    i.applyMatrix4(r);
+    this.camera.position.add(i);
+    this.target.add(i)
+};
+THREE.NormalControls.prototype.zoom = function(n) {
+    this.camera.position.add(this.target.clone().sub(this.camera.position).multiplyScalar(n));
+    var t = this.target.clone().sub(this.camera.position).length();
+    t < this.minDistance ? (this.camera.position.sub(this.target), this.camera.position.multiplyScalar(this.minDistance / t), this.camera.position.add(this.target)) : t > this.maxDistance && (this.camera.position.sub(this.target), this.camera.position.multiplyScalar(this.maxDistance / t), this.camera.position.add(this.target))
+};
+THREE.NormalControls.prototype.rotateAroundTarget = function(n, t) {
+    var u = new THREE.Matrix4,
+        i = new THREE.Matrix4,
+        r = new THREE.Matrix4,
+        f = this.camera.up.clone();
+    this.camera.position.sub(this.target);
+    u.makeRotationAxis(f.cross(this.camera.position).normalize(), t);
+    this.n00bMode ? i.makeRotationAxis(new THREE.Vector3(0, 0, this.camera.up.z).normalize(), n) : i.makeRotationAxis(this.camera.position.clone().cross(f).normalize(), n);
+    r.multiplyMatrices(i, u);
+    this.camera.position.applyMatrix4(r);
+    this.camera.up.applyMatrix4(r);
+    this.camera.position.add(this.target)
+};
+THREE.OBJLoader = function(n) {
+    this.manager = n !== undefined ? n : THREE.DefaultLoadingManager
+};
+THREE.OBJLoader.prototype = {
+    constructor: THREE.OBJLoader,
+    load: function(n, t, i, r) {
+        var u = this,
+            f = new THREE.XHRLoader(u.manager);
+        f.setCrossOrigin(this.crossOrigin);
+        f.load(n, function(n) {
+            t(u.parse(n))
+        }, i, r)
+    },
+    parse: function(n) {
+        function a(n) {
+            var t = parseInt(n);
+            return (t >= 0 ? t - 1 : t + u.length / 3) * 3
+        }
+
+        function v(n) {
+            var t = parseInt(n);
+            return (t >= 0 ? t - 1 : t + f.length / 3) * 3
+        }
+
+        function y(n) {
+            var t = parseInt(n);
+            return (t >= 0 ? t - 1 : t + s.length / 2) * 2
+        }
+
+        function w(n, t, i) {
+            r.vertices.push(u[n], u[n + 1], u[n + 2], u[t], u[t + 1], u[t + 2], u[i], u[i + 1], u[i + 2])
+        }
+
+        function b(n, t, i) {
+            r.normals.push(f[n], f[n + 1], f[n + 2], f[t], f[t + 1], f[t + 2], f[i], f[i + 1], f[i + 2])
+        }
+
+        function k(n, t, i) {
+            r.uvs.push(s[n], s[n + 1], s[t], s[t + 1], s[i], s[i + 1])
+        }
+
+        function p(n, t, i, r, u, f, e, o, s, h, c, l) {
+            var g = a(n),
+                p = a(t),
+                nt = a(i),
+                d;
+            r === undefined ? w(g, p, nt) : (d = a(r), w(g, p, d), w(p, nt, d));
+            u !== undefined && (g = y(u), p = y(f), nt = y(e), r === undefined ? k(g, p, nt) : (d = y(o), k(g, p, d), k(p, nt, d)));
+            s !== undefined && (g = v(s), p = v(h), nt = v(c), r === undefined ? b(g, p, nt) : (d = v(l), b(g, p, d), b(p, nt, d)))
+        }
+        var e, l, r, o, i, t, nt, h, tt, c, d;
+        console.time("OBJLoader");
+        l = [];
+        /^o /gm.test(n) === !1 && (r = {
+            vertices: [],
+            normals: [],
+            uvs: []
+        }, o = {
+            name: ""
+        }, e = {
+            name: "",
+            geometry: r,
+            material: o
+        }, l.push(e));
+        var u = [],
+            f = [],
+            s = [],
+            g = n.split("\n");
+        for (h = 0; h < g.length; h++)
+            if (i = g[h], i = i.trim(), i.length === 0 || i.charAt(0) === "#") continue;
+            else(t = /v( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/.exec(i)) !== null ? u.push(parseFloat(t[1]), parseFloat(t[2]), parseFloat(t[3])) : (t = /vn( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/.exec(i)) !== null ? f.push(parseFloat(t[1]), parseFloat(t[2]), parseFloat(t[3])) : (t = /vt( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/.exec(i)) !== null ? s.push(parseFloat(t[1]), parseFloat(t[2])) : (t = /f( +-?\d+)( +-?\d+)( +-?\d+)( +-?\d+)?/.exec(i)) !== null ? p(t[1], t[2], t[3], t[4]) : (t = /f( +(-?\d+)\/(-?\d+))( +(-?\d+)\/(-?\d+))( +(-?\d+)\/(-?\d+))( +(-?\d+)\/(-?\d+))?/.exec(i)) !== null ? p(t[2], t[5], t[8], t[11], t[3], t[6], t[9], t[12]) : (t = /f( +(-?\d+)\/(-?\d+)\/(-?\d+))( +(-?\d+)\/(-?\d+)\/(-?\d+))( +(-?\d+)\/(-?\d+)\/(-?\d+))( +(-?\d+)\/(-?\d+)\/(-?\d+))?/.exec(i)) !== null ? p(t[2], t[6], t[10], t[14], t[3], t[7], t[11], t[15], t[4], t[8], t[12], t[16]) : (t = /f( +(-?\d+)\/\/(-?\d+))( +(-?\d+)\/\/(-?\d+))( +(-?\d+)\/\/(-?\d+))( +(-?\d+)\/\/(-?\d+))?/.exec(i)) !== null ? p(t[2], t[5], t[8], t[11], undefined, undefined, undefined, undefined, t[3], t[6], t[9], t[12]) : /^o /.test(i) ? (r = {
+                vertices: [],
+                normals: [],
+                uvs: []
+            }, o = {
+                name: ""
+            }, e = {
+                name: i.substring(2).trim(),
+                geometry: r,
+                material: o
+            }, l.push(e)) : /^g /.test(i) || (/^usemtl /.test(i) ? o.name = i.substring(7).trim() : /^mtllib /.test(i) || /^s /.test(i));
+        for (nt = new THREE.Object3D, h = 0, tt = l.length; h < tt; h++) e = l[h], r = e.geometry, console.log(r.normals), c = new THREE.BufferGeometry, c.addAttribute("position", new THREE.BufferAttribute(new Float32Array(r.vertices), 3)), r.normals.length > 0 && c.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(r.normals), 3)), r.uvs.length > 0 && c.addAttribute("uv", new THREE.BufferAttribute(new Float32Array(r.uvs), 2)), o = new THREE.MeshLambertMaterial, o.name = e.material.name, d = new THREE.Mesh(c, o), d.name = e.name, nt.add(d);
+        return console.timeEnd("OBJLoader"), c
+    }
+};
+THREE.STLLoader = function(n) {
+	$('.wrap-loading').removeClass('display-none');
+    this.manager = n !== undefined ? n : THREE.DefaultLoadingManager
+};
+THREE.STLLoader.prototype = {
+    constructor: THREE.STLLoader,
+    load: function(n, t, i, r) {
+        var f = this,
+            u = new THREE.XHRLoader(f.manager);
+        u.setCrossOrigin(this.crossOrigin);
+        u.setResponseType("arraybuffer");
+        u.load(n, function(n) {
+            t(f.parse(n))
+        }, i, r)
+    },
+    parse: function(n) {
+        var i = function() {
+                var r, u, f, n, e, i;
+                if (n = new DataView(t), u = 50, f = n.getUint32(80, !0), r = 84 + f * u, r === n.byteLength) return !0;
+                for (e = n.byteLength, i = 0; i < e; i++)
+                    if (n.getUint8(i, !1) > 127) return !0;
+                return !1
+            },
+            t = this.ensureBinary(n);
+        return i() ? this.parseBinary(t) : this.parseASCII(this.ensureString(n))
+    },
+    parseBinary: function(n) {
+        for (var a, o, v, y, t = new DataView(n), s = t.getUint32(80, !0), p, w, b, h = !1, f, k, d, g, nt, r = 0; r < 70; r++) t.getUint32(r, !1) == 1129270351 && t.getUint8(r + 4) == 82 && t.getUint8(r + 5) == 61 && (h = !0, f = new Float32Array(s * 9), k = t.getUint8(r + 6) / 255, d = t.getUint8(r + 7) / 255, g = t.getUint8(r + 8) / 255, nt = t.getUint8(r + 9) / 255);
+        var i = 0,
+            u = new THREE.BufferGeometry,
+            c = new Float32Array(s * 9),
+            l = new Float32Array(s * 9);
+        for (a = 0; a < s; a++) {
+            var e = 84 + a * 50,
+                tt = t.getFloat32(e, !0),
+                it = t.getFloat32(e + 4, !0),
+                rt = t.getFloat32(e + 8, !0);
+            for (h && (o = t.getUint16(e + 48, !0), (o & 32768) == 0 ? (p = (o & 31) / 31, w = (o >> 5 & 31) / 31, b = (o >> 10 & 31) / 31) : (p = k, w = d, b = g)), v = 1; v <= 3; v++) y = e + v * 12, c[i] = t.getFloat32(y, !0), c[i + 1] = t.getFloat32(y + 4, !0), c[i + 2] = t.getFloat32(y + 8, !0), l[i] = tt, l[i + 1] = it, l[i + 2] = rt, h && (f[i] = p, f[i + 1] = w, f[i + 2] = b), i += 3
+        }
+        $('.wrap-loading').addClass('display-none');
+        return u.addAttribute("position", new THREE.BufferAttribute(c, 3)), u.addAttribute("normal", new THREE.BufferAttribute(l, 3)), h && (u.addAttribute("color", new THREE.BufferAttribute(f, 3)), u.hasColors = !0, u.alpha = nt), u
+    },
+    parseASCII: function(n) {
+        for (var r, f, o, s, t, u, i = new THREE.Geometry, e = /facet([\s\S]*?)endfacet/g;
+            (t = e.exec(n)) !== null;) {
+            for (u = t[0], o = /normal[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
+                (t = o.exec(u)) !== null;) f = new THREE.Vector3(parseFloat(t[1]), parseFloat(t[3]), parseFloat(t[5]));
+            for (s = /vertex[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
+                (t = s.exec(u)) !== null;) i.vertices.push(new THREE.Vector3(parseFloat(t[1]), parseFloat(t[3]), parseFloat(t[5])));
+            r = i.vertices.length;
+            i.faces.push(new THREE.Face3(r - 3, r - 2, r - 1, f))
+        }
+        $('.wrap-loading').addClass('display-none');
+        return i.computeBoundingBox(), i.computeBoundingSphere(), i
+    },
+    ensureString: function(n) {
+        var r, i, t;
+        if (typeof n != "string") {
+            for (r = new Uint8Array(n), i = "", t = 0; t < n.byteLength; t++) i += String.fromCharCode(r[t]);
+            return i
+        }
+        return n
+    },
+    ensureBinary: function(n) {
+        var i, t;
+        if (typeof n == "string") {
+            for (i = new Uint8Array(n.length), t = 0; t < n.length; t++) i[t] = n.charCodeAt(t) & 255;
+            return i.buffer || i
+        }
+        return n
+    }
+};
+typeof DataView == "undefined" && (DataView = function(n, t, i) {
+    this.buffer = n;
+    this.byteOffset = t || 0;
+    this.byteLength = i || n.byteLength || n.length;
+    this._isString = typeof n == "string"
+}, DataView.prototype = {
+    _getCharCodes: function(n, t, i) {
+        var f, u, r;
+        for (t = t || 0, i = i || n.length, f = t + i, u = [], r = t; r < f; r++) u.push(n.charCodeAt(r) & 255);
+        return u
+    },
+    _getBytes: function(n, t, i) {
+        var r;
+        if (i === undefined && (i = this._littleEndian), t = t === undefined ? this.byteOffset : this.byteOffset + t, n === undefined && (n = this.byteLength - t), typeof t != "number") throw new TypeError("DataView byteOffset is not a number");
+        if (n < 0 || t + n > this.byteLength) throw new Error("DataView length or (byteOffset+length) value is out of bounds");
+        return r = this.isString ? this._getCharCodes(this.buffer, t, t + n) : this.buffer.slice(t, t + n), !i && n > 1 && (r instanceof Array || (r = Array.prototype.slice.call(r)), r.reverse()), r
+    },
+    getFloat64: function(n, t) {
+        var i = this._getBytes(8, n, t),
+            r = 1 - 2 * (i[7] >> 7),
+            u = ((i[7] << 1 & 255) << 3 | i[6] >> 4) - 1023,
+            f = (i[6] & 15) * Math.pow(2, 48) + i[5] * Math.pow(2, 40) + i[4] * Math.pow(2, 32) + i[3] * Math.pow(2, 24) + i[2] * Math.pow(2, 16) + i[1] * Math.pow(2, 8) + i[0];
+        return u === 1024 ? f !== 0 ? NaN : r * Infinity : u === -1023 ? r * f * Math.pow(2, -1074) : r * (1 + f * Math.pow(2, -52)) * Math.pow(2, u)
+    },
+    getFloat32: function(n, t) {
+        var i = this._getBytes(4, n, t),
+            r = 1 - 2 * (i[3] >> 7),
+            u = (i[3] << 1 & 255 | i[2] >> 7) - 127,
+            f = (i[2] & 127) << 16 | i[1] << 8 | i[0];
+        return u === 128 ? f !== 0 ? NaN : r * Infinity : u === -127 ? r * f * Math.pow(2, -149) : r * (1 + f * Math.pow(2, -23)) * Math.pow(2, u)
+    },
+    getInt32: function(n, t) {
+        var i = this._getBytes(4, n, t);
+        return i[3] << 24 | i[2] << 16 | i[1] << 8 | i[0]
+    },
+    getUint32: function(n, t) {
+        return this.getInt32(n, t) >>> 0
+    },
+    getInt16: function(n, t) {
+        return this.getUint16(n, t) << 16 >> 16
+    },
+    getUint16: function(n, t) {
+        var i = this._getBytes(2, n, t);
+        return i[1] << 8 | i[0]
+    },
+    getInt8: function(n) {
+        return this.getUint8(n) << 24 >> 24
+    },
+    getUint8: function(n) {
+        return this._getBytes(1, n)[0]
+    }
+})

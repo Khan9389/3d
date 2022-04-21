@@ -1,0 +1,37 @@
+$(function(){
+	//상단메뉴 선택시 세부메뉴 활성화
+	var $gnb_deth = true;
+	var $gnb_deths = true;
+	$(".gnb > li").mouseenter(function(){
+		$(this).children("div").css("display", 'block');
+ 	});
+
+	$(".gnb > li").mouseleave(function(){
+		$(".gnb > li > div").css("display", 'none');
+ 	});
+	
+	//3뎁스
+	$(".sub_deth li").mouseenter(function(){
+		$(this).children("ul").css("display", 'block');
+ 	});
+	
+	$(".gnb_bottom").mouseenter(function(){
+		$gnb_deths = false;
+ 	});
+
+	$(".sub_deth li").mouseleave(function(){
+		$(this).children("ul").css("display", 'none');
+		$gnb_deth = false;
+		if($gnb_deth == false){
+			$(".sub_deth li").children("ul").first().css("display", 'block');
+			$(".sub_deth li").children("ul").eq(8).css("display", 'block');
+			$(".sub_deth li").children("ul").eq(14).css("display", 'block');
+			$gnb_deth = true;}
+		else if($gnb_deths == 1){
+			$(".sub_deth li").children("ul").css("display", 'none');
+			$(".sub_deth li").children("ul").last().css("display", 'block');
+			$(".sub_deth li").children("ul").eq(7).css("display", 'block');
+			$(".sub_deth li").children("ul").eq(13).css("display", 'block');
+		};
+ 	});	
+});

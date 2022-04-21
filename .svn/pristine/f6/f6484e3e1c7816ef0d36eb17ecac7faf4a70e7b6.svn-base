@@ -1,0 +1,303 @@
+<%@ page contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ko" xml:lang="ko">
+
+<head>
+<%@ include file="../comm/util.jsp"%>
+<meta name="keywords" content="3DBANK" />
+<script type="text/javascript" charset="utf-8"
+	src="/asia3d/js/jquery.cookie.js"></script>
+<title><%=title%></title>
+<link rel="stylesheet" type="text/css" media="screen"
+	href="/asia3d/jquery-ui/jquery-ui.css" />
+<script src="/asia3d/js/jquery.lazyload.min.js" type="text/javascript"></script>
+<script src="/asia3d/jquery-ui/jquery-ui.js" type="text/javascript"></script>
+</head>
+
+<body>
+	<%
+		String page_num = request.getParameter("page_num");
+		String sell_tp = request.getParameter("sell_tp");
+		String conts_word = request.getParameter("conts_word");
+		String dttm1 = request.getParameter("dttm1");
+		String dttm2 = request.getParameter("dttm2");
+	%>
+
+	<script type="text/javascript">
+var check_val = new Array();
+var check = 0;
+var sell_tp = ("<%=sell_tp%>" != "null") ? "<%=sell_tp%>" : 'ALL';
+var mLoginId = "<%=p_login_id%>";
+var mUserUid = <%=user_uid%>;
+var dttm1 = ("<%=dttm1%>" != "null") ? "<%=dttm1%>" : '';
+var dttm2 = ("<%=dttm2%>" != "null") ? "<%=dttm2%>" : '';
+var mPage = (<%=page_num%>) ? "<%=page_num%>" : 1;
+var conts_word = ('<%=conts_word%>' != 'null') ? "<%=conts_word%>" : "";
+conts_word = getDecodeTxt2(conts_word);
+var mListInfo = new Array();
+var ALL_AMT = 0;
+$(document).ready(function() {
+	setHistory("calculate_deposit_list");
+	$('#sell_tp').val(sell_tp);
+	if(dttm1){
+		$('#dttm1').val(getText_DateFormat(dttm1));
+	}
+	if(dttm2){
+		$('#dttm2').val(getText_DateFormat(dttm2));
+	}
+	$('#txt_search_menu').val(conts_word);
+	conts_word = "";
+	$("#dttm1").datepicker({
+		dateFormat: 'yy-mm-dd',
+	    showOn: "both",
+        buttonImage: "/asia3d/images/sub/day.gif", 
+        buttonImageOnly: true
+	});
+	
+	$("#dttm2").datepicker({
+		dateFormat: 'yy-mm-dd',
+	    showOn: "both",
+        buttonImage: "/asia3d/images/sub/day.gif", 
+        buttonImageOnly: true
+	});
+	readList();
+
+	$("#sell_tp").change(function() {
+			mPage = 1;
+			refreshPage();
+	});
+	$("#allCheck").click(function(){
+		//만약 전체 선택 체크박스가 체크된상태일경우
+		if($("#allCheck").prop("checked")) {
+			//해당화면에 전체 checkbox들을 체크해준다
+			$("input[type=checkbox]").prop("checked",true);
+		// 전체선택 체크박스가 해제된 경우
+		} else {
+			//해당화면에 모든 checkbox들의 체크를해제시킨다.
+			$("input[type=checkbox]").prop("checked",false);
+		}
+	});
+	
+});
+
+function selectRow() {
+	var chk = document.getElementsByName("ins_unit[]"); // 체크박스객체를 담는다
+	//체크박스의 전체 개수
+	var len = chk.length;
+	if(chk.length == 0 ){
+		alert("선택된 정보가 없습니다.");
+		refreshPage()
+	}
+	var checkRow = '';      //체크된 체크박스의 value를 담기위한 변수
+	var checkCnt = 0;        //체크된 체크박스의 개수
+	var checkLast = '';      //체크된 체크박스 중 마지막 체크박스의 인덱스를 담기위한 변수
+	var rowid = '';             //체크된 체크박스의 모든 value 값을 담는다
+	var cnt = 0;                 
+
+	for(var i=0; i<len; i++){
+		if(chk[i].checked == true){
+	checkCnt++;        //체크된 체크박스의 개수
+	checkLast = i;     //체크된 체크박스의 인덱스
+		}
+	} 
+
+	for(var i=0; i<len; i++){
+		if(chk[i].checked == true){  //체크가 되어있는 값 구분
+		checkRow = chk[i].value;
+	            	
+			if(checkCnt == 1){                            //체크된 체크박스의 개수가 한 개 일때,
+				rowid += checkRow;        //'value'의 형태 (뒤에 ,(콤마)가 붙지않게)
+			}else{                                            //체크된 체크박스의 개수가 여러 개 일때,
+				if(i == checkLast){                     //체크된 체크박스 중 마지막 체크박스일 때,
+				rowid += checkRow;  //'value'의 형태 (뒤에 ,(콤마)가 붙지않게)
+				}else{
+				rowid += checkRow+",";	 //'value',의 형태 (뒤에 ,(콤마)가 붙게)         			
+				}
+			}
+		cnt++;
+		checkRow = '';    //checkRow초기화.
+		}
+	}
+		check_val = rowid;
+		var jsonParam = new Object(); 
+		jsonParam.service_tp = "calculate_deposit_list";
+		jsonParam.crud_tp = "u";
+		jsonParam.user_uid = mUserUid;
+		jsonParam.page_num = "" + mPage;
+		jsonParam.dttm1 = getText_Number($('#dttm1').val());
+		jsonParam.dttm2 = getText_Number($('#dttm2').val());
+		jsonParam.conts_word = $('#txt_search_menu').val();
+		jsonParam.check_val = check_val;
+		doCommunication(jsonParam);
+}
+
+// 화면 새로고침
+function refreshPage() {
+	var encodeTxt = encodeURIComponent(encodeURIComponent($("#txt_search_menu").val()));
+	var pageUrl = "/pay/calculate_deposit_list.do?conts_word=" + encodeTxt +"&dttm1="+getText_Number($('#dttm1').val())+"&dttm2="+getText_Number($('#dttm2').val()); + "&page_num=" + mPage;
+	location.href = pageUrl;
+}
+function All_checked(){
+	if(check == 0){
+		$('#check_all').trigger();
+		check = check + 1; 	
+	}else{
+		$('#uncheck_all').trigger();
+		check = check - 1;
+	}
+}
+//페이지이동
+function goPage(tmpPage) {
+	mPage = tmpPage;
+	refreshPage();
+}
+
+// 리스트 세팅
+function setList() {
+	for (var i=0; i<mListInfo.order_list.length; i++) {
+		var listInfo = mListInfo.order_list[i];
+		var DEP_ST;
+		ALL_AMT += listInfo.STTL_AMT;
+		var tmpHtml = "<tr>" + 
+			"<td><input type='checkbox' name='ins_unit[]' value='\"" +listInfo.USTTL_DT + ":" + listInfo.USER_UID + "\"' /></td>" + 
+			"<td>" + parseInt((mPage-1)*18 + (i+1)) + "</td>" + 
+			"<td class=''>" + ((listInfo.COMPY_NAME) ? listInfo.COMPY_NAME : listInfo.P_NAME)  + "</td>" + 
+			"<td>" + listInfo.ACCT_NUM + "</td>" + 
+			"<td>" + getText_Money(listInfo.PAY_AMT) + "</td>" + 
+			"<td>" + listInfo.ACCT_BANK + "</td>" + 
+			"<td>" + getText_Money(listInfo.STTL_AMT) + "</td>" + 
+			"<td>" + getText_Money(listInfo.FEES) + "원</td>" + 
+			"<td>" + getText_Money(listInfo.TAX) + "원</td>" + 
+			"<td>" + listInfo.SELL_CNT + "건</td>" + 
+			"<td><a href=\"/pay/company_unpaid_descript.do?dttm="+ listInfo.USTTL_DT + "&sell_tp=ALL" + "&unpaid_tp=1&"+ "name=" + ((listInfo.COMPY_NAME) ? listInfo.COMPY_NAME : listInfo.P_NAME) + "\"'>" + getText_DateFormat(listInfo.USTTL_DT) + "</a></td>" +
+			"</tr>";
+		$('#tbody_list').append(tmpHtml);	
+	}
+	$('#all_amt').text(getText_Money(ALL_AMT) + " 원");
+	
+	setPaging(mPage, mListInfo.tot_count, 18);
+}
+
+function readList() {
+	var jsonParam = new Object(); 
+	jsonParam.service_tp = "calculate_deposit_list";
+	jsonParam.user_uid = mUserUid;
+	jsonParam.page_num = "" + mPage;
+	jsonParam.dttm1 = getText_Number($('#dttm1').val());
+	jsonParam.dttm2 = getText_Number($('#dttm2').val());
+	jsonParam.sell_tp = $('#sell_tp').val();
+	jsonParam.conts_word = $('#txt_search_menu').val();
+	doCommunication(jsonParam);
+}
+
+function doCommunication(jsonParam) {
+	var jsondata = "jsondata=" + JSON.stringify(jsonParam);
+	printLog("send data", jsondata);
+	
+	$.ajax({
+        type : "POST",  
+        url : "/Ajax3DBankController.do",
+        data : jsondata,
+        success : function(result) {
+        	printLog("response data", JSON.stringify(result));
+        	if (result.retcode == "000") {
+        		if(result.crud_tp == "u"){
+        			
+        			refreshPage();
+        		}else{
+        			mListInfo = result;
+					setList();
+        		}
+			}else{
+				if(result.crud_tp == "u"){
+        			refreshPage();
+        		}
+			}
+        }
+    });
+}
+</script>
+
+	<%@ include file="../comm/menu.jsp"%>
+
+	<div id="container">
+		<div class="SubContents">
+			<!-- //sub_left -->
+			<div class="Acontents">
+				<!--타이틀-->
+				<div class="con-tit1"></div>
+				<div id="option_list" style="padding-bottom: 5px; height: 20px;">
+					<div style="float: left;">
+						<fieldset>
+							<!-- <select id="">
+								<option value="">정산일자</option>
+							</select> -->
+							<input type="text" value="정산일자" readonly="readonly" size="7" style="text-align: center"/>
+							<input id="dttm1" class="input02" type="text" size="8"
+								name="input7" readonly="readonly" style="width: 113px;" /> ~ <input
+								id="dttm2" class="input02" type="text" size="8" name="input7"
+								readonly="readonly" style="width: 113px;" />
+						</fieldset>
+					</div>
+					<div style="float: right;">
+						<input id="txt_search_menu" class="top_input" name="searchWrd"
+							type="text" title="검색어 입력" placeholder="검색어를 입력하세요." "/>
+						<button style="margin: 0px; padding: 4px 15px" id="btn_write"
+							type="submit" class="btnList" onclick="refreshPage();">조회</button>
+					</div>
+				</div>
+				<div class="clear">
+					<table cellspacing="0" cellpadding="0" border="0" summary="환불테이블"
+						class="table04 mt8" style="text-align: center">
+						<colgroup>
+							<col width="3%" />
+							<col width="5%" />
+							<col width="10%" />
+							<col width="" />
+							<col width="10%" />
+							<col width="10%" />
+							<col width="12%" />
+							<col width="10%" />
+							<col width="5%" />
+							<col width="10%" />
+							<col width="10%" />
+						</colgroup>
+						<thead>
+							<tr>
+								<th scope="col"><input type="checkbox" name=""
+									id="allCheck" /></th>
+								<th scope="col">No</th>
+								<th scope="col">제작자</th>
+								<th scope="col">계좌번호</th>
+								<th scope="col">결제금액</th>
+								<th scope="col">은행코드</th>
+								<th scope="col">입금예정금액</th>
+								<th scope="col">중개수수료</th>
+								<th scope="col">VAT</th>
+								<th scope="col">판매건수</th>
+								<th scope="col" class="t_end">정산일자</th>
+							</tr>
+						</thead>
+						<tbody id="tbody_list"></tbody>
+					</table>
+					<div class="paginate clear"></div>
+					<div style="float: right">
+					<table class="table04 mt8" style="text-align: center">
+						<tr>
+							<th>전체입금예정금액 : </th>
+							<th id="all_amt">0 원</th>
+						</tr>
+						<tr>
+						</tr>
+					</table>
+						<div>
+							<input type="button" class="btnList"  style="float: right;padding: 5px" value="입금처리" onclick="selectRow()"/>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<%@ include file="../comm/footer.jsp"%>
+</body>
+</html>

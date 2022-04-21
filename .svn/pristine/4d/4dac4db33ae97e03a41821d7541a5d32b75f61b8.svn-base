@@ -1,0 +1,78 @@
+package com.asia3d.daemon;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.stereotype.Controller;
+
+import com.asia3d.util.PropertyUtil;
+
+/*
+ * 정산 관련 프로세스를 처리하는 Main 부..
+ */
+@Controller
+public class BatchCalculate {
+
+	protected final static Logger logger = LoggerFactory.getLogger(BatchCalculate.class);
+	
+	public static  String PROP_FILE = "/property/3dbank.properties";
+	
+	public static int runloop = 60; // 초 단위
+	public static int errorloop = 60*10; // 초 단위
+		
+	public static void main(String[] args) throws Exception {
+		// TODO Auto-generated method stub
+		String message = "LogTest.";
+
+		logger.error(message);
+		logger.warn(message);
+		logger.info(message);
+		logger.debug(message);
+		logger.trace(message);
+
+		logger.debug("===========================");	
+		logger.debug("== Start BatchCalculate ===");	
+		logger.debug("===========================");
+		
+		PropertyUtil pu = new PropertyUtil(PROP_FILE);
+		try{
+			runloop			= Integer.parseInt(pu.get("BATCHSMS_RUNLOOP"));
+		}catch(Exception e) {}
+		try{
+			errorloop		= Integer.parseInt(pu.get("BATCHSMS_ERRORLOOP"));
+		}catch(Exception e) {}
+		 
+		 
+		while(true)
+		{
+			ApplicationContext context = new ClassPathXmlApplicationContext(
+					new String[]{	
+							"asia3d/spring/context-common.xml",
+							"asia3d/spring/context-datasource.xml",
+							"asia3d/spring/context-idgen.xml",
+							"asia3d/spring/context-sqlMap.xml",
+							"asia3d/spring/context-transaction.xml",
+							});
+				
+			BatchCalculateProc batchCalculateProc = (BatchCalculateProc)context.getBean("batchCalculateProc");
+			try {
+				batchCalculateProc.start(runloop);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				// 오류시에 10초 후 재시도
+				logger.debug("========================================");
+				logger.debug("= 오류시에 [" + errorloop + "]초 후 재시도 = ");
+				logger.debug("========================================");
+				//Thread.sleep(errorloop*1000);
+				//continue;
+			}
+			break;
+		}
+		
+		logger.debug("==========================");	
+		logger.debug("=== end BatchCalculate ===");	
+		logger.debug("==========================");
+	}
+}

@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="3dworld_memberDAO">
+
+	    <select id="3dworld_memberDAO.selectUser_by_p_login_id" resultClass="java.util.HashMap">
+        <![CDATA[
+        SELECT
+        	*,(SELECT P_LOGIN_ID FROM USER WHERE USER_UID=T1.rcmder_uid) rcmder_login_id   
+        FROM 
+        (	
+			 SELECT B.P_LOGIN_ID corp_p_login_id,
+			       B.P_PSWD corp_p_pswd,
+			       B.P_NAME corp_p_name,
+			       B.P_PHONE_NUM corp_p_phone_num,
+			       B.UPT_DTTM corp_upt_dttm,
+			       A.USER_UID user_uid,
+			       A.USER_TP user_tp,
+			       A.COMPY_NAME compy_name,
+			       A.COMPY_NUM compy_num,
+			       A.P_NAME p_name,
+			       A.P_LOGIN_ID p_login_id,
+			       A.P_PSWD p_pswd,
+			       A.POST_CODE post_code,
+			       A.ROAD_ADDR road_addr,
+			       A.JIBUN_ADDR jibun_addr,
+			       A.DETAIL_ADDR detail_addr,
+			       A.PHONE_NUM phone_num,
+			       A.TEL_NUM tel_num,
+			       A.EMAIL email,
+		
+				   A.SNS_ID  sns_id,  
+				   A.SNS_TP  sns_tp,  
+				   A.AGE	  age,     
+				   A.GENDER  gender,  
+				   A.R_NAME  r_name,  
+				   A.PHONE_YN	phone_yn,
+				   A.SMS_YN		sms_yn,
+			       A.DESIGN_YN design_yn,
+			       A.PRINT_YN print_yn,
+			       A.TEACHER_YN teacher_yn,
+			       A.SUM_POINT sum_point,
+			       A.USED_POINT used_point,
+			       A.USE_PSSB_POINT use_pssb_point,
+			       A.ACCT_BANK acct_bank,
+			       A.ACCT_NUM acct_num,
+			       A.LOGIN_CNT login_cnt,
+			       A.REG_CERT_TP reg_cert_tp,
+			       A.REG_CERT_NUM reg_cert_num,
+			       A.REQ_REG_DTTM req_reg_dttm,
+			       A.REG_CERT_ST reg_cert_st,
+			       A.LST_LOGIN_DTTM lst_login_dttm,
+			       A.RCMDER_UID rcmder_uid,
+			       A.HOME_PAGE home_page,
+			       A.MY_INTRO my_intro,
+			       A.MY_PHOTO my_photo,
+			       A.ACCT_NAME acct_name,
+			       A.WITHDRAW_YN withdraw_yn,
+			       A.RECV_YN recv_yn,
+			       A.DEL_YN del_yn,
+			  	   A.FACEBOOK_ID facebook_id,
+			  	   A.TWITTER_ID twitter_id,
+			  	   A.LINK_ID link_id					       
+			FROM USER A LEFT OUTER JOIN CORP_USER B ON A.USER_UID = B.USER_UID
+			WHERE
+				(
+					IFNULL(#p_login_id#, '') != ''
+					OR
+					IFNULL(#user_uid#, '') != ''
+				)
+				AND
+				(
+					IFNULL(#p_login_id#, '') = ''
+					OR
+					A.P_LOGIN_ID = #p_login_id#
+				)
+				AND 
+				(
+					IFNULL(#user_uid#, '') = ''
+					OR
+					A.USER_UID = #user_uid#
+				)    
+			LIMIT 1
+        ) T1         
+        ]]>
+    </select>
+    
+    
+        <!-- 회원 정보 업데이트 -->
+	<update id="3dworld_memberDAO.updateUser_by_p_login_id">
+		UPDATE USER   
+		<dynamic prepend="SET">
+	
+			<isPropertyAvailable prepend="," property="user_tp">
+						USER_TP    			= #user_tp# </isPropertyAvailable>   	
+			<isPropertyAvailable prepend="," property="compy_name">			
+						COMPY_NAME    		= #compy_name# </isPropertyAvailable>   	
+			<isPropertyAvailable prepend="," property="compy_num">
+						COMPY_NUM    		= #compy_num# </isPropertyAvailable>   	
+			<isPropertyAvailable prepend="," property="p_name">
+						P_NAME    			= #p_name# </isPropertyAvailable>   		
+			<isPropertyAvailable prepend="," property="p_login_id">
+						P_LOGIN_ID    		= #p_login_id# </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="p_pswd">			
+						P_PSWD    			= #p_pswd# </isPropertyAvailable>   	
+			<isPropertyAvailable prepend="," property="post_code">			
+						POST_CODE    		= #post_code# </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="road_addr">			
+						ROAD_ADDR    		= #road_addr# </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="jibun_addr">			
+						JIBUN_ADDR    		= #jibun_addr# </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="detail_addr">			
+						DETAIL_ADDR    		= #detail_addr# </isPropertyAvailable>  
+			<isPropertyAvailable prepend="," property="phone_num">			
+						PHONE_NUM    		= #phone_num# </isPropertyAvailable>
+			<isPropertyAvailable prepend="," property="tel_num">			
+						TEL_NUM    			= #tel_num# </isPropertyAvailable>
+			<isPropertyAvailable prepend="," property="phone_yn">
+						PHONE_YN    		= #phone_yn# </isPropertyAvailable>
+			<isPropertyAvailable prepend="," property="sns_id">			
+						SNS_ID    		= #sns_id# </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="sns_tp">			
+						SNS_TP    		= #sns_tp# </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="age">			
+						AGE    		= #age# </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="gender">			
+						GENDER    		= #gender# </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="r_name">			
+						R_NAME    		= #r_name# </isPropertyAvailable>   
+
+ 	
+			<isPropertyAvailable prepend="," property="design_yn">			
+						DESIGN_YN    		= #design_yn# </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="print_yn">			
+						PRINT_YN    		= #print_yn# </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="teacher_yn">			
+						TEACHER_YN    		= #teacher_yn# </isPropertyAvailable>   	
+			<isPropertyAvailable prepend="," property="sum_point">
+						SUM_POINT    		= #sum_point# </isPropertyAvailable>   
+			<isPropertyAvailable prepend="," property="used_point">			
+						USED_POINT    		= #used_point# </isPropertyAvailable>   	
+			<isPropertyAvailable prepend="," property="use_pssb_point">
+						USE_PSSB_POINT    	= #use_pssb_point# </isPropertyAvailable>
+			<isPropertyAvailable prepend="," property="acct_bank">
+						ACCT_BANK    		= #acct_bank# </isPropertyAvailable>   	
+			<isPropertyAvailable prepend="," property="acct_num">
+						ACCT_NUM    		= #acct_num# </isPropertyAvailable>   	
+			<isPropertyAvailable prepend="," property="login_cnt">
+						LOGIN_CNT    		= #login_cnt# </isPropertyAvailable>   	
+			<isPropertyAvailable prepend="," property="reg_cert_tp">
+						REG_CERT_TP    		= #reg_cert_tp# </isPropertyAvailable>   	
+			<isPropertyAvailable prepend="," property="reg_cert_num">
+						REG_CERT_NUM    	= #reg_cert_num# </isPropertyAvailable>  
+			<isPropertyAvailable prepend="," property="req_reg_dttm">
+						REQ_REG_DTTM    	= #req_reg_dttm# </isPropertyAvailable>  
+			<isPropertyAvailable prepend="," property="reg_cert_st">
+						REG_CERT_ST    		= #reg_cert_st# </isPropertyAvailable>   	
+			<isPropertyAvailable prepend="," property="lst_login_dttm">
+						LST_LOGIN_DTTM    	= #lst_login_dttm# </isPropertyAvailable>
+			<isPropertyAvailable prepend="," property="rcmder_login_id">
+						RCMDER_UID    		= (SELECT * FROM (SELECT `USER_UID` FROM `USER` WHERE `P_LOGIN_ID` = #rcmder_login_id#) AS t1) </isPropertyAvailable>  
+			<isPropertyAvailable prepend="," property="sms_yn">
+						SMS_YN    			= #sms_yn# </isPropertyAvailable>  			
+			<isPropertyAvailable prepend="," property="home_page">
+						HOME_PAGE    		= #home_page# </isPropertyAvailable>  
+			<isPropertyAvailable prepend="," property="my_intro">
+						MY_INTRO    		= #my_intro# </isPropertyAvailable>  
+			<isPropertyAvailable prepend="," property="my_photo">
+						MY_PHOTO    		= #my_photo# </isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="acct_name">
+						ACCT_NAME    		= #acct_name# </isPropertyAvailable> 			
+			<isPropertyAvailable prepend="," property="t_follower">
+						T_FOLLOWER    		= #t_follower# </isPropertyAvailable>  
+			<isPropertyAvailable prepend="," property="t_following">
+						T_FOLLOWING    		= #t_following# </isPropertyAvailable> 			
+			<isPropertyAvailable prepend="," property="del_yn">
+						DEL_YN    			= #del_yn# </isPropertyAvailable>	
+			<isPropertyAvailable prepend="," property="withdraw_yn">
+						WITHDRAW_YN    		= #withdraw_yn# </isPropertyAvailable>
+			<isPropertyAvailable prepend="," property="recv_yn">
+						RECV_YN    		= #recv_yn# </isPropertyAvailable>							
+
+			<isPropertyAvailable prepend="," property="facebook_id">
+						FACEBOOK_ID    			= #facebook_id# </isPropertyAvailable>
+			<isPropertyAvailable prepend="," property="twitter_id">
+						TWITTER_ID    		= #twitter_id# </isPropertyAvailable>
+			<isPropertyAvailable prepend="," property="link_id">
+						LINK_ID    		= #link_id# </isPropertyAvailable>
+						
+			<isPropertyAvailable prepend="," property="email">
+						EMAIL    		= #email# </isPropertyAvailable>
+																								 
+		</dynamic>
+		WHERE P_LOGIN_ID=#p_login_id#
+            
+	</update>
+	
+	
+		<insert id="3dworld_memberDAO.user_reg">
+		<selectKey keyProperty="new_user_uid" resultClass="int">
+			SELECT IFNULL(MAX(USER_UID),0)+1  FROM USER
+		</selectKey>
+		
+		<![CDATA[
+			INSERT INTO USER 
+			(	
+					USER_UID		
+				,	USER_TP			
+				,	COMPY_NAME		
+				,	COMPY_NUM		
+				,	P_NAME			
+				,	P_LOGIN_ID
+				,	P_PSWD
+				,	POST_CODE
+				,	ROAD_ADDR
+				,	JIBUN_ADDR
+				,	DETAIL_ADDR
+				,	PHONE_NUM
+				
+				,	SNS_ID
+				,	SNS_TP
+				,	AGE
+				,	GENDER
+				,	R_NAME
+
+				,	DESIGN_YN		
+				,	PRINT_YN		
+				,	TEACHER_YN		
+				,	SUM_POINT		
+				,	USED_POINT		
+				,	USE_PSSB_POINT	
+				,	ACCT_BANK		
+				,	ACCT_NUM
+				,	ACCT_NAME		
+				,	LOGIN_CNT		
+				,	REG_CERT_TP		
+				,	REG_CERT_NUM	
+				,	REQ_REG_DTTM	
+				,	REG_CERT_ST		
+				,	LST_LOGIN_DTTM	
+				,	RCMDER_UID	
+				,	HOME_PAGE
+				,	MY_INTRO
+				,	MY_PHOTO	
+				,	REG_DTTM
+				,	PHONE_YN
+				,	SMS_YN
+				,	WITHDRAW_YN
+				,	RECV_YN
+				,	TEL_NUM
+				
+				,  SUBSCRIP_PATH
+				,  STUDENT_TP
+				,  SCHOOL_NAME
+				,  SCHOOL_CODE				
+
+			)
+			VALUES 
+			( 
+					#new_user_uid#		
+				,	#user_tp#			
+				,	#compy_name#		
+				,	#compy_num#		
+				,	#p_name#			
+				,	#p_login_id#		
+				,	#p_pswd#			
+				,	#post_code#		
+				,	#road_addr#		
+				,	#jibun_addr#		
+				,	#detail_addr#		
+				,	#phone_num#		
+				,	#sns_id#
+				,	#sns_tp#
+				,	#age#
+				,	#gender#
+				,	#r_name#
+			
+				,	#design_yn#		
+				,	#print_yn#		
+				,	#teacher_yn#		
+				,	#sum_point#		
+				,	#used_point#		
+				,	#use_pssb_point#	
+				,	#acct_bank#		
+				,	#acct_num#
+				,	#acct_name#		
+				,	#login_cnt#		
+				,	#reg_cert_tp#		
+				,	#reg_cert_num#	
+				,	#req_reg_dttm#	
+				,	#reg_cert_st#		
+				,	#lst_login_dttm#	
+				,	#rcmder_uid#	
+				,	#home_page#
+				,	#my_intro#
+				,	#my_photo#
+				,	date_format(now(),'%Y%m%d%H%i%s')
+				,	#phone_yn#
+				,	#sms_yn#
+				,	#withdraw_yn#
+				,	#recv_yn#
+				,	#tel_num#
+				
+				,  #subscrip_path#
+				,  #student_tp#
+				,  #school_name#
+				,  #school_code#						
+			)
+		]]>
+	</insert>
+	
+	
+		<insert id="3dworld_memberDAO.cuser_reg">
+		<![CDATA[
+			INSERT INTO g5_member 
+			(	
+					MB_ID		
+				,	MB_PASSWORD			
+				,	MB_NAME		
+				,	MB_NICK		
+				,	MB_NICK_DATE			
+				,	MB_EMAIL		
+				,	MB_TODAY_LOGIN			
+				,	MB_DATETIME
+				,	MB_LEVEL		
+			)
+			VALUES 
+			( 
+					#mb_id#			
+				,	#mb_password#		
+				,	#mb_nick#		
+				,	#mb_nick#			
+				,	NOW()		
+				,	#mb_email#			
+				,	NOW()		
+				,	NOW()
+				,	#mb_level#		
+
+			)
+		]]>
+	</insert>
+    
+    
+</sqlMap>

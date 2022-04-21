@@ -1,0 +1,206 @@
+<%@ page contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ko" xml:lang="ko">
+
+<head>
+	<%@ include file="../comm/util.jsp" %>
+	<meta name="keywords" content="3DBANK" />
+	<title><%=title%></title>
+	<script src="/asia3d/js/jquery.lazyload.min.js" type="text/javascript"></script>
+</head>
+
+<body>
+<%
+String mLoginId = request.getParameter("p_login_id");
+String mUserUid = request.getParameter("user_uid");
+%>
+
+<script type="text/javascript">
+var mLoginId = "<%=mLoginId%>";
+var mUserUid = <%=mUserUid%>;
+var mUserInfo;
+
+$(document).ready(function() {
+	setHistory("member_info", null);
+	readUser();
+});
+
+// 모델러정보 세팅
+function setUserInfo() {
+	if (mUserInfo.print_yn == "Y") 
+		$('#li_tab_3').show();
+	
+	setUserInfo2(mUserInfo.my_photo, getName(mUserInfo));
+	
+	var toolList = mUserInfo.work_tool_kind_list;
+	var toolNames = "";
+	
+	for (var j=0; j<toolList.length; j++) {
+		var codeTool = toolList[j].poss_work_tool;
+		if (codeTool != "99")
+			toolNames += getText_WorkTool(codeTool)
+		else 
+			toolNames += mUserInfo.work_tool_etc_desc;
+			
+		if (j < toolList.length -1)
+			toolNames += ", ";
+	}
+	$('#td_tools').text(toolNames);
+	
+	var fieldTxtList = new Array();
+	if (mUserInfo.field_3dscan == "Y")
+		fieldTxtList.push("3D스캔");
+	if (mUserInfo.field_build == "Y")
+		fieldTxtList.push("건축설계");
+	if (mUserInfo.field_joint == "Y")
+		fieldTxtList.push("맞춤제작");
+	if (mUserInfo.field_medical == "Y")
+		fieldTxtList.push("의학설계");
+	if (mUserInfo.field_machine == "Y")
+		fieldTxtList.push("기계설계");
+	if (mUserInfo.field_jewel == "Y")
+		fieldTxtList.push("주얼리");
+	if (mUserInfo.field_indust_d == "Y")
+		fieldTxtList.push("산업디자인");
+	if (mUserInfo.field_model_d == "Y")
+		fieldTxtList.push("조형디자인");
+	if (mUserInfo.field_char_d == "Y")
+		fieldTxtList.push("캐릭터디자인");
+	if (mUserInfo.field_etc_desc)
+		fieldTxtList.push(mUserInfo.field_etc_desc);
+	
+	var fieldTxt = "";
+	for (var i=0; i<fieldTxtList.length; i++) {
+		fieldTxt += fieldTxtList[i];
+		
+		if (i < fieldTxtList.length -1)
+			fieldTxt += ", ";
+	}
+	$('#td_fields').text(fieldTxt);
+	
+	if (mUserInfo.intro_doc) {
+		$('#h_intro').show();
+		$('#intro_doc').show();
+		$('#intro_doc').html(mUserInfo.intro_doc);
+	}
+}
+
+// 포트폴리오 세팅
+function setUserImg() {
+	for (var i=0; i<mUserInfo.pplio_list.length; i++) {
+		var imgInfo = mUserInfo.pplio_list[i];
+		
+		var tmpHtml = "<li class='mb10 ";
+		if (i%3 < 2)
+			tmpHtml += " mr10 ";
+		
+		tmpHtml += "'>" +
+				"<img class='cursor_hand' src='/asia3d/images/phto/no_img2.jpg' data-original='" + img_path_split + imgInfo.save_name + "' onclick='clickUserImg(\"" + imgInfo.save_name + "\" , \"" + imgInfo.file_name + "\");' />" + 
+			"</li>";
+		$('.portfolio').append(tmpHtml);
+	}
+	$(".portfolio > li > img").lazyload({
+        effect : "fadeIn",
+    });
+}
+
+//포트폴리오클릭 이벤트
+function clickUserImg(tmpUrl, tmpName) {
+	setPop_Enlarge(img_path + tmpUrl, img_path + mUserInfo.my_photo, getName(mUserInfo), tmpName);
+/*	
+	var tmpImg = new Image();
+	tmpImg.src = tmpUrl;
+	tmpImg.onload = function() {
+		$('#img_enlarge').attr("src", tmpImg.src);
+		tmpImg = null;
+	}
+	
+	$('#my_photo2').attr("src", img_path + mUserInfo.my_photo);
+	$('#p_name2').text(mUserInfo.p_name);
+	$('#conts_name2').text(tmpName);
+	
+	$('#div_pop1').fadeIn();
+*/
+}
+
+//모델러 정보 불러오기
+function readUser() {
+	var paramJson = new Object();
+	paramJson.service_tp = "modeler_info_reg";
+	paramJson.p_login_id = mLoginId; 
+	paramJson.user_uid = mUserUid;
+	paramJson.crud_tp = "r";
+	
+	var jsondata = "jsondata=" + JSON.stringify(paramJson);
+	printLog(jsondata);
+	
+	$.ajax({
+        type : "POST",  
+        url : "/Ajax3DBankController.do",
+        data : jsondata,
+        success : function(args) {
+        	printLog(JSON.stringify(args));
+        	if (args.retcode == "000") {
+				mUserInfo = args;
+        		setUserInfo();
+        		setUserImg();
+        	} else {
+	            alert(JSON.stringify(args.retmsg));
+        	}
+        }
+    });
+}
+</script>
+
+<%@ include file="../comm/menu.jsp" %>
+
+<div id="container">
+    <div class="contents_full">
+         <!-- <p><img id="img_logo" src="/asia3d/images/sub/top_img01.jpg" alt="COMMUNITY"/><ul class="sub_tit2"><li class="sub_name2">COMMUNITY</li><li>방대하고 다양한 주제의 3D 데이터 보유로 차별화된 즐거움을 제공</li></ul></p> -->
+        <div class="contents">
+            <!--타이틀 -->
+            <div class="con-tit1"></div>
+            
+            <div id="notice">
+                <div class="designview">
+					<%@ include file="mypage_menu.jsp" %>
+
+                    <div class="desig_right">
+                        <div class="tab_wrap tab_col3">
+                            <ul>
+                                <li id="li_tab_1"><a href="/member/member_info.do?user_uid=<%=mUserUid%>&p_login_id=<%=mLoginId%>">소개</a></li>
+                            	<li id="li_tab_2"><a class="active" href="/member/modeller_info.do?user_uid=<%=mUserUid%>&p_login_id=<%=mLoginId%>">디자인</a> </li>
+                            	<li id="li_tab_3" style="display:none;"><a href="/member/printer_info.do?user_uid=<%=mUserUid%>&p_login_id=<%=mLoginId%>">출력</a> </li>
+                            </ul>
+                        </div>
+                        <div class="conDiv1">
+                         <h6 class="mb10">정보</h6>
+                            <table width="466" class="hitlist02 mt15">
+                                <tbody>
+                                    <tr>
+                                        <th width="20%">작업분야</th>
+                                        <td id="td_fields" class="alignL"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>작업 툴</th>
+                                        <td id="td_tools" class="alignL"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <h6 id="h_intro" class="mt20 mb10 hide">소개 글</h6>
+                            <p id="intro_doc"></p>
+                             
+							<h6 class="mt20 mb10">포트폴리오</h6>
+                           	<ul class="portfolio"></ul>
+                        </div>
+                    </div>
+                    <!--//desig_right-->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--//contents-->
+</div>
+<%@ include file="../comm/footer.jsp" %>
+</body>
+</html>

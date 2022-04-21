@@ -1,0 +1,551 @@
+/*
+ * Copyright 2008-2009 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.asia3d.member.service.impl;
+
+import java.util.HashMap;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Repository;
+
+import com.asia3d.util.Log;
+
+import egovframework.rte.psl.dataaccess.EgovAbstractDAO;
+
+/**
+ * @Class Name : SampleDAO.java
+ * @Description : Sample DAO Class
+ * @Modification Information
+ * @
+ * @  수정일      수정자              수정내용
+ * @ ---------   ---------   -------------------------------
+ * @ 2009.03.16           최초생성
+ *
+ * @author 개발프레임웍크 실행환경 개발팀
+ * @since 2009. 03.16
+ * @version 1.0
+ * @see
+ *
+ *  Copyright (C) by MOPAS All right reserved.
+ */
+
+@Repository("memberDAO")
+public class AjaxMemberDAO extends EgovAbstractDAO {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(AjaxMemberDAO.class);
+	
+	/**
+	 * 회원을 등록한다.
+	 * @param vo - 등록할 정보가 담긴 HashMap
+	 * @return 등록 결과
+	 * @exception Exception
+	 */
+	public void user_reg(HashMap<String, Object> vo) throws Exception {
+		int new_user_uid = (int)insert("memberDAO.user_reg", vo);
+		Log.print(LOGGER, "user_reg new_user_uid=" + new_user_uid);
+		vo.put("user_uid", new_user_uid);
+	}
+
+	/**
+	 * 회원을 login_id를 통해 조회한다.
+	 * @param vo - 조회할 정보가 담긴 HashMap
+	 * @return 조회 결과
+	 * @exception Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public HashMap<String, Object> selectUser_by_p_login_id(HashMap<String, Object> vo) throws Exception {
+		return (HashMap<String, Object>) select("memberDAO.selectUser_by_p_login_id", vo);
+	}
+	
+	/**
+	 * 회원을 user_uid를 통해 조회한다.
+	 * @param vo - 조회할 정보가 담긴 HashMap
+	 * @return 조회 결과
+	 * @exception Exception
+	 */
+	
+	public HashMap selectUser_by_user_uid(HashMap vo) throws Exception {
+		return (HashMap) select("memberDAO.selectUser_by_user_uid", vo);
+	}
+
+	/**
+	 * 회원을 login_id를 통해 정보를 업데이트한다.
+	 * @param vo - 업데이트할 정보가 담긴 HashMap
+	 * @return  결과
+	 * @exception Exception
+	 */
+	public int updateUser_by_p_login_id(HashMap<String, Object> update_map) {
+		// TODO Auto-generated method stub
+		return update("memberDAO.updateUser_by_p_login_id", update_map);
+	}
+
+	public int del_portfolio(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return delete("memberDAO.del_portfolio", jsonMap);
+	}
+
+	public void ins_portfolio(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		insert("memberDAO.ins_portfolio", jsonMap);
+		
+	}	
+	
+	public List<?> selectPortfolioList(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return list("memberDAO.selectPortfolioList", jsonMap);
+	}
+
+	public int deleteCorpUsers(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return delete("memberDAO.deleteCorpUsers", jsonMap);	
+	}
+
+	public void insertCorpUser(HashMap<String, Object> hashMap) {
+		// TODO Auto-generated method stub
+		insert("memberDAO.insertCorpUser", hashMap);
+	}
+	
+	public List<?> selectCorpUserList(HashMap<String, Object> hashMap) {
+		// TODO Auto-generated method stub
+		return list("memberDAO.selectCorpUserList", hashMap);
+	}
+
+	/*
+	 * 출력업체 정보조회
+	 */
+	public HashMap<String, Object> selectPrint_corp_info(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return (HashMap<String, Object>) select("memberDAO.selectPrint_corp_info", jsonMap);
+	}
+
+	/*
+	 * 출력업체 정보 등록
+	 */
+	public void print_corp_info_reg(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		insert("memberDAO.insertPrint_corp_info_reg", jsonMap);
+	}
+
+	/*
+	 * 출력업체 정보 업데이트
+	 */
+	public int updatePrint_corp_info(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return update("memberDAO.updatePrint_corp_info", jsonMap);
+	}
+
+	/*
+	 * 모델러정보 조회
+	 */
+	@SuppressWarnings("unchecked")
+	public HashMap<String, Object> selectModeler_info(HashMap<String, Object> jsonMap) {
+		return (HashMap<String, Object>) select("memberDAO.selectModeler_info", jsonMap);
+	}
+
+	/*
+	 * 모델러정보 등록
+	 */
+	public void modeler_info_reg(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		insert("memberDAO.modeler_info_reg", jsonMap);
+	}
+
+	/*
+	 * 모델러정보 업데이트
+	 */
+	public int updateModeler_info(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return update("memberDAO.updateModeler_info", jsonMap);
+	}
+
+	/*
+	 * 모델링 작업툴 삭제
+	 */
+	public void deleteWork_tool_kind(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		delete("memberDAO.deleteWork_tool_kind", jsonMap);
+	}
+
+	/*
+	 * 모델링 작업툴 추가
+	 */
+	public void insertWork_tool_kind(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		insert("memberDAO.insertWork_tool_kind", jsonMap);
+	}
+	
+	/*
+	 * 모델링 작업툴 리스트
+	 */
+	public List<?> selectWork_tool_kindList(HashMap<String, Object> jsonMap) {
+		return list("memberDAO.selectWork_tool_kindList", jsonMap);
+	}
+
+	/*
+	 * 공지사항 상세조회
+	 */
+	public HashMap<String, Object> selectNotice(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return (HashMap<String, Object>) select("memberDAO.selectNotice", jsonMap);
+	}
+	/*
+	 * 공지사항 추가
+	 */
+	public void createNotice(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		insert("memberDAO.createNotice", jsonMap);
+	}
+	/*
+	 * 공지사항 업데이트
+	 */
+	public int updateNotice(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return update("memberDAO.updateNotice", jsonMap);
+	}
+	/*
+	 * 공지사항 삭제
+	 */
+	public int deleteNotice(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return delete("memberDAO.deleteNotice", jsonMap);
+	}
+	/*
+	 * 공지사항 리스트 갯수
+	 */
+	public long selectNotice_TotalCount(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		HashMap map = (HashMap) select("memberDAO.selectNotice_TotalCount", jsonMap);
+		Log.print(LOGGER, "memberDAO.selectNotice_TotalCount map=" + map);
+		return map == null ? 0 : (long)map.get("tot_count");
+	}
+	/*
+	 * 공지사항 리스트
+	 */
+	public List<?> selectNotice_List(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return list("memberDAO.selectNotice_List", jsonMap);
+	}
+
+	
+	/*
+	 * QNA 상세조회
+	 */
+	public HashMap<String, Object> selectQNA(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return (HashMap<String, Object>) select("memberDAO.selectQNA", jsonMap);
+	}
+	/*
+	 * QNA 추가
+	 */
+	public void createQNA(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		insert("memberDAO.createQNA", jsonMap);
+	}
+	/*
+	 * QNA 업데이트
+	 */
+	public int updateQNA(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return update("memberDAO.updateQNA", jsonMap);
+	}
+	/*
+	 * QNA 삭제
+	 */
+	public int deleteQNA(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		//return delete("contentsDAO.deleteQNA", jsonMap);
+		
+		jsonMap.put("del_yn", "Y");
+		return update("memberDAO.updateQNA", jsonMap);
+	}
+	/*
+	 * QNA 리스트 갯수
+	 */
+	public long selectQNA_TotalCount(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		HashMap map = (HashMap) select("memberDAO.selectQNA_TotalCount", jsonMap);
+		Log.print(LOGGER, "memberDAO.selectQNA_TotalCount map=" + map);
+		return map == null ? 0 : (long)map.get("tot_count");
+	}
+	/*
+	 * QNA 리스트
+	 */
+	public List<?> selectQNA_List(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return list("memberDAO.selectQNA_List", jsonMap);
+	}
+	
+	/*
+	 * QNA 리스트
+	 */
+	public List<?> selectQNA_AnswerList(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return list("memberDAO.selectQNA_AnswerList", jsonMap);
+	}
+
+	/*
+	 * 뉴스&트랜드
+	 */
+	public HashMap<String, Object> selectNewsTrand(	HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return (HashMap<String, Object>) select("memberDAO.selectNewsTrand", jsonMap);
+	}
+	/*
+	 * 뉴스&트랜드
+	 */
+	public void createNewsTrand(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		insert("memberDAO.createNewsTrand", jsonMap);
+	}
+	/*
+	 * 뉴스&트랜드
+	 */
+	public int updateNewsTrand(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return update("memberDAO.updateNewsTrand", jsonMap);
+	}
+	/*
+	 * 뉴스&트랜드
+	 */
+	public int deleteNewsTrand(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return delete("memberDAO.deleteNewsTrand", jsonMap);
+	}
+
+	/*
+	 * 뉴스&트랜드 리스트
+	 */
+	public long selectNewsTrand_TotalCount(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		HashMap map = (HashMap) select("memberDAO.selectNewsTrand_TotalCount", jsonMap);
+		Log.print(LOGGER, "memberDAO.selectNewsTrand_TotalCount map=" + map);
+		return map == null ? 0 : (long)map.get("tot_count");
+	}
+	/*
+	 * 뉴스&트랜드 리스트
+	 */
+	public List<?> selectNewsTrand_List(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return list("memberDAO.selectNewsTrand_List", jsonMap);
+	}
+	
+	
+	/*
+	 * Follow 추가
+	 */
+	public void insertFollow(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		insert("memberDAO.insertFollow", jsonMap);
+	}
+	
+	/*
+	 * Follow 삭제
+	 */
+	public int deleteFollow(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return delete("memberDAO.deleteFollow", jsonMap);
+	}
+	
+	/*
+	 * Follow 갯수
+	 */
+	public long selectFollow_TotalCount(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		HashMap map = (HashMap)  select("memberDAO.selectFollow_TotalCount", jsonMap);
+		Log.print(LOGGER, "memberDAO.selectFollow_TotalCount map=" + map);
+		return map == null ? 0 : (long)map.get("tot_count");
+	}
+
+	/*
+	 * 회원리스트 전체수(일반회원 / 디자이너소개 / 출력업체소개) 
+	 */
+	@SuppressWarnings("unchecked")
+	public long selectUserInfo_TotalCount(HashMap<String, Object> jsonMap) {
+		HashMap<String, Object> map = (HashMap<String, Object>)  select("memberDAO.selectUserInfo_TotalCount", jsonMap);
+		Log.print(LOGGER, "memberDAO.selectUserInfo_TotalCount map=" + map);
+		return map == null ? 0 : (long)map.get("tot_count");
+	}
+
+	/*
+	 * 회원리스트 (일반회원 / 디자이너소개 / 출력업체소개) 
+	 */
+	public List<?> selectUserInfo_List(HashMap<String, Object> jsonMap) {
+		return list("memberDAO.selectUserInfo_List", jsonMap);
+	}
+
+	/*
+	 * 보유3D프린터 삭제
+	 */
+	public int deleteHold3DPrinterALL(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return delete("memberDAO.deleteHold3DPrinterALL", jsonMap);
+	}
+
+	/*
+	 * 보유3D프린터 조회
+	 */
+	public List<?> selectHold3DPrinter_List(HashMap<String, Object> jsonMap) {
+		return list("memberDAO.selectHold3DPrinter_List", jsonMap);
+	}
+
+	/*
+	 * 보유3D프린터 추가
+	 */
+	public void insertHold3DPrinter(Object object) {
+		// TODO Auto-generated method stub
+		insert("memberDAO.insertHold3DPrinter", object);
+	}
+
+	public int updateUser_by_user_uid(HashMap<String, Object> tmpHash) {
+		// TODO Auto-generated method stub
+		return update("memberDAO.updateUser_by_user_uid", tmpHash);
+	}
+
+	/*
+	 * 사용자의 summary 정보 :  Followers, Following, Design, Makes, Like, Collections
+	 */
+	public HashMap<String, Object> selectUserSummaryEtcInfo(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		HashMap map = (HashMap) select("memberDAO.selectUserSummaryEtcInfo", jsonMap);
+		return map;
+	}
+
+	public List<?> selectFollow_List(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return list("memberDAO.selectFollow_List", jsonMap);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public long selectFollow_List_TotalCount(HashMap<String, Object> jsonMap) {
+		HashMap<String, Object> map = (HashMap<String, Object>)  select("memberDAO.selectFollow_List_TotalCount", jsonMap);
+		Log.print(LOGGER, "memberDAO.selectFollow_List_TotalCount map=" + map);
+		return map == null ? 0 : (long)map.get("tot_count");
+	}
+
+	/*
+	 * 메인페이지에 들어가는 3D Contents 대분류 + 인기순
+	 */
+	public List<?> main_info_conts_3d_list_by_major_by_like(HashMap<String, Object> jsonMap) {
+		return list("memberDAO.main_info_conts_3d_list_by_major_by_like", jsonMap);
+	}
+
+	public void insert_point_info(HashMap<String, Object> jsonMap) {
+		insert("memberDAO.insert_point_info", jsonMap);
+	}
+
+	public List<?> select_point_list(HashMap<String, Object> jsonMap) {
+		return list("memberDAO.select_point_list", jsonMap);
+	}
+
+	public int update_point_info(HashMap<String, Object> jsonMap) {
+		return update("memberDAO.update_point_info", jsonMap);
+	}
+
+	public int select_point_trans_list_total_cnt(HashMap<String, Object> jsonMap) {
+		return (int) select("memberDAO.select_point_trans_list_total_cnt", jsonMap);
+	}
+
+	public List<?> select_point_trans_list(HashMap<String, Object> jsonMap) {
+		return list("memberDAO.select_point_trans_list", jsonMap);
+	}
+
+	public int update_point_trans_info(HashMap<String, Object> jsonMap) {
+		return update("memberDAO.update_point_trans_info", jsonMap);
+	}
+
+	public int update_user_point(HashMap<String, Object> jsonMap) {
+		return update("memberDAO.update_user_point", jsonMap);
+	}
+
+	public void insert_point_add_hist(HashMap<String, Object> jsonMap) {
+		insert("memberDAO.insert_point_add_hist", jsonMap);
+	}
+	
+	public List<?> company_unpaid_list(HashMap<String, Object> jsonMap) {
+		return list("memberDAO.company_unpaid_list", jsonMap);
+	}
+
+	public int company_unpaid_list_total(HashMap<String, Object> jsonMap) {
+		return (int) select("memberDAO.company_unpaid_list_total", jsonMap);
+	}
+
+	public List<?> company_unpaid_descript(HashMap<String, Object> jsonMap) {
+		return list("memberDAO.company_unpaid_descript", jsonMap);
+	}
+
+	public int company_unpaid_descript_total(HashMap<String, Object> jsonMap) {
+		return (int) select("memberDAO.company_unpaid_descript_total", jsonMap);
+	}
+	public List<?> company_paid_list(HashMap<String, Object> jsonMap) {
+		return list("memberDAO.company_paid_list", jsonMap);
+	}
+
+	public int company_paid_list_total(HashMap<String, Object> jsonMap) {
+		return (int) select("memberDAO.company_paid_list_total", jsonMap);
+	}
+
+	public List<?> company_paid_descript(HashMap<String, Object> jsonMap) {
+		return list("memberDAO.company_paid_descript", jsonMap);
+	}
+
+	public int company_paid_descript_total(HashMap<String, Object> jsonMap) {
+		return (int) select("memberDAO.company_paid_descript_total", jsonMap);
+	}
+
+	public void company_unpaid_list_u(HashMap<String, Object> jsonMap) {
+		update("memberDAO.company_unpaid_list_u", jsonMap);
+	}
+	// SELECT USTTL_INFO DEP_ST = 1
+	public int calculate_target_list_total(HashMap<String, Object> jsonMap) {
+		return (int) select("memberDAO.calculate_target_list_total", jsonMap);
+	}
+	public List<?> calculate_target_list(HashMap<String, Object> jsonMap) {
+		return list("memberDAO.calculate_target_list", jsonMap);
+	}
+	// UPDATE USTTL_INFO DEP_ST = 2
+	public void calculate_target_list_u(HashMap<String, Object> jsonMap) {
+		update("memberDAO.calculate_target_list_u", jsonMap);
+	}
+	// SELECT USTTL_INFO DEP_ST = 2
+	public List<?> calculate_deposit_list(HashMap<String, Object> jsonMap) {
+		return list("memberDAO.calculate_deposit_list", jsonMap);
+	}
+	public int calculate_deposit_list_total(HashMap<String, Object> jsonMap) {
+		return (int) select("memberDAO.calculate_deposit_list_total", jsonMap);
+	}
+	// UPDATE USTTL_INFO DEP_ST = 3
+	public void calculate_deposit_list_u(HashMap<String, Object> jsonMap) {
+		update("memberDAO.calculate_deposit_list_u", jsonMap);
+	}
+	public int calculate_deposit_list_s(HashMap<String, Object> jsonMap) {
+		return (int) select("memberDAO.calculate_deposit_list_s", jsonMap);
+	}
+
+	public List<?> calculate_excel_list(HashMap<String, Object> jsonMap) {
+		return list("memberDAO.calculate_excel_list", jsonMap);
+	}
+
+	@SuppressWarnings("unchecked")
+	public HashMap<String, Object> selectAdmin_by_p_login_id(HashMap<String, Object> vo) throws Exception {
+		return (HashMap<String, Object>) select("memberDAO.selectAdmin_by_p_login_id", vo);
+	}
+
+	@SuppressWarnings("unchecked")
+	public HashMap<String, Object> admin_check(HashMap<String, Object> vo) {
+		return (HashMap<String, Object>) select("memberDAO.admin_check", vo);
+	}
+}

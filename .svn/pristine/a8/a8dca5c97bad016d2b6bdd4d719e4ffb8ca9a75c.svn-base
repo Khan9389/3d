@@ -1,0 +1,354 @@
+
+$(document).ready(function() {
+	if (edit_type == "r") {
+		$('#btn_save').show();
+		setHistory("device_modify_edit", null);
+		readInfo();
+	} else {
+		$('#btn_reg').show();
+		setHistory("device_modify_new", null);		
+	}
+	
+	// 전시 시작일/종료일
+	$("#disp_s_dt, #disp_e_dt").datepicker({
+	    dateFormat: 'yy-mm-dd',
+	    showOn: "both",
+        buttonImage: "/asia3d/images/sub/day.gif", 
+        buttonImageOnly:true, 
+        minDate: 0,
+	});
+	$('img.ui-datepicker-trigger').css({'cursor':'pointer', 'margin-left':'5px'});  //아이콘 위치
+	
+	// 파일추가	
+	$('#ex_file').change(function() {
+		for (var i=0; i<this.files.length; i++) {
+			if (this.files && this.files[i]) {
+				readFile(this.files, i);
+			}
+		}
+	});
+	// 파일 드래그
+	$(".upfile").on("drop", function(event) {
+		event.stopPropagation();
+	    event.preventDefault();
+	    
+		var arrayFile = event.originalEvent.dataTransfer.files;
+	  	for (var i=0; i<arrayFile.length; i++) {
+			if (arrayFile && arrayFile[i]) {
+				readFile(arrayFile, i);
+			}
+		}
+	});
+});
+
+// 이미지파일삭제 버튼 클릭
+function clickDeleteFile(obj) {
+	var tmpIdx = $('#tbody_file tr').index($(obj).parent().parent());
+	$("#tbody_file > tr:eq(" + tmpIdx + ")").remove();
+	
+	tmpIdx--;
+	if (tmpIdx < mArrayFirstContsName.length)
+		mArrayFirstContsName.splice(tmpIdx, 1);
+	else
+		mArrayContsFile.splice(tmpIdx - mArrayFirstContsName.length, 1);
+}
+
+//파일명 중복체크
+function checkFilename(tmpFilename) {
+	for (var i=0; i<mArrayContsFile.length; i++) {
+		if (mArrayContsFile[i] && mArrayContsFile[i].name == tmpFilename) {
+			alert("동일한 콘텐츠 파일명이 있습니다.");				
+			return false;
+		}
+	}
+	return true;
+}
+
+// 콘텐츠그룹정보 불러오기
+function readInfo() {
+	var paramJson = new Object();
+	paramJson.service_tp = "controller_mng";
+	paramJson.man_type = edit_type;
+	paramJson.ctr_no = device_no;
+	
+	doMultipart(paramJson);
+}
+
+// 콘텐츠그룹정보 세팅
+function set_info() {
+	device_no = mInfo.ctr_no
+	$("#device_name").val(mInfo.ctr_nm);
+	$("#disp_name").val(mInfo.disp_name);
+	$("#permit_id").val(mInfo.permit_id);
+	$("input[name='use_yn']").each(function() {
+		if(this.value == mInfo.use_yn){
+			this.checked = true;
+		}
+	});
+}
+
+// 버튼 세팅
+function set_button() {
+	if (edit_type == "u"){
+		$('#btn_save').show();
+		$('#btn_reg').hide();
+	}
+	else{
+		$('#btn_save').hide();
+		$('#btn_reg').show();
+	}
+	
+}
+
+// Display
+// Display 세팅
+function set_display_list(tmpInfo) {
+	if (tmpInfo.disp_list.length < 10){
+		$('#div_more_display').hide();
+	}
+	else{
+		$('#div_more_display').show();
+	}
+	for (var i=0; i<tmpInfo.disp_list.length; i++) {
+		var dispInfo = tmpInfo.disp_list[i];
+		var disp_st = (dispInfo.disp_st == "01") ? "전시중" : "전시중지";
+		var tmpHtml = 
+			"<tr>"+
+	            "<td>" + parseInt((cnt_page_disp-1) * 24 + (i+1)) + "</td>" + 
+	            "<td class='alignC'><a class='cursor_hand' onclick='btn_select_disp(" + dispInfo.disp_id + ",\"" + dispInfo.disp_name +  "\");'>" + dispInfo.disp_name + "</a></td>"  +
+	            "<td>" + disp_st + "</td>" + 
+	            "<td>" + getText_DispTemp(dispInfo.temp_tp) + "</td>" + 
+	            "<td class='alignC'>" + dispInfo.cgrp_name + "</td>" +
+	            "<td>" + getText_DateFormat(dispInfo.disp_s_dt) + " ~ " + getText_DateFormat(dispInfo.disp_e_dt) + "</td>" +
+			"</tr>";
+		$('#tbody_display').append(tmpHtml);
+	}
+}
+
+function btn_select_disp(disp_id, disp_nm){
+	$("#disp_name").val(disp_nm);
+	selected_disp_id = disp_id;
+	close_popup_display();
+}
+
+function open_popup_display() {
+	$('#div_pop_display_conts').center();
+	$('#div_pop_display').show();
+	$('#div_more_display').show();
+	
+	readDisplay();
+}
+
+function close_popup_display() {
+	cnt_page_disp = 1;
+	$('#div_pop_display').hide();
+	$('#display_conts_word').val("");
+	$('#tbody_display').html("");
+}
+
+//검색버튼 클릭
+function btn_display_search() {
+	cnt_page_disp = 1;
+	readDisplay();
+}
+
+function readDisplay() {
+	var jsonParam = new Object();
+	jsonParam.service_tp = "disp_list";
+	jsonParam.grp_use_yn = "ALL";
+	jsonParam.conts_word = $('#display_conts_word').val();
+	jsonParam.page_num = "" + cnt_page_disp;
+	
+	doCommunication(jsonParam);
+}
+
+// end Display
+
+// User
+
+function open_popup_user(){
+	$("#div_pop_user_conts").center();
+	$("#div_pop_user").show();
+	$("#div_more_user").show();
+	
+	readUser();
+}
+
+function close_popup_user() {
+	cnt_page_user = 1;
+	$("#div_pop_user").hide();
+	$("#inq_user_tp option:eq(0)").attr("selected", "selected");
+	$("#user_condition option:eq(0)").attr("selected", "selected");
+	$("#user_conts_word").val("");
+	$("#tbody_user").html("");
+}
+
+function btn_user_search(){
+	cnt_page_user = 1;
+	$("#tbody_user").html("");
+	readUser();
+}
+
+function readUser(){
+	var jsonParam = new Object(); 
+	jsonParam.service_tp = "user_info_list";
+	jsonParam.inq_user_tp = $('#inq_user_tp').val();
+	jsonParam.user_condition = $('#user_condition').val();
+	jsonParam.conts_word = $("#user_conts_word").val();
+	jsonParam.page_num = "" + cnt_page_user;
+	jsonParam.inq_user = "1";
+	jsonParam.field_tp = "ALL";
+	
+	doCommunication(jsonParam);
+}
+
+function set_user_list(tmpInfo){
+	if (tmpInfo.user_info_list.length < 10){
+		$("#div_more_user").hide();
+	}
+	else{
+		$("#div_more_user").show();
+	}
+	for (var i=0; i < tmpInfo.user_info_list.length; i++) {
+		var userInfo = tmpInfo.user_info_list[i];
+		var user_tp = (userInfo.user_tp == "1"	) ? "개인" : "기업";
+		var tmpHtml = 
+			"<tr>" + 
+			"<td>" + user_tp + "</td>" + 
+			"<td class='alignC'><a class='cursor_hand' onclick='btn_select_user(\"" + userInfo.p_login_id + "\");'>" + userInfo.p_login_id + "</a></td>"  +
+            "<td class='alignC'>" + getName(userInfo) + "</td>" + 
+            "<td>" + getText_UserCondition(userInfo.user_condition) + "</td>" + 
+            "<td>" + getText_DateFormat(userInfo.reg_dttm) + "</td>" +
+            "<td>" + getText_DateFormat(userInfo.stop_dttm) + "</td>" +
+			"<td>" + getText_Money(userInfo.use_pssb_point) + "</td>";
+			"</tr>" +
+		$('#tbody_user').append(tmpHtml);			
+	}
+}
+
+function btn_select_user(p_login_id){
+	$("#permit_id").val(p_login_id);
+	selected_user_id = p_login_id;
+	close_popup_user();
+}
+// end User
+
+//Ajax 통신 및 Callback
+function doCommunication(jsonParam) {
+	var jsondata = "jsondata=" + JSON.stringify(jsonParam);
+	printLog("send data", jsondata);
+	
+	$.ajax({
+        type : "POST",  
+        url : "/Ajax3DBankController.do",
+        data : jsondata,
+        success : function(result) {
+        	printLog("response data", JSON.stringify(result));
+        	
+        	if (result.retcode == "000") {
+        		if(result.service_tp == "disp_list"){
+        			set_display_list(result);
+        		}
+        		else if(result.service_tp == "user_info_list"){
+        			set_user_list(result);
+        		}
+			}
+        }
+    });
+}
+
+function btn_edit(type){
+	var device_name = $("#device_name").val();
+	var user_yn = $("input[name='use_yn']:checked").val();
+	if (device_name == "") {
+		alert("장치 이름을 입력하세요.");
+		return;
+	}
+	
+	if (selected_disp_id == -1) {
+		alert("3D 전시를 선택하여 주세요.");
+		return;
+	}
+	
+	if (selected_user_id == "") {
+		alert("사용자 아이디를 선택하여 주세요.");
+		return;
+	}
+
+	var paramJson = new Object();
+	paramJson.service_tp = "controller_mng";
+	paramJson.man_type = type;
+	paramJson.ctr_nm = device_name;
+	paramJson.disp_id = selected_disp_id; 
+	paramJson.permit_ids = selected_user_id; 
+	paramJson.reg_id = "admin@3dbank.xyz";
+	paramJson.upt_id = "admin@3dbank.xyz";
+	paramJson.active_uid = "";
+	paramJson.rotation = "";
+	paramJson.control_yn = "n";
+	paramJson.use_yn = user_yn;
+	
+	doMultipart(paramJson);
+}
+
+// Multipart 통신 및 Callback
+function doMultipart(tmpJson) {
+	printLog("send JSON", JSON.stringify(tmpJson));
+	
+	var formData = new FormData();
+	for (var i=0; i<mArrayContsFile.length; i++) {
+		if (mArrayContsFile[i])
+			formData.append("file[]", mArrayContsFile[i]);
+	}
+	formData.append("jsondata", JSON.stringify(tmpJson));
+	
+	$.ajax({
+        url: '/Ajax3DBankMultipartController.do',
+        processData: false,
+      	contentType: false,
+        data: formData,
+        type: 'POST',
+        success: function(result) {
+        	printLog(JSON.stringify(result));
+        	
+        	if (result.retcode == "000") {
+        		if (tmpJson.man_type == "c" || tmpJson.man_type == "u") {
+        			alert("저장완료 되었습니다.");
+        			// 미리보기일경우 사용자 화면으로 이동
+        			location.href = "/event/device_list.do";
+        			
+        		} else if (tmpJson.man_type == "r") {
+        			mInfo = result;
+        			edit_type = "u";
+        			set_info();
+        			set_button();
+        			
+        		}
+        	} else {
+        		alert(result.retmsg);
+        	}
+        }
+		,beforeSend:function() {
+	        $('.wrap-loading').removeClass('display-none');
+	    }
+		,complete:function(){
+	        $('.wrap-loading').addClass('display-none');
+	    }
+		,xhr: function() {
+            myXhr = $.ajaxSettings.xhr();
+            if(myXhr.upload){
+                myXhr.upload.addEventListener('progress', showPercent, false);
+            } else {
+                console.log("Uploadress is not supported.");
+            }
+            return myXhr;
+        }
+	});
+}
+// 업로드퍼센트 표시
+function showPercent(evt) {
+    if (evt.lengthComputable) {
+        var percentComplete = ((evt.loaded / evt.total) * 100).toFixed(2);
+        $('#p_percent').text(percentComplete + " %");
+    }
+}

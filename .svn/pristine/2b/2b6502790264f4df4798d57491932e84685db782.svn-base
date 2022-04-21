@@ -1,0 +1,976 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="ordermadeDAO">
+
+
+	<insert id="ordermadeDAO.insertMakeInfo">
+		<selectKey keyProperty="new_make_uid" resultClass="int">
+			SELECT IFNULL(MAX(MAKE_UID),0)+1  FROM MAKE_INFO
+		</selectKey>
+		<![CDATA[
+			INSERT INTO MAKE_INFO 
+			(	
+				MAKE_UID       
+			,	MAKE_P_TP      
+			,	MAKE_TP        
+			,	P_MODEL_TP     
+			,	MAKE_REQ_TP    
+			,	MAKE_FIELD_TP  
+			,	APPR_UID       
+			,	PROC_ST        
+			,	ORDR_DT        
+			,	ETMT_DT        
+			,	ETMT_END_DT    
+			,	STTL_DT        
+			,	TRUST_REQ_DT   
+			,	TRUST_RCPT_DT  
+			,	MAKE_CMPT_DT   
+			,	DLVY_DT        
+			,	BUY_CMPT_DT    
+			,	REFU_REQ_DTTM  
+			,	REFU_AGREE_DTTM
+			,	MAKE_MTHD      
+			,	TITLE          
+			,	DETAIL_REQ     
+			,	HOPE_RCPT_DT       
+			,	EXPECT_AMOUNT  
+			,	PRINT_MTHD     
+			,	PRINT_SVC_TP   
+			,	PRINT_SIZE     
+			,	DTL_REQ_RSPT   
+			,	DLVY_MTHD      
+			,	INVOICE        
+			,	MAKER_UID      
+			,	CONTS_UID      
+			,	UPT_DTTM       	
+			,	REG_DTTM   
+			,	DEL_YN 			
+
+			)
+			VALUES 
+			( 
+				#new_make_uid#   
+			,	#make_p_tp#       
+			,	#make_tp#         
+			,	#p_model_tp#      
+			,	#make_req_tp#     
+			,	#make_field_tp#   
+			,	#appr_uid#        
+			,	#proc_st#         
+			,	#ordr_dt#         
+			,	#etmt_dt#         
+			,	#etmt_end_dt#     
+			,	#sttl_dt#         
+			,	#trust_req_dt#    
+			,	#trust_rcpt_dt#   
+			,	#make_cmpt_dt#    
+			,	#dlvy_dt#         
+			,	#buy_cmpt_dt#     
+			,	#refu_req_dttm#   
+			,	#refu_agree_dttm# 
+			,	#make_mthd#       
+			,	#title#           
+			,	#detail_req#      
+			,	#hope_rcpt_dt#            
+			,	#expect_amount#   
+			,	#print_mthd#      
+			,	#print_svc_tp#    
+			,	#print_size#      
+			,	#dtl_req_rspt#    
+			,	#dlvy_mthd#       
+			,	#invoice#         
+			,	#maker_uid#       
+			,	#conts_uid#       
+			,	date_format(now(),'%Y%m%d%H%i%s')				
+			,	date_format(now(),'%Y%m%d%H%i%s')	
+			,	'N'
+			)
+		]]>
+	</insert>
+
+	<select id="ordermadeDAO.selectMakeInfo" resultClass="java.util.HashMap">
+    <![CDATA[
+        SELECT
+     			MAKE_INFO.MAKE_UID          make_uid       
+			,	MAKE_INFO.MAKE_P_TP       	make_p_tp      
+			,	MAKE_INFO.MAKE_TP         	make_tp        
+			,	MAKE_INFO.P_MODEL_TP      	p_model_tp     
+			,	MAKE_INFO.MAKE_REQ_TP     	make_req_tp    
+			,	MAKE_INFO.MAKE_FIELD_TP   	make_field_tp  
+			,	MAKE_INFO.APPR_UID        	appr_uid       
+			,	MAKE_INFO.PROC_ST         	proc_st        
+			,	MAKE_INFO.ORDR_DT         	ordr_dt        
+			,	MAKE_INFO.ETMT_DT         	etmt_dt        
+			,	MAKE_INFO.ETMT_END_DT     	etmt_end_dt    
+			,	MAKE_INFO.STTL_DT         	sttl_dt        
+			,	MAKE_INFO.TRUST_REQ_DT    	trust_req_dt   
+			,	MAKE_INFO.TRUST_RCPT_DT   	trust_rcpt_dt  
+			,	MAKE_INFO.MAKE_CMPT_DT    	make_cmpt_dt   
+			,	MAKE_INFO.DLVY_DT         	dlvy_dt        
+			,	MAKE_INFO.BUY_CMPT_DT     	buy_cmpt_dt    
+			,	MAKE_INFO.REFU_REQ_DT   	refu_req_dt
+			,	MAKE_INFO.REFU_DESC   	refu_desc  
+			,	MAKE_INFO.REFU_AMOUNT 	refu_amount
+			,	MAKE_INFO.MAKE_MTHD       	make_mthd      
+			,	MAKE_INFO.TITLE           	title          
+			,	MAKE_INFO.DETAIL_REQ      	detail_req     
+			,	MAKE_INFO.HOPE_RCPT_DT    	hope_rcpt_dt   
+			,	MAKE_INFO.EXPECT_AMOUNT   	expect_amount  
+			,	MAKE_INFO.PAY_AMOUNT   	pay_amount  
+			,	MAKE_INFO.CONTS_AMOUNT   	conts_amount  
+			,	MAKE_INFO.PRINT_MTHD      	print_mthd     
+			,	MAKE_INFO.PRINT_SVC_TP    	print_svc_tp   
+			,	MAKE_INFO.PRINT_SIZE      	print_size     
+			,	MAKE_INFO.DTL_REQ_RSPT    	dtl_req_rspt   
+			,	MAKE_INFO.DLVY_MTHD       	dlvy_mthd      
+			,	MAKE_INFO.INVOICE         	invoice        
+			,	MAKE_INFO.INVOICE_COMPY 	invoice_compy
+			,	MAKE_INFO.POST_CODE			post_code
+			,	MAKE_INFO.ROAD_ADDR			road_addr
+			,	MAKE_INFO.JIBUN_ADDR		jibun_addr
+			,	MAKE_INFO.DETAIL_ADDR		detail_addr
+			,	MAKE_INFO.PHONE_NUM		delivery_phone_num
+			,	MAKE_INFO.RECIPIENT			recipient        
+			,	MAKE_INFO.MAKER_UID       	maker_uid      
+			,	MAKE_INFO.RECPTOR_UID  	recptor_uid      
+			,	MAKE_INFO.CONTS_UID       	conts_uid      
+			,	MAKE_INFO.MOID       			moid      
+			,	MAKE_INFO.UPT_DTTM       	upt_dttm       
+			,	MAKE_INFO.REG_DTTM        	reg_dttm    
+			,	MAKE_INFO.DEL_YN        	del_yn  
+			
+			, (SELECT p_name FROM USER WHERE user_uid = MAKE_INFO.RECPTOR_UID) consignment_p_name
+			, (SELECT compy_name FROM USER WHERE user_uid = MAKE_INFO.RECPTOR_UID) consignment_compy_name
+			, (SELECT USER_UID FROM CONTS_3D_INFO WHERE CONTS_UID = MAKE_INFO.CONTS_UID) s_user_uid
+			, (SELECT TID FROM PAY_APPR_INFO WHERE Moid = MAKE_INFO.MOID) tid
+			
+			, 	USER.P_NAME             	p_name  
+	        , 	USER.COMPY_NAME		compy_name
+	        , 	USER.MY_PHOTO         	my_photo
+	        , 	USER.PHONE_YN			phone_yn
+	        , 	USER.PHONE_NUM		phone_num
+	        , 	USER.P_LOGIN_ID			p_login_id
+	        , 	USER.USER_TP				user_tp
+
+		FROM	MAKE_INFO, USER
+		WHERE	MAKE_INFO.APPR_UID = USER.USER_UID
+		AND		MAKE_INFO.MAKE_UID = #make_uid# 
+	]]>
+    </select>
+  
+
+
+    <!--  업데이트 -->
+	<update id="ordermadeDAO.updateMakeInfo">
+			UPDATE MAKE_INFO   
+			<dynamic prepend="SET">
+				<isPropertyAvailable prepend="," property="make_p_tp"      > MAKE_P_TP      = #make_p_tp#       </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="make_tp"        > MAKE_TP        = #make_tp#         </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="p_model_tp"     > P_MODEL_TP     = #p_model_tp#      </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="make_req_tp"    > MAKE_REQ_TP    = #make_req_tp#     </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="make_field_tp"  > MAKE_FIELD_TP  = #make_field_tp#   </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="appr_uid"       > APPR_UID       = #appr_uid#        </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="proc_st"        > PROC_ST        = #proc_st#         </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="ordr_dt"        > ORDR_DT        = #ordr_dt#         </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="etmt_dt"        > ETMT_DT        = #etmt_dt#         </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="etmt_end_dt"    > ETMT_END_DT    = #etmt_end_dt#     </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="sttl_dt"        > STTL_DT        = #sttl_dt#         </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="trust_req_dt"   > TRUST_REQ_DT   = #trust_req_dt#    </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="trust_rcpt_dt"  > TRUST_RCPT_DT  = #trust_rcpt_dt#   </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="make_cmpt_dt"   > MAKE_CMPT_DT   = #make_cmpt_dt#    </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="dlvy_dt"        > DLVY_DT        = #dlvy_dt#         </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="buy_cmpt_dt"    > BUY_CMPT_DT    = #buy_cmpt_dt#     </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="refu_req_dttm"  > REFU_REQ_DTTM  = #refu_req_dttm#   </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="refu_agree_dttm"> REFU_AGREE_DTTM= #refu_agree_dttm# </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="make_mthd"      > MAKE_MTHD      = #make_mthd#       </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="title"          > TITLE          = #title#           </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="detail_req"     > DETAIL_REQ     = #detail_req#      </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="hope_rcpt_dt"   > HOPE_RCPT_DT   = #hope_rcpt_dt#    </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="expect_amount"  > EXPECT_AMOUNT  = #expect_amount#   </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="print_mthd"     > PRINT_MTHD     = #print_mthd#      </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="print_svc_tp"   > PRINT_SVC_TP   = #print_svc_tp#    </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="print_size"     > PRINT_SIZE     = #print_size#      </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="dtl_req_rspt"   > DTL_REQ_RSPT   = #dtl_req_rspt#    </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="dlvy_mthd"      > DLVY_MTHD      = #dlvy_mthd#       </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="invoice"        > INVOICE        = #invoice#         </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="maker_uid"      > MAKER_UID      = #maker_uid#       </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="conts_uid"      > CONTS_UID      = #conts_uid#       </isPropertyAvailable> 		
+				<isPropertyAvailable prepend="," property="del_yn"         > DEL_YN         = #del_yn#          </isPropertyAvailable> 	
+				<isPropertyAvailable prepend="," property="make_uid"       > UPT_DTTM   = date_format(now(),'%Y%m%d%H%i%s')</isPropertyAvailable>
+			</dynamic>
+			WHERE MAKE_UID = #make_uid#   
+	</update>
+    
+        
+	<select id="ordermadeDAO.selectMakeAttchFileList" resultClass="java.util.HashMap">
+        <![CDATA[
+     	SELECT
+			   MAKE_UID        make_uid       
+			,  MAKE_FILE_SEQ   make_file_seq  
+			,  CONTS_TP        conts_tp        
+			,  CONTS_FILE_NAME  conts_file_name 
+			,  CONTS_FILE_SIZE  conts_file_size 
+			,  CONTS_SAVE_NAME  conts_save_name 
+			,  CONTS_TITLE      conts_title     
+			,  CONTS_DESC       conts_desc  
+			,  DELEGATE_YN      delegate_yn
+			,  STL_X            stl_x           
+			,  STL_Y            stl_y           
+			,  STL_Z            stl_z           
+			,  STL_THUMNAIL     stl_thumnail    
+			,  STL_VOLUME       stl_volume      
+			,  STL_WEIGHT       stl_weight      
+			,  UPT_DTTM         upt_dttm    
+			,  REG_DTTM         reg_dttm      
+			,  P_LOGIN_ID       p_login_id   
+     	FROM	MAKE_ATTCH_FILE
+     	WHERE	MAKE_UID = #make_uid#
+     	  AND	IFNULL(DEL_YN,'N') = 'N'
+     	ORDER BY DELEGATE_YN DESC, MAKE_FILE_SEQ ASC
+        ]]>
+    </select>
+
+
+	<insert id="ordermadeDAO.insertMakeAttchFile">
+		<selectKey keyProperty="new_make_file_seq" resultClass="int">
+			SELECT IFNULL(MAX(MAKE_FILE_SEQ),0)+1  FROM MAKE_ATTCH_FILE
+		</selectKey>
+		<![CDATA[
+			INSERT INTO MAKE_ATTCH_FILE 
+			(	
+				   MAKE_UID       
+				,  MAKE_FILE_SEQ  
+				,  CONTS_TP        
+				,  CONTS_FILE_NAME 
+				,  CONTS_FILE_SIZE 
+				,  CONTS_SAVE_NAME 
+				,  CONTS_TITLE     
+				,  CONTS_DESC  
+				,  DELEGATE_YN    
+				,  STL_X           
+				,  STL_Y           
+				,  STL_Z           
+				,  STL_THUMNAIL    
+				,  STL_VOLUME      
+				,  STL_WEIGHT      
+				,  UPT_DTTM    
+				,  REG_DTTM 				    
+				,  P_LOGIN_ID      
+   
+			)
+			VALUES 
+			( 		
+					#make_uid#      
+				,	#new_make_file_seq# 
+				,	#conts_tp#       
+				,	#conts_file_name#
+				,	#conts_file_size#
+				,	#conts_save_name#
+				,	#conts_title#    
+				,	#conts_desc#  
+				,	#delegate_yn#   
+				,	#stl_x#          
+				,	#stl_y#          
+				,	#stl_z#          
+				,	#stl_thumnail#   
+				,	#stl_volume#     
+				,	#stl_weight#     
+				,	date_format(now(),'%Y%m%d%H%i%s')     
+				,	date_format(now(),'%Y%m%d%H%i%s')  
+				,	#p_login_id# 
+			)
+		]]>
+	</insert>
+
+	<select id="ordermadeDAO.selectMakeAttchFile" resultClass="java.util.HashMap">
+        <![CDATA[
+     	SELECT
+				   MAKE_UID        make_uid       
+				,  MAKE_FILE_SEQ   make_file_seq  
+				,  CONTS_TP        conts_tp        
+				,  CONTS_FILE_NAME  conts_file_name 
+				,  CONTS_FILE_SIZE  conts_file_size 
+				,  CONTS_SAVE_NAME  conts_save_name 
+				,  CONTS_TITLE      conts_title     
+				,  CONTS_DESC       conts_desc  
+				,  DELEGATE_YN      delegate_yn    
+				,  STL_X            stl_x           
+				,  STL_Y            stl_y           
+				,  STL_Z            stl_z           
+				,  STL_THUMNAIL     stl_thumnail    
+				,  STL_VOLUME       stl_volume      
+				,  STL_WEIGHT       stl_weight      
+				,  UPT_DTTM         upt_dttm        
+				,  REG_DTTM         reg_dttm  				
+				,  P_LOGIN_ID       p_login_id     
+     	FROM	MAKE_ATTCH_FILE
+     	WHERE	MAKE_UID = #make_uid#
+     	AND		MAKE_FILE_SEQ = #make_file_seq#
+        ]]>
+    </select>
+ 
+ 	<update id="ordermadeDAO.updateMakeAttchFile">
+			UPDATE MAKE_ATTCH_FILE
+			<dynamic prepend="SET">
+
+				<isPropertyAvailable prepend="," property="conts_tp"		> CONTS_TP       = #conts_tp#		</isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="conts_file_name"	> CONTS_FILE_NAME= #conts_file_name#</isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="conts_file_size"	> CONTS_FILE_SIZE= #conts_file_size#</isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="conts_save_name"	> CONTS_SAVE_NAME= #conts_save_name#</isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="conts_title"		> CONTS_TITLE    = #conts_title#	</isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="conts_desc"		> CONTS_DESC     = #conts_desc#		</isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="delegate_yn"		> DELEGATE_YN    = #delegate_yn#	</isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="stl_x"			> STL_X          = #stl_x#			</isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="stl_y"			> STL_Y          = #stl_y#			</isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="stl_z"			> STL_Z          = #stl_z#			</isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="stl_thumnail"	> STL_THUMNAIL   = #stl_thumnail#	</isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="stl_volume"		> STL_VOLUME     = #stl_volume#		</isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="stl_weight"		> STL_WEIGHT     = #stl_weight#		</isPropertyAvailable> 
+
+				<isPropertyAvailable prepend="," property="upt_dttm"       > UPT_DTTM       = date_format(now(),'%Y%m%d%H%i%s') </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="p_login_id"     > P_LOGIN_ID     = #p_login_id#      </isPropertyAvailable> 
+				
+			</dynamic>
+			WHERE MAKE_UID = #make_uid# AND MAKE_FILE_SEQ = #make_file_seq#
+	</update>	 
+  
+    	
+    <delete id="ordermadeDAO.deleteMakeAttchFile">
+		<![CDATA[
+			DELETE FROM MAKE_ATTCH_FILE 
+			WHERE	MAKE_UID = #make_uid#
+     		AND		CONTS_SAVE_NAME = #conts_save_name#
+		]]>
+	</delete>
+
+    <delete id="ordermadeDAO.deleteMakeAttchFileNotFileALL">
+		<![CDATA[
+			DELETE FROM MAKE_ATTCH_FILE 
+			WHERE	MAKE_UID = #make_uid#
+     		AND		IFNULL(CONTS_SAVE_NAME,'') = ''
+		]]>
+		<isNotEqual property="make_file_seq_list" compareValue="ALL" prepend="AND">
+ 		MAKE_FILE_SEQ NOT IN ($make_file_seq_list$)
+ 		</isNotEqual> 
+ 		
+	</delete>
+
+	    
+    <!-- 제작정보 삭제 -->
+	<update id="ordermadeDAO.deleteMAKE_INFO">
+			UPDATE MAKE_INFO SET DEL_YN = 'Y'
+			WHERE MAKE_UID = #make_uid#  
+	</update>
+
+    <!-- 제작정보 삭제 : 콘텐츠파일 삭제 -->
+	<update id="ordermadeDAO.deleteMAKE_ATTCH_FILE">
+			UPDATE MAKE_ATTCH_FILE SET DEL_YN = 'Y'
+			WHERE MAKE_UID = #make_uid#   
+	</update>
+
+	<!-- DELEGATE_YN 값을 새로 업데이트한다. -->
+	<!--
+			delegateInfo = new HashMap();
+			delegateInfo.put("make_uid", jsonMap.get("make_uid"));
+			delegateInfo.put("make_file_seq", jsonMap.get("delegate_make_file_seq"));
+			delegateInfo.put("conts_tp", jsonMap.get("01")); // 01:업로드한 stl, jpg등 모든파일
+			delegateInfo.put("delegate_yn", "Y");
+			ajaxContentsDAO.updateMakeAttchFile_Delegate_yn(jsonMap); 
+	 -->
+	
+   	<update id="ordermadeDAO.updateMakeAttchFile_Delegate_yn">
+			UPDATE	MAKE_ATTCH_FILE
+			SET 	DELEGATE_YN = #delegate_yn#
+			WHERE 	MAKE_UID   = #make_uid# 
+			AND 	CONTS_TP    = '01'
+			AND		(	MAKE_FILE_SEQ = #make_file_seq# OR IFNULL(#make_file_seq#,'') = '' )
+	</update>	
+	
+	
+	<!-- 견적[업체]정보(ESTIMATE_INFO) 추가 -->
+	<insert id="ordermadeDAO.insertEstimateInfo">
+		<![CDATA[
+			INSERT INTO ESTIMATE_INFO 
+			(	
+				   MAKE_UID       
+				,  USER_UID  
+				,  ETMT_DT        
+				,  ETMT_AMOUNT 
+				,  ETMT_DESC 
+				,  P_LOGIN_ID 
+				,  ETMT_ST     
+				,  UPT_DTTM  
+			)
+			VALUES 
+			( 		
+				   #make_uid#       
+				,  #user_uid#  
+				,  #etmt_dt#        
+				,  #etmt_amount# 
+				,  #etmt_desc# 
+				,  #p_login_id# 
+				,  #etmt_st#     
+				,  date_format(now(),'%Y%m%d%H%i%s')   
+			)
+		]]>
+	</insert>
+	
+	 <update id="ordermadeDAO.updateEstimateInfo">
+			UPDATE ESTIMATE_INFO
+			<dynamic prepend="SET">
+				<isPropertyAvailable prepend="," property="etmt_dt"    > ETMT_DT    = #etmt_dt#    </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="etmt_amount"> ETMT_AMOUNT= #etmt_amount#</isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="etmt_desc"  > ETMT_DESC  = #etmt_desc#  </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="p_login_id" > P_LOGIN_ID = #p_login_id# </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="etmt_st"    > ETMT_ST    = #etmt_st#    </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="make_uid"   > UPT_DTTM   = date_format(now(),'%Y%m%d%H%i%s')   </isPropertyAvailable> 			
+			</dynamic>
+	     	WHERE	MAKE_UID = #make_uid#
+	     	AND		USER_UID = #user_uid#
+	</update>	
+	
+	<select id="ordermadeDAO.selectEstimateInfo" resultClass="java.util.HashMap">
+        <![CDATA[
+       	SELECT
+				   MAKE_UID     make_uid    
+				,  USER_UID     user_uid    
+				,  ETMT_DT      etmt_dt     
+				,  ETMT_AMOUNT  etmt_amount 
+				,  ETMT_DESC    etmt_desc   
+				,  P_LOGIN_ID   p_login_id  
+				,  ETMT_ST      etmt_st     
+				,  UPT_DTTM     upt_dttm    
+     	FROM	ESTIMATE_INFO
+     	WHERE	MAKE_UID = #make_uid#
+     	AND		USER_UID = #user_uid#
+        ]]>
+    </select>
+	
+	<delete id="ordermadeDAO.deleteEstimateInfo">
+		<![CDATA[
+			DELETE FROM ESTIMATE_INFO 
+	     	WHERE	MAKE_UID = #make_uid#
+	     	AND		USER_UID = #user_uid#
+		]]>
+	</delete>
+	
+	
+	<!-- 견적[업체]정보(ESTIMATE_INFO) 삭제 -->
+	<delete id="ordermadeDAO.deleteEstimateInfo_by_make_uid">
+		<![CDATA[
+			DELETE FROM ESTIMATE_INFO 
+			WHERE	MAKE_UID = #make_uid#
+		]]>
+	</delete>
+	
+	<!-- 견적[업체]정보(ESTIMATE_INFO) 조회리스트 -->
+	<select id="ordermadeDAO.selectEstimateInfoList" resultClass="java.util.HashMap">
+		<![CDATA[
+			SELECT
+				   ESTIMATE_INFO.MAKE_UID     make_uid       
+				,  ESTIMATE_INFO.USER_UID  	user_uid     
+				,  ESTIMATE_INFO.ETMT_DT      etmt_dt        
+				,  ESTIMATE_INFO.ETMT_AMOUNT 	etmt_amount  
+				,  ESTIMATE_INFO.ETMT_DESC 	etmt_desc    
+				,  ESTIMATE_INFO.P_LOGIN_ID 	p_login_id   
+				,  ESTIMATE_INFO.ETMT_ST     	etmt_st      
+				,  ESTIMATE_INFO.UPT_DTTM  	upt_dttm     
+				
+				,  (SELECT COUNT(*) FROM MAKE_INFO WHERE MAKE_INFO.MAKER_UID = USER.USER_UID  ) make_cnt
+			    ,  (SELECT COUNT(*) FROM CONTS_3D_INFO WHERE CONTS_3D_INFO.USER_UID = USER.USER_UID AND IFNULL(CONTS_3D_INFO.DEL_YN,'N') = 'N' ) design_cnt
+			    ,  (SELECT COUNT(*) FROM PRINT_HIST WHERE PRINT_HIST.USER_UID = USER.USER_UID AND IFNULL(PRINT_HIST.DEL_YN,'N') = 'N' ) print_cnt     
+				,  USER.COMPY_NAME      compy_name    
+				,  USER.P_NAME          p_name  
+				,  USER.MY_PHOTO        my_photo  	
+				,  USER.MY_INTRO        my_intro
+				,  USER.T_FOLLOWER      t_follower
+				,  USER.T_FOLLOWING     t_following
+				,  USER.DESIGN_YN       design_yn
+				,  USER.PRINT_YN        print_yn
+
+				,  USER.ROAD_ADDR        road_addr
+				,  USER.JIBUN_ADDR        jibun_addr
+				,  USER.DETAIL_ADDR        detail_addr
+				,  USER.PHONE_NUM        phone_num
+				,  USER.HOME_PAGE        home_page
+								
+			FROM ESTIMATE_INFO, USER 
+		
+		    LEFT OUTER JOIN MODELER
+			ON   USER.USER_UID = MODELER.USER_UID
+      
+            LEFT OUTER JOIN HOLD_3D_PRINTER
+			ON   USER.USER_UID = HOLD_3D_PRINTER.USER_UID
+
+			WHERE	IFNULL(USER.DEL_YN,'N') = 'N'
+			  AND   USER.REG_CERT_ST = 'Y'
+			  AND 	USER.USER_UID = ESTIMATE_INFO.USER_UID		  
+			  AND	ESTIMATE_INFO.MAKE_UID = #make_uid#
+			GROUP BY  USER.USER_UID    
+		]]>
+	</select>
+	
+	<!-- 제작정보(MAKE_INFO) 조회리스트 -->
+	<select id="ordermadeDAO.selectMake_Info_List" resultClass="java.util.HashMap">
+		<![CDATA[
+			SELECT  
+     			MAKE_INFO.MAKE_UID          make_uid       
+			,	MAKE_INFO.MAKE_P_TP       	make_p_tp      
+			,	MAKE_INFO.MAKE_TP         	make_tp        
+			,	MAKE_INFO.P_MODEL_TP      	p_model_tp     
+			,	MAKE_INFO.MAKE_REQ_TP     	make_req_tp    
+			,	MAKE_INFO.MAKE_FIELD_TP   	make_field_tp  
+			,	MAKE_INFO.APPR_UID        	appr_uid       
+			,	MAKE_INFO.PROC_ST         	proc_st        
+			,	MAKE_INFO.ORDR_DT         	ordr_dt        
+			,	MAKE_INFO.ETMT_DT         	etmt_dt        
+			,	MAKE_INFO.ETMT_END_DT     	etmt_end_dt    
+			,	MAKE_INFO.STTL_DT         	sttl_dt        
+			,	MAKE_INFO.TRUST_REQ_DT    	trust_req_dt   
+			,	MAKE_INFO.TRUST_RCPT_DT   	trust_rcpt_dt  
+			,	MAKE_INFO.MAKE_CMPT_DT    	make_cmpt_dt   
+			,	MAKE_INFO.DLVY_DT         	dlvy_dt        
+			,	MAKE_INFO.BUY_CMPT_DT     	buy_cmpt_dt    
+			,	MAKE_INFO.REFU_REQ_DTTM   	refu_req_dttm  
+			,	MAKE_INFO.REFU_AGREE_DTTM 	refu_agree_dttm
+			,	MAKE_INFO.MAKE_MTHD       	make_mthd      
+			,	MAKE_INFO.TITLE           	title          
+			,	MAKE_INFO.DETAIL_REQ      	detail_req     
+			,	MAKE_INFO.HOPE_RCPT_DT    	hope_rcpt_dt   
+			,	MAKE_INFO.EXPECT_AMOUNT   	expect_amount  
+			,	MAKE_INFO.PRINT_MTHD      	print_mthd     
+			,	MAKE_INFO.PRINT_SVC_TP    	print_svc_tp   
+			,	MAKE_INFO.PRINT_SIZE      	print_size     
+			,	MAKE_INFO.DTL_REQ_RSPT    	dtl_req_rspt   
+			,	MAKE_INFO.DLVY_MTHD       	dlvy_mthd      
+			,	MAKE_INFO.INVOICE         	invoice        
+			,	MAKE_INFO.MAKER_UID       	maker_uid      
+			,	MAKE_INFO.CONTS_UID       	conts_uid      
+			,	MAKE_INFO.UPT_DTTM       	upt_dttm       
+			,	MAKE_INFO.REG_DTTM        	reg_dttm    
+			,	MAKE_INFO.DEL_YN        	del_yn  
+			,	(SELECT AVG(ETMT_AMOUNT) FROM ESTIMATE_INFO WHERE MAKE_UID = MAKE_INFO.MAKE_UID) avg_etmt_amount
+			, 	USER.P_NAME                 p_name  
+	        , 	USER.MY_PHOTO               my_photo
+	        , 	USER.COMPY_NAME             compy_name					
+		FROM	MAKE_INFO, USER
+		WHERE	MAKE_INFO.APPR_UID = USER.USER_UID
+		AND		MAKE_INFO.DEL_YN = 'N'  		
+		AND		(
+					IFNULL(#make_uid#,'ALL') = 'ALL' OR MAKE_INFO.MAKE_UID = #make_uid#
+				)
+		AND		( 
+					IFNULL(#appr_uid#,'ALL') = 'ALL' OR MAKE_INFO.APPR_UID = #appr_uid# 
+				)
+		AND	    (
+			      	IFNULL(#make_req_tp#,'ALL') = 'ALL'
+		     		]]> 
+		      		<isNotEqual property="make_req_tp" compareValue="ALL" prepend="OR">
+		 			MAKE_INFO.MAKE_REQ_TP IN ($make_req_tp$)
+		 			</isNotEqual> 
+					<![CDATA[
+			    )		    				
+		AND		( 
+					IFNULL(#make_tp#,'ALL') = 'ALL' OR MAKE_INFO.MAKE_TP = #make_tp# 
+				)
+		AND	    (
+			      	IFNULL(#proc_st#,'ALL') = 'ALL'
+		     		]]> 
+		      		<isNotEqual property="proc_st" compareValue="ALL" prepend="OR">
+		 			MAKE_INFO.PROC_ST IN ($proc_st$)
+		 			</isNotEqual> 
+					<![CDATA[
+			    )	
+		AND		(
+					IFNULL(#print_corp_user_uid#,'ALL') = 'ALL' 
+					OR
+					(
+						MAKE_INFO.MAKE_UID IN (SELECT MAKE_UID FROM ESTIMATE_INFO WHERE USER_UID = #print_corp_user_uid#)
+					)
+				)				
+		ORDER BY MAKE_INFO.REG_DTTM DESC
+				
+		]]>
+	</select>
+	
+
+	<!-- 결제요청 추가 -->
+	<insert id="ordermadeDAO.insertPayRequest">
+		<![CDATA[
+			INSERT INTO PAY_REQ_INFO 
+			(	
+				Moid           
+				,  PayMethod         
+				,  GoodsCnt       
+				,  GoodsName      
+				,  Amt            
+				,  BuyerName      
+				,  BuyerTel       
+				,  UserIP         
+				,  MallIP         
+				,  EncodeParameter
+				,  SocketYN       
+				,  EdiDate        
+				,  EncryptData    
+				,  GoodsCl        
+				,  BuyerAuthNum   
+				,  BuyerEmail     
+				,  ParentEmail    
+				,  BuyerAddr      
+				,  BuyerPostNo    
+				,  SUB_ID         
+				,  MallUserID     
+				,  VbankExpDate   
+				,  REG_DTTM       
+				,  DEL_YN         
+				,  B_USER_UID  
+				,  S_USER_UID 
+				,  S_CONTS_UID      
+				,  S_MAKE_UID       
+
+			)
+			VALUES 
+			( 
+				#moid#           
+				,  #paymethod#         
+				,  #goodscnt#       
+				,  #goodsname#      
+				,  #amt#            
+				,  #buyername#      
+				,  #buyertel#       
+				,  #userip#         
+				,  #mallip#         
+				,  #encodeparameter#
+				,  #socketyn#       
+				,  #edidate#        
+				,  #encryptdata#    
+				,  #goodscl#        
+				,  #buyerauthnum#   
+				,  #buyeremail#     
+				,  #parentemail#    
+				,  #buyeraddr#      
+				,  #buyerpostno#    
+				,  #sub_id#         
+				,  #malluserid#     
+				,  #vbankexpdate#   
+				,  date_format(now(),'%Y%m%d%H%i%s') 
+				,  'N'         
+				,  #b_user_uid#  
+				,  #s_user_uid# 
+				,  #s_conts_uid#      
+				,  #s_make_uid#  
+			)
+		]]>
+	</insert>	
+
+	<!-- 결제결과 추가 -->
+	<insert id="ordermadeDAO.insertPayResult">
+		<![CDATA[
+			INSERT INTO PAY_APPR_INFO 
+			(	
+				   TID          
+				,  Moid   
+				,  ResultCode   
+				,  ResultMsg    
+				,  PayMethod    
+				,  Amt          
+				,  AuthDate     
+				,  AuthCode     
+				,  CardCode     
+				,  CardName     
+				,  CardQuota    
+				,  CardCl       
+				,  CcPartCl     
+				,  BankCode     
+				,  BankName     
+				,  RcptType     
+				,  VbankBankCode
+				,  VbankBankName
+				,  VbankNum     
+				,  Carrier      
+				,  DstAddr      
+				,  REG_DTTM     
+				,  DEL_YN    
+				,  PROC_ST  
+
+			)
+			VALUES 
+			( 
+          
+				   #tid#            
+				,  #moid#    
+				,  #resultcode#     
+				,  #resultmsg#      
+				,  #paymethod#      
+				,  #amt#            
+				,  #authdate#       
+				,  #authcode#       
+				,  #cardcode#       
+				,  #cardname#       
+				,  #cardquota#      
+				,  #cardcl#         
+				,  #ccpartcl#       
+				,  #bankcode#       
+				,  #bankname#       
+				,  #rcpttype#       
+				,  #vbankbankcode#  
+				,  #vbankbankname#  
+				,  #vbanknum#       
+				,  #carrier#        
+				,  #dstaddr#        
+				,  date_format(now(),'%Y%m%d%H%i%s') 
+				,  'N'   
+				,  #proc_st# 				     
+			)
+		]]>
+	</insert>
+	
+	<select id="ordermadeDAO.select_pay_list_total_cnt" resultClass="java.util.HashMap">
+	<![CDATA[
+		SELECT 
+					COUNT(CPAY_ORDER_NUM) total_cnt
+		FROM 		CPAY_TRADING
+		WHERE 		DATE(CPAY_AUTH_DT) >= DATE(#dttm1#)
+		AND			DATE(CPAY_AUTH_DT) <= DATE(#dttm2#)
+		AND		(
+					IFNULL(#sell_tp#,'ALL') = 'ALL' OR CPAY_RESULT = #sell_tp#
+				)
+		ORDER BY CPAY_AUTH_DT DESC	
+	]]>
+	</select>
+	
+	<select id="ordermadeDAO.select_pay_list" resultClass="java.util.HashMap">
+	<![CDATA[
+		SELECT 		
+					CPAY_AUTH_DT		cpay_auth_dt,
+					CPAY_TID			cpay_tid,
+					CPAY_CANCEL_DT		cpay_cancel_dt,
+					CPAY_ORG_TID		cpay_org_tid,
+					CPAY_GOODSNAME		cpay_goodsname,
+					CPAY_AMT			cpay_amt,
+					CPAY_ST				cpay_st,
+					CPAY_AUTHCODE		cpay_authcode,
+					CPAY_ORDER_NUM		cpay_order_num,
+					CPAY_MSUB_ID		cpay_msub_id,
+					CPAY_CBANK_CD		cpay_cbank_cd,
+					CPAY_ACCTNUM		cpay_acctnum,
+					CPAY_INQ_DTTM		cpay_inq_dttm,
+					CPAY_RESULT			cpay_result
+		FROM 		CPAY_TRADING		
+		WHERE 		DATE(CPAY_AUTH_DT) >= DATE(#dttm1#)
+		AND			DATE(CPAY_AUTH_DT) <= DATE(#dttm2#)
+		AND		(
+					IFNULL(#sell_tp#,'ALL') = 'ALL' OR CPAY_RESULT = #sell_tp#
+				)
+		ORDER BY CPAY_AUTH_DT DESC
+		LIMIT #start_index#, #max_ret_count#
+	]]>
+	</select>
+	
+	<select id="ordermadeDAO.select_deposit_list_total_cnt" resultClass="java.util.HashMap">
+	<![CDATA[
+		SELECT 
+					COUNT(MOID)	total_cnt, CASE WHEN SUM(CSTTL_AMT)= 'NULL' THEN 0 ELSE SUM(CSTTL_AMT) END total_amt
+		FROM 		CSTTL_INFO
+		WHERE 		DATE(DEP_DT) >= DATE(#dttm1#)
+		AND			DATE(DEP_DT) <= DATE(#dttm2#)
+		AND 
+			(
+				IFNULL(#conts_word#,'') = '' 
+				OR ( MOID LIKE CONCAT('%',#conts_word#, '%')) 
+			) 			
+	]]>
+	</select>
+	
+	<select id="ordermadeDAO.select_deposit_list" resultClass="java.util.HashMap">
+	<![CDATA[
+		SELECT 
+					DEP_DT			dep_dt,
+					CSTTL_ST		csttl_st,
+					CSTTL_AC_DT		csttl_ac_dt,
+					CSTTL_AC_AMT	csttl_ac_amt,
+					CSTTL_AMT		csttl_amt,
+					CSTTL_DT		csttl_dt,
+					CSTTL_FEES		csttl_fees,
+					CSTTL_TAX		csttl_tax,
+					CSTTL_TR_TP		csttl_tr_tp,
+					MOID			moid
+		FROM 		CSTTL_INFO
+		WHERE 		DATE(DEP_DT) >= DATE(#dttm1#)
+		AND			DATE(DEP_DT) <= DATE(#dttm2#)
+		AND 
+			(
+				IFNULL(#conts_word#,'') = '' 
+				OR ( MOID LIKE CONCAT('%',#conts_word#, '%')) 
+			)
+			ORDER BY DEP_DT DESC 
+			LIMIT #start_index#, #max_ret_count#
+	]]>
+	<!--  ordermadeDAO.select_deposit_list 원코드
+	SELECT 	tb1.MAKE_UID make_uid,
+			tb1.MAKE_TP make_tp,
+			tb1.MAKE_REQ_TP make_req_tp,
+			tb1.APPR_UID appr_uid,
+			tb1.PROC_ST proc_st,
+			tb1.TITLE title,
+			tb1.MAKER_UID maker_uid,
+			tb2.Moid moid,
+			tb2.Amt amt,
+			tb2.ResultCode resultcode,
+			tb2.REG_DTTM reg_dttm,
+			
+			(SELECT P_NAME FROM USER WHERE USER_UID = maker_uid) maker_p_name,
+			(SELECT COMPY_NAME FROM USER WHERE USER_UID = maker_uid) maker_compy_name,
+			(SELECT P_NAME FROM USER WHERE USER_UID = appr_uid) appr_p_name,
+			(SELECT COMPY_NAME FROM USER WHERE USER_UID = appr_uid) appr_compy_name,
+			
+			tb2.CSTTL_STTL_DT csttl_sttl_dt,
+			tb2.CSTTL_ST csttl_st,
+			tb2.CSTTL_AC_DT csttl_ac_dt,
+			tb2.CSTTL_AC_AMT csttl_ac_amt,
+			tb2.CSTTL_FEES csttl_fees,
+			tb2.CSTTL_TAX csttl_tax,
+			tb2.PROC_ST post_st
+			
+		FROM MAKE_INFO AS tb1, PAY_APPR_INFO AS tb2
+		
+		WHERE tb1.Moid = tb2.MOID
+		AND tb1.PROC_ST = '71'
+		AND tb2.ResultCode IN ('3001', '4000', 'A000', '4100')
+	 -->
+	</select>
+	<select id="ordermadeDAO.pay_calculate_list" resultClass="java.util.HashMap">
+	<![CDATA[
+		SELECT 
+						DEP_DT			dep_dt,
+						AUTH_CNT		auth_cnt,
+						AUTH_AMT		auth_amt,
+						CANCEL_CNT		cancel_cnt,
+						CANCEL_AMT		cancel_amt,
+						HOLD_PAY_AMT		hold_pay_amt,
+						HOLD_CPAY_AMT		hold_cpay_amt,
+						OFFSET_AMT		offset_amt,
+						FEES			fees,
+						TAX			tax,
+						DEP_AMT			dep_amt
+		FROM	 		PAY_DEPOSIT_INFO
+		WHERE			DATE(DEP_DT) >= DATE(#dttm1#)
+		AND				DATE(DEP_DT) <= DATE(#dttm2#)
+						ORDER BY DEP_DT DESC 
+						LIMIT #start_index#, #max_ret_count#
+		]]>
+	</select>
+	<select id="ordermadeDAO.pay_calculate_list_total_cnt" resultClass="java.util.HashMap">
+	<![CDATA[
+		SELECT 			COUNT(DEP_DT) total_cnt , SUM(DEP_AMT) s_amt, SUM(FEES) s_fees, SUM(TAX) s_tax 
+		FROM 			PAY_DEPOSIT_INFO
+		WHERE			DATE(DEP_DT) >= DATE(#dttm1#)
+		AND				DATE(DEP_DT) <= DATE(#dttm2#)
+	]]>
+	</select>
+	<select id="ordermadeDAO.refund_list" resultClass="java.util.HashMap">
+	<![CDATA[
+		SELECT * FROM (
+			SELECT		MAKE_UID	make_uid
+						, REFUND_SEQ	refund_seq
+						, REFUND_DESC	refund_desc
+						, REFUND_ST 	refund_st
+						, REFUND_AMOUNT refund_amount
+						, PAY_AMOUNT pay_amount
+						, B_USER_UID	b_user_uid
+						, S_USER_UID	s_user_uid
+						, APPR_YN	appr_yn
+						, MOID		moid
+						, REG_DTTM	reg_dttm
+						, UPT_DTTM	upt_dttm
+						, (SELECT P_NAME FROM USER WHERE USER_UID = B_USER_UID) AS p_name
+						, (SELECT COMPY_NAME FROM USER WHERE USER_UID = B_USER_UID) AS compy_name
+						, (SELECT P_NAME FROM USER WHERE USER_UID = S_USER_UID) AS s_p_name
+						, (SELECT COMPY_NAME FROM USER WHERE USER_UID = S_USER_UID) AS s_compy_name
+			FROM REFUND
+			ORDER BY REG_DTTM DESC) AS t1
+		LIMIT #start_index#, #max_ret_count#
+		]]>
+	</select>
+	
+	<select id="ordermadeDAO.refund_list_total_cnt" resultClass="int">
+	<![CDATA[
+		SELECT 	COUNT(REG_DTTM)
+		FROM	REFUND
+	]]>
+	</select>
+	
+	<select id="ordermadeDAO.select_refund_info" resultClass="java.util.HashMap">
+	<![CDATA[
+		SELECT REFUND_SEQ refund_seq,
+			MAKE_UID make_uid,
+			REFUND_ST refund_st,
+			REFUND_DESC refund_desc,
+			REFUND_AMOUNT refund_amount,
+			PAY_AMOUNT pay_amount,
+			B_USER_UID b_user_uid,
+			S_USER_UID s_user_uid,
+			APPR_YN appr_yn,
+			Moid moid,
+			(SELECT P_NAME FROM USER WHERE USER_UID = B_USER_UID) AS p_name,
+			(SELECT COMPY_NAME FROM USER WHERE USER_UID = B_USER_UID) AS compy_name,
+			(SELECT P_NAME FROM USER WHERE USER_UID = S_USER_UID) AS s_p_name,
+			(SELECT COMPY_NAME FROM USER WHERE USER_UID = S_USER_UID) AS s_compy_name,
+			REG_DTTM reg_dttm,
+			UPT_DTTM upt_dttm
+		FROM REFUND
+		WHERE MAKE_UID = #make_uid#
+	]]>
+	</select>
+	
+	<update id="ordermadeDAO.update_refund_info">
+		UPDATE REFUND
+		<dynamic prepend="SET">
+			<isPropertyAvailable prepend="," property="refund_st"> REFUND_ST = #refund_st# </isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="refund_desc"> REFUND_DESC = #refund_desc# </isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="refund_amount"> REFUND_AMOUNT = #refund_amount# </isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="appr_yn"> APPR_YN = #appr_yn# </isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="make_uid"> UPT_DTTM = DATE_FORMAT(NOW(),'%Y%m%d%H%i%s') </isPropertyAvailable> 
+		</dynamic>
+		WHERE MAKE_UID = #make_uid#
+	</update>	 
+	
+	<update id="ordermadeDAO.updateRefundInfo">
+			UPDATE REFUND
+			<dynamic prepend="SET">
+				<isPropertyAvailable prepend="," property="refund_st" > REFUND_ST = #refund_st# </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="appr_yn" > APPR_YN = #appr_yn# </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="tid" > TID = #tid# </isPropertyAvailable> 
+				<isPropertyAvailable prepend="," property="refund_seq" > UPT_DTTM = DATE_FORMAT(NOW(),'%Y%m%d%H%i%s') </isPropertyAvailable> 
+			</dynamic>
+			WHERE moid = #moid#
+	</update>
+	<!--  빠진 문구 <isPropertyAvailable prepend="," property="pay_cancel_seq" > PAY_CANCEL_SEQ = #pay_cancel_seq# </isPropertyAvailable> -->	
+	<insert id="ordermadeDAO.insert_cancel_info">
+		<![CDATA[
+			INSERT INTO PAY_CANCEL_INFO (
+				TID, CancelAmt, CancelPwd, CancelMsg, PartialCancelCode, Moid, REG_DTTM, ORG_TID
+			) VALUES (
+				#TID#,
+				#CancelAmt#,
+				#CancelPwd#,
+				#ResultMsg#,
+				#PartialCancelCode#,
+				#moid#,
+				DATE_FORMAT(NOW(),'%Y%m%d%H%i%s'),
+				#org_tid#
+			)
+		]]>
+		<selectKey resultClass="int">
+			SELECT LAST_INSERT_ID();
+		</selectKey>
+	</insert>
+	<update id="ordermadeDAO.cpay_update">
+			UPDATE 	CPAY_TRADING
+			SET		CPAY_RESULT = 3
+					,REG_DTTM = (SELECT DATE_FORMAT(NOW(),'%Y%m%d%H%i%s'))
+			WHERE	CPAY_ORG_TID = #org_tid#
+			AND	  	CPAY_RESULT = 2
+	</update>
+</sqlMap>

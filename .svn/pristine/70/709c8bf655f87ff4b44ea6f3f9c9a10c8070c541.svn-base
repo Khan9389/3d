@@ -1,0 +1,2269 @@
+package com.asia3d.member.service.impl;
+
+import java.io.*;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.poi.*;
+import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.hssf.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.asia3d.member.service.AjaxMemberService;
+import com.asia3d.util.DateUtil;
+import com.asia3d.util.DownUtil;
+import com.asia3d.util.FileUtil;
+import com.asia3d.util.KakaoThumnail;
+import com.asia3d.util.Log;
+import com.asia3d.util.PropertyUtil;
+import com.asia3d.util.StrUtil;
+
+@Service("ajaxMemberService")
+public class AjaxMemberServiceImpl implements AjaxMemberService {
+
+	private String PROP_FILE = "/property/3dbank.properties";
+
+	private static final Logger LOGGER = LoggerFactory
+			.getLogger(AjaxMemberServiceImpl.class);
+
+	@Autowired
+	private AjaxMemberDAO ajaxMemberDAO;
+
+	@Resource(name = "messageSource")
+	MessageSource messageSource;
+
+	@Override
+	public Map<String, Object> user_reg(HashMap<String, Object> jsonMap,
+			HttpServletRequest request) throws Exception {
+		if ("c".equals(jsonMap.get("crud_tp"))) {
+			jsonMap = user_reg_c(jsonMap);
+
+			if ("000".equals(jsonMap.get("retcode"))) {
+			}
+		} else if ("r".equals(jsonMap.get("crud_tp"))) {
+			jsonMap = user_reg_r(jsonMap);
+		} else if ("u".equals(jsonMap.get("crud_tp"))) {
+			jsonMap = user_reg_u(jsonMap);
+		}
+
+		return jsonMap;
+	}
+
+	/*
+	 * 회원등록
+	 */
+	public HashMap<String, Object> user_reg_c(HashMap<String, Object> jsonMap)
+			throws Exception {
+
+		PropertyUtil pl = new PropertyUtil(PROP_FILE);
+
+		if (ajaxMemberDAO.selectUser_by_p_login_id(jsonMap) != null) {
+			jsonMap = new HashMap<String, Object>();
+			jsonMap.put("retcode", "991");
+			jsonMap.put("retmsg", "이미 등록된 로그인ID입니다.");
+			return jsonMap;
+		}
+
+		/*
+		 * 추천인등록을 할 경우
+		 */
+		if (jsonMap.get("rcmder_id") != null
+				&& jsonMap.get("rcmder_id").toString().length() > 0) {
+			if (jsonMap.get("rcmder_id").equals(jsonMap.get("p_login_id"))) {
+				jsonMap = new HashMap<String, Object>();
+				jsonMap.put("retcode", "992");
+				jsonMap.put("retmsg", "본인의 이메일을 추천인 이메일(아이디)로 사용할 수 없습니다.");
+				return jsonMap;
+			}
+
+			HashMap<String, Object> rcmder_info = new HashMap<String, Object>();
+			rcmder_info.put("p_login_id", jsonMap.get("rcmder_id"));
+			rcmder_info = ajaxMemberDAO.selectUser_by_p_login_id(rcmder_info);
+			if (rcmder_info == null) {
+				jsonMap = new HashMap<String, Object>();
+				jsonMap.put("retcode", "993");
+				jsonMap.put("retmsg", "존재하지 않는 추천인 이메일(아이디)입니다.");
+				return jsonMap;
+			}
+			// 유효한 추천인일 경우 처리.
+			jsonMap.put("rcmder_uid", rcmder_info.get("user_uid"));
+		}
+
+		// '[가입인증구분]\r\n1:이메일\r\n2:모바일',
+		if ("1".equals(jsonMap.get("reg_cert_tp"))) {
+			URL url = getClass().getResource(
+					"/property/MAIL_AUTH_CONFIRM_TMP.txt");
+			Log.print(LOGGER, "### url.getPath()=[" + url.getPath() + "]");
+
+			StringBuffer sb = new StringBuffer();
+			ArrayList<?> alist = FileUtil.getOneLineListToFileUTF8(url
+					.getPath());
+			Log.print(LOGGER, "### line.size=[" + alist.size() + "]");
+			if (alist == null || alist.size() <= 0) {
+				jsonMap.put("retcode", "999");
+				jsonMap.put("retmsg",
+						"### 오류!! 보낼 메일내용을 읽을수 없습니다.[" + url.getPath() + "]");
+			}
+
+			String reg_cert_num = StrUtil.getGetRandomCode(4) + "-"
+					+ StrUtil.getGetRandomCode(4) + "-"
+					+ StrUtil.getGetRandomCode(4);
+
+			for (int iline = 0; iline < alist.size(); iline++) {
+				String line = (String) alist.get(iline);
+
+				// 받는사람-이름
+				line = line.replaceAll("\\$p_name\\$",
+						(String) jsonMap.get("p_name"));
+				// 받는사람-아이디
+				line = line.replaceAll("\\$p_login_id\\$",
+						(String) jsonMap.get("p_login_id"));
+				// date
+				line = line.replaceAll("\\$DATE\\$",
+						DateUtil.getDateNTimeByForm("yyyy/MM/dd") + "-"
+								+ DateUtil.getDateNTimeByForm("HH:mm:ss"));
+				// 글내용
+				line = line.replaceAll("\\$reg_cert_num\\$", reg_cert_num);
+				// SITE_DOMAIN
+				line = line.replaceAll("\\$SITE_DOMAIN\\$",
+						pl.get("SITE_DOMAIN"));
+
+				sb.append(line + "\n");
+			}
+
+			jsonMap.put("reg_cert_num", reg_cert_num);
+			jsonMap.put("req_reg_dttm",
+					DateUtil.getDateNTimeByForm("yyyyMMddHHmmss"));
+			jsonMap.put("reg_cert_st", "N");
+			jsonMap.put("reg_cert_tp", "1");
+
+			Log.print(LOGGER, "### 가입메일=[" + sb.toString() + "]");
+
+			SendMemberMail sendMailSingle = new SendMemberMail(
+					(String) jsonMap.get("p_login_id"),
+					"[3dbank.xyz] 가입인증 메일입니다.", sb.toString());
+			sendMailSingle.run();
+		} else if ("2".equals(jsonMap.get("reg_cert_tp"))) {
+			// SMS인증
+		} else {
+			jsonMap.put("retcode", "999");
+			jsonMap.put("retmsg", "필수조건~~ 가입인증구분(reg_cert_tp):1:이메일,2:모바일");
+			return jsonMap;
+		}
+
+		ajaxMemberDAO.user_reg(jsonMap);
+
+		jsonMap.put("retcode", "000");
+		jsonMap.put("retmsg", "정상적으로 인증메일이 발송되었습니다.");
+
+		return jsonMap;
+	}
+
+	public static void main(String h[]) {
+		AjaxMemberServiceImpl test = new AjaxMemberServiceImpl();
+
+		URL url = test.getClass().getResource(
+				"/property/MAIL_AUTH_CONFIRM_TMP.txt");
+		Log.print(LOGGER, "### url.getPath()=[" + url.getPath() + "]");
+
+		StringBuffer sb = new StringBuffer();
+		ArrayList<?> alist = FileUtil.getOneLineListToFileUTF8(url.getPath());
+		Log.print(LOGGER, "### line.size=[" + alist.size() + "]");
+
+		PropertyUtil pl = new PropertyUtil(test.PROP_FILE);
+
+		String reg_cert_num = StrUtil.getGetRandomCode(4) + "-"
+				+ StrUtil.getGetRandomCode(4) + "-"
+				+ StrUtil.getGetRandomCode(4);
+
+		for (int iline = 0; iline < alist.size(); iline++) {
+			String line = (String) alist.get(iline);
+
+			// 받는사람-이름
+			line = line.replaceAll("\\$p_name\\$", "이영호");
+			// 받는사람-아이디
+			line = line.replaceAll("\\$p_login_id\\$", "art_05@nate.com");
+			// date
+			line = line.replaceAll(
+					"\\$DATE\\$",
+					DateUtil.getDateNTimeByForm("yyyy/MM/dd") + "-"
+							+ DateUtil.getDateNTimeByForm("HH:mm:ss"));
+			// 글내용
+			line = line.replaceAll("\\$reg_cert_num\\$", reg_cert_num);
+			// SITE_DOMAIN
+			line = line.replaceAll("\\$SITE_DOMAIN\\$", pl.get("SITE_DOMAIN"));
+
+			System.out.println("line:[" + line + "]");
+
+			sb.append(line + "\n");
+		}
+
+		SendMemberMail sendMailSingle = new SendMemberMail("art_05@nate.com",
+				"[3dbank.xyz] 가입인증 메일입니다.", sb.toString());
+		try {
+			sendMailSingle.run();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/*
+	 * 회원조회
+	 */
+	public HashMap<String, Object> user_reg_r(HashMap<String, Object> jsonMap)
+			throws Exception {
+
+		HashMap<String, Object> select_map = ajaxMemberDAO
+				.selectUser_by_p_login_id(jsonMap);
+
+		if (select_map == null) {
+			jsonMap = new HashMap<String, Object>();
+			jsonMap.put("retcode", "991");
+			jsonMap.put("retmsg", "존재하지 않는 로그인ID입니다.");
+			return jsonMap;
+		}
+
+		select_map.put("pplio_tp", "9");
+		List<?> pplio_list = ajaxMemberDAO.selectPortfolioList(select_map);
+		select_map.put("pplio_list", pplio_list);
+
+		List<?> corp_user_list = ajaxMemberDAO.selectCorpUserList(select_map);
+		select_map.put("corp_user_list", corp_user_list);
+
+		select_map.put("retcode", "000");
+		select_map.put("retmsg", "정상적으로 조회되었습니다.");
+
+		return select_map;
+	}
+
+	/*
+	 * 회원정보업데이트
+	 */
+	public HashMap<String, Object> user_reg_u(HashMap<String, Object> jsonMap)
+			throws Exception {
+
+		HashMap<String, Object> select_map = ajaxMemberDAO
+				.selectUser_by_p_login_id(jsonMap);
+
+		if (select_map == null) {
+			jsonMap = new HashMap<String, Object>();
+			jsonMap.put("retcode", "991");
+			jsonMap.put("retmsg", "존재하지 않는 로그인ID입니다.");
+			return jsonMap;
+		}
+
+		jsonMap.put("user_uid", select_map.get("user_uid"));
+
+		// 회원정보업데이트
+		int upt = ajaxMemberDAO.updateUser_by_p_login_id(jsonMap);
+		Log.print(LOGGER, "ajaxMemberDAO.updateUser_by_p_login_id upt=[" + upt
+				+ "]");
+
+		// 기업사용자 업데이트
+		ajaxMemberDAO.deleteCorpUsers(select_map);
+		if (jsonMap.get("corp_user_list") != null) {
+			List<HashMap<String, Object>> mList = (List) jsonMap
+					.get("corp_user_list");
+			for (int i = 0; i < mList.size(); i++) {
+				if (mList.get(i).get("p_login_id") == null
+						|| ((String) mList.get(i).get("p_login_id")).length() == 0) {
+					continue;
+				}
+
+				// 업데이트 날짜가 없다면 지금 추가한 것으로 보구 날짜를 셋팅해준다.
+				if (mList.get(i).get("upt_dttm") == null
+						|| ((String) mList.get(i).get("upt_dttm")).length() == 0) {
+					mList.get(i).put("upt_dttm",
+							DateUtil.getDateNTimeByForm("yyyyMMddHHmmss"));
+				}
+				mList.get(i).put("user_uid", select_map.get("user_uid"));
+
+				Log.print(LOGGER,
+						"ajaxMemberDAO.insertCorpUser=" + mList.get(i));
+				ajaxMemberDAO.insertCorpUser(mList.get(i));
+			}
+		}
+
+		// jsonMap = new HashMap<String, Object>();
+		jsonMap.put("retcode", "000");
+		jsonMap.put("retmsg", "정상적으로 업데이트 되었습니다.");
+
+		return jsonMap;
+	}
+
+	@Override
+	public Map<String, Object> mail_auth_confirm(HashMap<String, Object> jsonMap)
+			throws Exception {
+		// TODO Auto-generated method stub
+
+		HashMap map = ajaxMemberDAO.selectUser_by_p_login_id(jsonMap);
+
+		Log.print(LOGGER, "ajaxMemberDAO.selectUser_by_p_login_id map=" + map);
+		if (map == null) {
+			jsonMap = new HashMap<String, Object>();
+			jsonMap.put("retcode", "991");
+			jsonMap.put("retmsg", "미등록된 로그인ID입니다.");
+			return jsonMap;
+		}
+
+		if ("Y".equals(map.get("reg_cert_st"))) {
+			jsonMap = new HashMap<String, Object>();
+			jsonMap.put("retcode", "992");
+			jsonMap.put("retmsg", "이미 인증된 로그인ID입니다.");
+			return jsonMap;
+		}
+
+		if (!jsonMap.get("reg_cert_num").equals(map.get("reg_cert_num"))) {
+			jsonMap = new HashMap<String, Object>();
+			jsonMap.put("retcode", "993");
+			jsonMap.put("retmsg", "해당 로그인ID에 대한 인증번호가 서로 틀립니다.");
+			return jsonMap;
+		}
+
+		HashMap<String, Object> update_map = new HashMap<String, Object>();
+		// 회원정보업데이트
+		update_map.put("p_login_id", jsonMap.get("p_login_id"));
+		update_map.put("reg_cert_st", "Y");
+
+		int upt = ajaxMemberDAO.updateUser_by_p_login_id(update_map);
+		Log.print(LOGGER, "ajaxMemberDAO.updateUser_by_p_login_id upt=[" + upt
+				+ "]");
+
+		jsonMap = new HashMap<String, Object>();
+		jsonMap.put("retcode", "000");
+		jsonMap.put("retmsg", "정상적으로 인증되었습니다. 로그인 후 사용하시기 바랍니다.");
+
+		return jsonMap;
+	}
+
+	/*
+	 * 로그인
+	 */
+	@Override
+	public Map<String, Object> user_login(HashMap<String, Object> jsonMap,
+			HttpServletRequest request) throws Exception {
+		// TODO Auto-generated method stub
+
+		request.getSession().invalidate();
+
+		HashMap map = ajaxMemberDAO.selectUser_by_p_login_id(jsonMap);
+
+		Log.print(LOGGER, "ajaxMemberDAO.selectUser_by_p_login_id map=" + map);
+		if (map == null) {
+			jsonMap = new HashMap<String, Object>();
+			jsonMap.put("retcode", "991");
+			jsonMap.put("retmsg", "미등록된 로그인ID입니다.");
+			return jsonMap;
+		}
+
+		if (map.get("p_pswd") == null
+				|| ((String) map.get("p_pswd")).length() == 0) {
+			if (map.get("sns_tp") != null
+					&& ((String) map.get("p_pswd")).length() > 0) {
+				jsonMap = new HashMap<String, Object>();
+				jsonMap.put("retcode", "993");
+				jsonMap.put("retmsg", "SNS를 통해 가입된 사용자입니다.");
+				return jsonMap;
+			}
+		}
+
+		if (!jsonMap.get("p_pswd").equals(map.get("p_pswd"))) {
+			jsonMap = new HashMap<String, Object>();
+			jsonMap.put("retcode", "992");
+			jsonMap.put("retmsg", "비밀번호가 틀렸습니다.");
+			return jsonMap;
+		}
+
+		if (!"Y".equals((String) map.get("reg_cert_st"))) {
+			jsonMap = new HashMap<String, Object>();
+			jsonMap.put("retcode", "993");
+			jsonMap.put("retmsg", "아직 메일을 통해 인증받지 않은 사용자입니다..");
+			return jsonMap;
+		}
+
+		HashMap<String, Object> update_map = new HashMap<String, Object>();
+		// 회원정보업데이트
+		update_map.put("p_login_id", map.get("p_login_id"));
+		update_map.put("lst_login_dttm",
+				DateUtil.getDateNTimeByForm("yyyyMMddHHmmss"));
+		update_map.put("login_cnt", (map.get("login_cnt") == null ? 0
+				: (int) map.get("login_cnt")) + 1);
+		int upt = ajaxMemberDAO.updateUser_by_p_login_id(update_map);
+
+		Log.print(LOGGER, "ajaxMemberDAO.updateUser_by_p_login_id upt=[" + upt
+				+ "]");
+
+		jsonMap.put("retcode", "000");
+		jsonMap.put("retmsg", "정상적으로 로그인되었습니다.");
+
+		if (map.get("corp_p_login_id") == null) {
+			map.put("corp_p_login_id", map.get("p_login_id"));
+			map.put("corp_p_name", map.get("p_name"));
+		}
+
+		if ("000".equals(jsonMap.get("retcode"))) {
+			Log.print(LOGGER, "login OK : request.getSession().getId()=["
+					+ request.getSession().getId() + "]");
+			if (map.get("user_uid") != null) {
+				request.getSession().setAttribute("user_uid",
+						String.valueOf(map.get("user_uid")));
+
+				request.getSession().setAttribute("post_code",
+						String.valueOf(map.get("post_code")));
+				request.getSession().setAttribute("road_addr",
+						String.valueOf(map.get("road_addr")));
+				request.getSession().setAttribute("jibun_addr",
+						String.valueOf(map.get("jibun_addr")));
+				request.getSession().setAttribute("detail_addr",
+						String.valueOf(map.get("detail_addr")));
+				request.getSession().setAttribute("phone_num",
+						String.valueOf(map.get("phone_num")));
+
+				request.getSession().setAttribute("sns_id",
+						String.valueOf(map.get("sns_id")));
+				request.getSession().setAttribute("sns_tp",
+						String.valueOf(map.get("sns_tp")));
+				request.getSession().setAttribute("age",
+						String.valueOf(map.get("age")));
+				request.getSession().setAttribute("gender",
+						String.valueOf(map.get("gender")));
+				request.getSession().setAttribute("r_name",
+						String.valueOf(map.get("r_name")));
+
+				request.getSession().setAttribute("corp_p_login_id",
+						map.get("corp_p_login_id"));
+				request.getSession().setAttribute("corp_p_name",
+						map.get("corp_p_name"));
+				request.getSession().setAttribute("p_login_id",
+						map.get("p_login_id"));
+				request.getSession().setAttribute("p_name", map.get("p_name"));
+				request.getSession()
+						.setAttribute("user_tp", map.get("user_tp"));
+				request.getSession().setAttribute("compy_name",
+						map.get("compy_name"));
+				request.getSession().setAttribute("my_photo",
+						map.get("my_photo"));
+				request.getSession().setAttribute("lst_hit_dttm",
+						DateUtil.getDateNTimeByForm("yyyyMMddHHmmss"));
+			}
+		}
+
+		return jsonMap;
+	}
+
+	/**
+	 * 운영자로그인
+	 */
+	@Override
+	public Map<String, Object> admin_login(HashMap<String, Object> jsonMap,
+			HttpServletRequest request) throws Exception {
+		request.getSession().invalidate();
+		HashMap map = ajaxMemberDAO.selectUser_by_p_login_id(jsonMap);
+		HashMap map1 = ajaxMemberDAO.selectAdmin_by_p_login_id(jsonMap);
+		if (map == null) {
+			jsonMap = new HashMap<String, Object>();
+			jsonMap.put("retcode", "991");
+			jsonMap.put("retmsg", "미등록된 로그인ID입니다.");
+			return jsonMap;
+		}
+		
+		System.out.println(">>>>>>>>>>> " + map.get("user_uid"));
+		
+		if (!map1.get("admin_id").equals(jsonMap.get("p_login_id"))) {
+			
+			jsonMap = new HashMap<String, Object>();
+			jsonMap.put("retcode", "994");
+			jsonMap.put("retmsg", "운영자가 아닙니다.");
+			return jsonMap;
+		}
+
+		if (map.get("p_pswd") == null
+				|| ((String) map.get("p_pswd")).length() == 0) {
+			if (map.get("sns_tp") != null
+					&& ((String) map.get("p_pswd")).length() > 0) {
+				jsonMap = new HashMap<String, Object>();
+				jsonMap.put("retcode", "993");
+				jsonMap.put("retmsg", "SNS를 통해 가입된 사용자입니다.");
+				return jsonMap;
+			}
+		}
+
+		if (!jsonMap.get("p_pswd").equals(map.get("p_pswd"))) {
+			jsonMap = new HashMap<String, Object>();
+			jsonMap.put("retcode", "992");
+			jsonMap.put("retmsg", "비밀번호가 틀렸습니다.");
+			return jsonMap;
+		}
+
+		if (!"Y".equals((String) map.get("reg_cert_st"))) {
+			jsonMap = new HashMap<String, Object>();
+			jsonMap.put("retcode", "993");
+			jsonMap.put("retmsg", "아직 메일을 통해 인증받지 않은 사용자입니다..");
+			return jsonMap;
+		}
+
+		HashMap<String, Object> update_map = new HashMap<String, Object>();
+		// 회원정보업데이트
+		update_map.put("p_login_id", map.get("p_login_id"));
+		update_map.put("lst_login_dttm",
+				DateUtil.getDateNTimeByForm("yyyyMMddHHmmss"));
+		update_map.put("login_cnt", (map.get("login_cnt") == null ? 0
+				: (int) map.get("login_cnt")) + 1);
+		int upt = ajaxMemberDAO.updateUser_by_p_login_id(update_map);
+
+		Log.print(LOGGER, "ajaxMemberDAO.updateUser_by_p_login_id upt=[" + upt
+				+ "]");
+
+		jsonMap.put("retcode", "000");
+		jsonMap.put("retmsg", "정상적으로 로그인되었습니다.");
+
+		if (map.get("corp_p_login_id") == null) {
+			map.put("corp_p_login_id", map.get("p_login_id"));
+			map.put("corp_p_name", map.get("p_name"));
+		}
+
+		if ("000".equals(jsonMap.get("retcode"))) {
+			Log.print(LOGGER, "login OK : request.getSession().getId()=["
+					+ request.getSession().getId() + "]");
+			if (map.get("user_uid") != null) {
+				request.getSession().setAttribute("user_uid",
+						String.valueOf(map.get("user_uid")));
+
+				request.getSession().setAttribute("post_code",
+						String.valueOf(map.get("post_code")));
+				request.getSession().setAttribute("road_addr",
+						String.valueOf(map.get("road_addr")));
+				request.getSession().setAttribute("jibun_addr",
+						String.valueOf(map.get("jibun_addr")));
+				request.getSession().setAttribute("detail_addr",
+						String.valueOf(map.get("detail_addr")));
+				request.getSession().setAttribute("phone_num",
+						String.valueOf(map.get("phone_num")));
+
+				request.getSession().setAttribute("sns_id",
+						String.valueOf(map.get("sns_id")));
+				request.getSession().setAttribute("sns_tp",
+						String.valueOf(map.get("sns_tp")));
+				request.getSession().setAttribute("age",
+						String.valueOf(map.get("age")));
+				request.getSession().setAttribute("gender",
+						String.valueOf(map.get("gender")));
+				request.getSession().setAttribute("r_name",
+						String.valueOf(map.get("r_name")));
+
+				request.getSession().setAttribute("corp_p_login_id",
+						map.get("corp_p_login_id"));
+				request.getSession().setAttribute("corp_p_name",
+						map.get("corp_p_name"));
+				request.getSession().setAttribute("p_login_id",
+						map.get("p_login_id"));
+				request.getSession().setAttribute("p_name", map.get("p_name"));
+				request.getSession()
+						.setAttribute("user_tp", map.get("user_tp"));
+				request.getSession().setAttribute("compy_name",
+						map.get("compy_name"));
+				request.getSession().setAttribute("my_photo",
+						map.get("my_photo"));
+				request.getSession().setAttribute("lst_hit_dttm",
+						DateUtil.getDateNTimeByForm("yyyyMMddHHmmss"));
+			}
+		}
+		return jsonMap;
+	}
+
+	/*
+	 * 로그아웃
+	 */
+
+	@Override
+	public Map<String, Object> user_logout(HashMap<String, Object> jsonMap,
+			HttpServletRequest request) throws Exception {
+		// TODO Auto-generated method stub
+
+		request.getSession().invalidate();
+
+		jsonMap.put("retcode", "000");
+		jsonMap.put("retmsg", "정상적으로 로그아웃되었습니다.");
+
+		return jsonMap;
+	}
+
+	@Override
+	public Map<String, Object> user_photo_download(
+			HashMap<String, Object> jsonMap) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Map<String, Object> my_info_fileupload(
+			HashMap<String, Object> jsonMap, List<MultipartFile> aMultipartFile)
+			throws Exception {
+		// TODO Auto-generated method stub
+
+		HashMap map = ajaxMemberDAO.selectUser_by_p_login_id(jsonMap);
+
+		Log.print(LOGGER, "ajaxMemberDAO.selectUser_by_p_login_id map=" + map);
+		if (map == null) {
+			jsonMap = new HashMap<String, Object>();
+			jsonMap.put("retcode", "991");
+			jsonMap.put("retmsg", "미등록된 로그인ID입니다.");
+			return jsonMap;
+		}
+
+		//
+		jsonMap.put("user_uid", map.get("user_uid"));
+
+		PropertyUtil pl = new PropertyUtil(PROP_FILE);
+
+		ArrayList del_file = (ArrayList) jsonMap.get("del_file");
+		ArrayList ins_file = (ArrayList) jsonMap.get("ins_file");
+
+		Log.print(LOGGER, "del_file=[" + del_file + "]");
+		Log.print(LOGGER, "ins_file=[" + ins_file + "]");
+
+		String my_photo = null;
+
+		// 포트폴리오
+		if (jsonMap.get("upload_tp").equals("portfolio")) {
+			if (jsonMap.get("pplio_tp") == null
+					|| ((String) jsonMap.get("pplio_tp")).length() == 0) {
+				jsonMap = new HashMap();
+				jsonMap.put("retcode", "999");
+				jsonMap.put("retmsg", "pplio_tp값이 없습니다.");
+				return jsonMap;
+			}
+
+			for (int i = 0; i < del_file.size(); i++) {
+				jsonMap.put("save_name", del_file.get(i));
+				// db에서 삭제
+				int ret = ajaxMemberDAO.del_portfolio(jsonMap);
+				Log.print(LOGGER, "ajaxMemberDAO.del_portfolio ret=[" + ret
+						+ "]");
+				// 실제 물리파일 삭제
+				FileUtil.deleteFile(pl.get("IMG_UPLOAD_PATH"),
+						(String) del_file.get(i));
+			}
+
+			for (int i = 0; i < ins_file.size(); i++) {
+				for (int j = 0; j < aMultipartFile.size(); j++) {
+					// 업로드된 파일명과 동일한지 체크한다.
+					if (ins_file.get(i).equals(
+							aMultipartFile.get(j).getOriginalFilename())) {
+
+						Log.print(LOGGER, "업로드할 파일명=[" + ins_file.get(i) + "]");
+
+						String uploaded_file = FileUtil.uploadFile(
+								pl.get("IMG_UPLOAD_PATH"),
+								aMultipartFile.get(j));
+						jsonMap.put("pplio_tp", jsonMap.get("pplio_tp"));
+						jsonMap.put("file_name", ins_file.get(i));
+						jsonMap.put("save_name", uploaded_file);
+						ajaxMemberDAO.ins_portfolio(jsonMap);
+					}
+				}
+			}
+		}
+		// 나의사진
+		else if (jsonMap.get("upload_tp").equals("my_photo")) {
+
+			if (aMultipartFile != null && aMultipartFile.size() > 0) {
+				my_photo = FileUtil.uploadFile(pl.get("IMG_UPLOAD_PATH"),
+						aMultipartFile.get(0));
+				jsonMap.put("my_photo", my_photo);
+			}
+			HashMap<String, Object> tmpMap = new HashMap();
+			tmpMap.put("p_login_id", jsonMap.get("p_login_id"));
+			tmpMap.put("my_photo", my_photo);
+			int upt = ajaxMemberDAO.updateUser_by_p_login_id(tmpMap);
+		}
+
+		map.put("pplio_tp", jsonMap.get("pplio_tp"));
+		List<?> pplio_list = ajaxMemberDAO.selectPortfolioList(map);
+
+		jsonMap = new HashMap();
+		jsonMap.put("my_photo", my_photo);
+		jsonMap.put("pplio_list", pplio_list);
+		jsonMap.put("retcode", "000");
+		jsonMap.put("retmsg", "정상적으로 등록되었습니다.");
+
+		return jsonMap;
+	}
+
+	/*
+	 * 출력업체 등록/수정/조회
+	 */
+	@Override
+	public Map<String, Object> print_corp_info_reg(
+			HashMap<String, Object> jsonMap) throws Exception {
+		// TODO Auto-generated method stub
+
+		if ("c".equals(jsonMap.get("crud_tp"))) {
+			jsonMap = print_corp_info_reg_c(jsonMap);
+
+			if ("000".equals(jsonMap.get("retcode"))) {
+			}
+		} else if ("r".equals(jsonMap.get("crud_tp"))) {
+			jsonMap = print_corp_info_reg_r(jsonMap);
+		} else if ("u".equals(jsonMap.get("crud_tp"))) {
+			jsonMap = print_corp_info_reg_u(jsonMap);
+		}
+
+		return jsonMap;
+	}
+
+	/*
+	 * 출력업체등록
+	 */
+	public HashMap<String, Object> print_corp_info_reg_c(
+			HashMap<String, Object> jsonMap) throws Exception {
+
+		PropertyUtil pl = new PropertyUtil(PROP_FILE);
+
+		if (ajaxMemberDAO.selectPrint_corp_info(jsonMap) != null) {
+			jsonMap = new HashMap<String, Object>();
+			jsonMap.put("retcode", "991");
+			jsonMap.put("retmsg", "이미 등록된 정보입니다.");
+			return jsonMap;
+		}
+
+		ajaxMemberDAO.print_corp_info_reg(jsonMap);
+
+		ArrayList hold_3d_printer_list = (ArrayList) jsonMap
+				.get("hold_3d_printer_list");
+		for (int i = 0; i < hold_3d_printer_list.size(); i++) {
+			ajaxMemberDAO.insertHold3DPrinter(hold_3d_printer_list.get(i));
+		}
+
+		// 회원테이블도 업데이트한다.
+		// DESIGN_YN, PRINT_YN
+		ajaxMemberDAO.updateUser_by_p_login_id(jsonMap);
+
+		jsonMap.put("retcode", "000");
+		jsonMap.put("retmsg", "정상적으로 등록되었습니다.");
+
+		return jsonMap;
+	}
+
+	/*
+	 * 출력업체 조회
+	 */
+	public HashMap<String, Object> print_corp_info_reg_r(
+			HashMap<String, Object> jsonMap) throws Exception {
+
+		HashMap<String, Object> select_map = ajaxMemberDAO
+				.selectPrint_corp_info(jsonMap);
+
+		if (select_map == null) {
+			jsonMap = new HashMap<String, Object>();
+			jsonMap.put("retcode", "991");
+			jsonMap.put("retmsg", "존재하지 않는 USER_UID입니다.");
+			return jsonMap;
+		}
+
+		jsonMap.put("pplio_tp", "2"); // 1:
+										// 디자이너,2:출력업체,3:출력업체-품질확인용,9:회원개인정보(회원가입시)
+		List<?> pplio_list = ajaxMemberDAO.selectPortfolioList(jsonMap);
+		select_map.put("pplio_list", pplio_list);
+
+		List<?> hold3dprinter_list = ajaxMemberDAO
+				.selectHold3DPrinter_List(jsonMap);
+		select_map.put("hold_3d_printer_list", hold3dprinter_list);
+
+		select_map.put("retcode", "000");
+		select_map.put("retmsg", "정상적으로 조회되었습니다.");
+
+		return select_map;
+	}
+
+	/*
+	 * 출력업체 업데이트
+	 */
+	public HashMap<String, Object> print_corp_info_reg_u(
+			HashMap<String, Object> jsonMap) throws Exception {
+
+		HashMap<String, Object> select_map = ajaxMemberDAO
+				.selectPrint_corp_info(jsonMap);
+
+		if (select_map == null) {
+			jsonMap = new HashMap<String, Object>();
+			jsonMap.put("retcode", "991");
+			jsonMap.put("retmsg", "존재하지 않는 USER_UID입니다.");
+			return jsonMap;
+		}
+
+		// 출력업체정보 업데이트
+		int upt = ajaxMemberDAO.updatePrint_corp_info(jsonMap);
+		Log.print(LOGGER, "ajaxMemberDAO.updatePrint_corp_info upt=[" + upt
+				+ "]");
+
+		ajaxMemberDAO.deleteHold3DPrinterALL(jsonMap);
+
+		ArrayList hold_3d_printer_list = (ArrayList) jsonMap
+				.get("hold_3d_printer_list");
+		for (int i = 0; i < hold_3d_printer_list.size(); i++) {
+			ajaxMemberDAO.insertHold3DPrinter(hold_3d_printer_list.get(i));
+		}
+
+		// 회원테이블도 업데이트한다.
+		// DESIGN_YN, PRINT_YN
+		ajaxMemberDAO.updateUser_by_p_login_id(jsonMap);
+
+		jsonMap = new HashMap<String, Object>();
+		jsonMap.put("retcode", "000");
+		jsonMap.put("retmsg", "정상적으로 업데이트 되었습니다.");
+
+		return jsonMap;
+	}
+
+	/*
+	 * 모델러정보 등록/수정/조회
+	 */
+	@Override
+	public Map<String, Object> modeler_info_reg(HashMap<String, Object> jsonMap)
+			throws Exception {
+		if ("c".equals(jsonMap.get("crud_tp"))) {
+			jsonMap = modeler_info_reg_c(jsonMap);
+			// if("000".equals(jsonMap.get("retcode"))) { }
+
+		} else if ("r".equals(jsonMap.get("crud_tp"))) {
+			jsonMap = modeler_info_reg_r(jsonMap);
+		} else if ("u".equals(jsonMap.get("crud_tp"))) {
+			jsonMap = modeler_info_reg_u(jsonMap);
+		}
+		return jsonMap;
+	}
+
+	/*
+	 * 모델러정보 등록
+	 */
+	public HashMap<String, Object> modeler_info_reg_c(
+			HashMap<String, Object> jsonMap) throws Exception {
+
+		PropertyUtil pl = new PropertyUtil(PROP_FILE);
+
+		if (ajaxMemberDAO.selectModeler_info(jsonMap) != null) {
+			jsonMap = new HashMap<String, Object>();
+			jsonMap.put("retcode", "991");
+			jsonMap.put("retmsg", "이미 등록된 정보입니다.");
+			return jsonMap;
+		}
+
+		// 작업툴정보 업데이트
+		ajaxMemberDAO.deleteWork_tool_kind(jsonMap);
+		if (jsonMap.get("work_tool_kind_list") != null) {
+			List<HashMap<String, Object>> mList = (List) jsonMap
+					.get("work_tool_kind_list");
+			for (int i = 0; i < mList.size(); i++) {
+				mList.get(i).put("user_uid", jsonMap.get("user_uid"));
+
+				Log.print(LOGGER,
+						"ajaxMemberDAO.insertWork_tool_kind=" + mList.get(i));
+				ajaxMemberDAO.insertWork_tool_kind(mList.get(i));
+			}
+		}
+
+		ajaxMemberDAO.modeler_info_reg(jsonMap);
+
+		// 회원테이블도 업데이트한다.
+		// DESIGN_YN, PRINT_YN
+		ajaxMemberDAO.updateUser_by_p_login_id(jsonMap);
+
+		jsonMap.put("retcode", "000");
+		jsonMap.put("retmsg", "정상적으로 등록되었습니다.");
+
+		return jsonMap;
+	}
+
+	/*
+	 * 모델러정보 조회
+	 */
+	public HashMap<String, Object> modeler_info_reg_r(
+			HashMap<String, Object> jsonMap) throws Exception {
+
+		HashMap<String, Object> select_map = ajaxMemberDAO
+				.selectModeler_info(jsonMap);
+
+		if (select_map == null) {
+			jsonMap = new HashMap<String, Object>();
+			jsonMap.put("retcode", "991");
+			jsonMap.put("retmsg", "존재하지 않는 USER_UID입니다.");
+			return jsonMap;
+		}
+
+		jsonMap.put("pplio_tp", "1"); // 1:
+										// 디자이너,2:출력업체,3:출력업체-품질확인용,9:회원개인정보(회원가입시)
+		List<?> pplio_list = ajaxMemberDAO.selectPortfolioList(jsonMap);
+		select_map.put("pplio_list", pplio_list);
+
+		List<?> work_tool_kind_list = ajaxMemberDAO
+				.selectWork_tool_kindList(jsonMap);
+		select_map.put("work_tool_kind_list", work_tool_kind_list);
+
+		select_map.put("retcode", "000");
+		select_map.put("retmsg", "정상적으로 조회되었습니다.");
+
+		return select_map;
+	}
+
+	/*
+	 * 모델러정보 업데이트
+	 */
+	public HashMap<String, Object> modeler_info_reg_u(
+			HashMap<String, Object> jsonMap) throws Exception {
+
+		HashMap<String, Object> select_map = ajaxMemberDAO
+				.selectModeler_info(jsonMap);
+
+		if (select_map == null) {
+			jsonMap = new HashMap<String, Object>();
+			jsonMap.put("retcode", "991");
+			jsonMap.put("retmsg", "존재하지 않는 USER_UID입니다.");
+			return jsonMap;
+		}
+
+		// 모델러정보 업데이트
+		int upt = ajaxMemberDAO.updateModeler_info(jsonMap);
+		Log.print(LOGGER, "ajaxMemberDAO.updatePrint_corp_info upt=[" + upt
+				+ "]");
+
+		// 작업툴정보 업데이트
+		ajaxMemberDAO.deleteWork_tool_kind(select_map);
+		if (jsonMap.get("work_tool_kind_list") != null) {
+			List<HashMap<String, Object>> mList = (List) jsonMap
+					.get("work_tool_kind_list");
+			for (int i = 0; i < mList.size(); i++) {
+				mList.get(i).put("user_uid", select_map.get("user_uid"));
+
+				Log.print(LOGGER,
+						"ajaxMemberDAO.insertWork_tool_kind=" + mList.get(i));
+				ajaxMemberDAO.insertWork_tool_kind(mList.get(i));
+			}
+		}
+
+		// 회원테이블도 업데이트한다.
+		// DESIGN_YN, PRINT_YN
+		ajaxMemberDAO.updateUser_by_p_login_id(jsonMap);
+
+		// jsonMap = new HashMap<String, Object>();
+		jsonMap.put("retcode", "000");
+		jsonMap.put("retmsg", "정상적으로 업데이트 되었습니다.");
+
+		return jsonMap;
+	}
+
+	/*
+	 * 유저별 이미지 임시 업로드 (실시간으로 1차업로드 후 저장시 유효함)
+	 */
+	@Override
+	public Map<String, Object> file_tmp_updownload(
+			HashMap<String, Object> jsonMap, HttpServletRequest request,
+			HttpServletResponse response, List<MultipartFile> aMultipartFile)
+			throws Exception {
+
+		// TODO Auto-generated method stub
+		PropertyUtil pl = new PropertyUtil(PROP_FILE);
+		HashMap<String, Object> select_map = ajaxMemberDAO
+				.selectUser_by_p_login_id(jsonMap);
+		if (select_map == null) {
+			jsonMap = new HashMap<String, Object>();
+			jsonMap.put("retcode", "991");
+			jsonMap.put("retmsg", "존재하지 않는 로그인ID입니다.");
+			return jsonMap;
+		}
+
+		if (jsonMap.get("updownload_tp").equals("upload")) {
+			List save_list = new ArrayList();
+			for (int j = 0; j < aMultipartFile.size(); j++) {
+				Log.print(LOGGER, "임시로 업로드할 파일명=["
+						+ aMultipartFile.get(j).getOriginalFilename() + "]");
+				String uploaded_file = FileUtil.uploadFile(
+						pl.get("IMG_UPLOAD_USER_TMP_PATH"),
+						aMultipartFile.get(j));
+				Hashtable map = new Hashtable();
+				map.put("file_name", uploaded_file);
+				map.put("save_name", aMultipartFile.get(j)
+						.getOriginalFilename());
+				save_list.add(map);
+
+			}
+			jsonMap.put("retcode", "000");
+			jsonMap.put("retmsg", "정상적으로 업로드 되었습니다.");
+			jsonMap.put("save_list", save_list);
+			return jsonMap;
+		}
+
+		return new HashMap<String, Object>();
+	}
+
+	@Override
+	public Map<String, Object> notice_reg(HashMap<String, Object> jsonMap,
+			HttpServletRequest request, HttpServletResponse response,
+			List<MultipartFile> aMultipartFile) throws Exception {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		if ("r".equals(jsonMap.get("crud_tp"))) {
+			retMap = ajaxMemberDAO.selectNotice(jsonMap);
+			if (retMap == null) {
+				retMap = new HashMap<String, Object>();
+				retMap.put("retcode", "991");
+				retMap.put("retmsg", "존재하지 않은 정보입니다.");
+				return retMap;
+			}
+		}
+
+		PropertyUtil pl = new PropertyUtil(PROP_FILE);
+
+		Hashtable file_map = new Hashtable();
+		if (aMultipartFile != null && aMultipartFile.size() == 1
+				&& aMultipartFile.get(0) != null) {
+			String uploaded_file = FileUtil.uploadFile(
+					pl.get("IMG_UPLOAD_NOTICE_PATH"), aMultipartFile.get(0));
+			file_map.put("file_name", uploaded_file);
+			file_map.put("save_name", aMultipartFile.get(0)
+					.getOriginalFilename());
+
+			Log.print(LOGGER, "file_map=" + file_map);
+		}
+
+		if (!"r".equals(jsonMap.get("crud_tp")) && jsonMap.get("hits") == null) {
+
+			HashMap<String, Object> userInfo = ajaxMemberDAO
+					.selectUser_by_p_login_id(jsonMap);
+			if (userInfo == null) {
+				retMap = new HashMap<String, Object>();
+				retMap.put("retcode", "991");
+				retMap.put("retmsg", "존재하지 않은 사용자정보입니다.");
+				return retMap;
+			}
+		}
+
+		// retMap = new HashMap<String, Object>();
+		// TODO Auto-generated method stub
+		if ("c".equals(jsonMap.get("crud_tp"))) {
+			jsonMap.putAll(file_map);
+			ajaxMemberDAO.createNotice(jsonMap);
+		} else if ("u".equals(jsonMap.get("crud_tp"))) {
+			jsonMap.putAll(file_map);
+			int ret = ajaxMemberDAO.updateNotice(jsonMap);
+			if (ret <= 0) {
+				retMap.put("retcode", "991");
+				retMap.put("retmsg", "업데이트 오류입니다.");
+				return retMap;
+			}
+		} else if ("d".equals(jsonMap.get("crud_tp"))) {
+			int ret = ajaxMemberDAO.deleteNotice(jsonMap);
+			if (ret <= 0) {
+				retMap.put("retcode", "992");
+				retMap.put("retmsg", "데이타 삭제 오류입니다.");
+				return retMap;
+			}
+		}
+
+		retMap.put("retcode", "000");
+		retMap.put("retmsg", "정상적으로 처리되었습니다.");
+		return retMap;
+	}
+
+	@Override
+	public Map<String, Object> notice_list(HashMap<String, Object> jsonMap,
+			HttpServletRequest request) throws Exception {
+		// TODO Auto-generated method stub
+		int max_ret_count = jsonMap.get("max_ret_count") != null ? Integer
+				.parseInt((String) jsonMap.get("max_ret_count")) : 24;
+
+		int pageNum = Integer.parseInt((String) jsonMap.get("page_num"));
+		int start_index = (pageNum - 1) * max_ret_count;
+
+		jsonMap.put("start_index", start_index);
+		jsonMap.put("max_ret_count", max_ret_count);
+
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+
+		retMap.put("page_num", pageNum);
+		retMap.put("max_ret_count", max_ret_count);
+		retMap.put("start_index", start_index);
+
+		String area_cd = (String) jsonMap.get("area_cd");
+
+		long tot_count = ajaxMemberDAO.selectNotice_TotalCount(jsonMap);
+		retMap.put("tot_count", tot_count);
+		if (tot_count == 0) {
+			retMap.put("retcode", "999");
+			retMap.put("retmsg", "데이타가 없습니다.");
+			return retMap;
+		}
+
+		List<?> notice_list = ajaxMemberDAO.selectNotice_List(jsonMap);
+		retMap.put("notice_list", notice_list.size());
+		if (notice_list.size() == 0) {
+			retMap.put("retcode", "999");
+			retMap.put("retmsg", "조건에 맞는 데이타가 없습니다.");
+			return retMap;
+		}
+
+		retMap.put("notice_list", notice_list);
+		retMap.put("retcode", "000");
+		retMap.put("retmsg", "정상적으로 조회되었습니다.");
+
+		return retMap;
+	}
+
+	@Override
+	public Map<String, Object> qna_reg(HashMap<String, Object> jsonMap,
+			HttpServletRequest request) throws Exception {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		if ("r".equals(jsonMap.get("crud_tp"))) {
+			retMap = ajaxMemberDAO.selectQNA(jsonMap);
+			if (retMap == null) {
+				retMap = new HashMap<String, Object>();
+				retMap.put("retcode", "991");
+				retMap.put("retmsg", "존재하지 않은 정보입니다.");
+				return retMap;
+			}
+		}
+
+		if (!"r".equals(jsonMap.get("crud_tp")) && jsonMap.get("hits") == null) {
+
+			HashMap<String, Object> userInfo = ajaxMemberDAO
+					.selectUser_by_p_login_id(jsonMap);
+			if (userInfo == null) {
+				retMap = new HashMap<String, Object>();
+				retMap.put("retcode", "991");
+				retMap.put("retmsg", "존재하지 않은 사용자정보입니다.");
+				return retMap;
+			}
+		}
+
+		// retMap = new HashMap<String, Object>();
+		// TODO Auto-generated method stub
+		if ("c".equals(jsonMap.get("crud_tp"))) {
+			ajaxMemberDAO.createQNA(jsonMap);
+
+		} else if ("u".equals(jsonMap.get("crud_tp"))) {
+			int ret = ajaxMemberDAO.updateQNA(jsonMap);
+			if (ret <= 0) {
+				retMap.put("retcode", "991");
+				retMap.put("retmsg", "업데이트 오류입니다.");
+				return retMap;
+			}
+		} else if ("d".equals(jsonMap.get("crud_tp"))) {
+			int ret = ajaxMemberDAO.deleteQNA(jsonMap);
+			if (ret <= 0) {
+				retMap.put("retcode", "992");
+				retMap.put("retmsg", "데이타 삭제 오류입니다.");
+				return retMap;
+			}
+		}
+
+		retMap.put("retcode", "000");
+		retMap.put("retmsg", "정상적으로 처리되었습니다.");
+		return retMap;
+	}
+
+	@Override
+	public Map<String, Object> qna_list(HashMap<String, Object> jsonMap,
+			HttpServletRequest request) throws Exception {
+		// TODO Auto-generated method stub
+		int max_ret_count = jsonMap.get("max_ret_count") != null ? Integer
+				.parseInt((String) jsonMap.get("max_ret_count")) : 24;
+
+		int pageNum = Integer.parseInt((String) jsonMap.get("page_num"));
+		int start_index = (pageNum - 1) * max_ret_count;
+
+		jsonMap.put("start_index", start_index);
+		jsonMap.put("max_ret_count", max_ret_count);
+
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+
+		retMap.put("page_num", pageNum);
+		retMap.put("max_ret_count", max_ret_count);
+		retMap.put("start_index", start_index);
+
+		jsonMap.put("qna_tp", "Q");
+		long tot_count = ajaxMemberDAO.selectQNA_TotalCount(jsonMap);
+		retMap.put("tot_count", tot_count);
+		if (tot_count == 0) {
+			retMap.put("retcode", "999");
+			retMap.put("retmsg", "데이타가 없습니다.");
+			return retMap;
+		}
+
+		jsonMap.put("qna_tp", "Q");
+		List<?> qna_list = ajaxMemberDAO.selectQNA_List(jsonMap);
+
+		Log.print(LOGGER, "ajaxMemberDAO.selectQNA_List:" + qna_list);
+
+		retMap.put("qna_list", qna_list.size());
+		if (qna_list.size() == 0) {
+			retMap.put("retcode", "999");
+			retMap.put("retmsg", "조건에 맞는 데이타가 없습니다.");
+			return retMap;
+		}
+
+		for (int i = 0; i < qna_list.size(); i++) {
+			Log.print(LOGGER, "> qna_list.get(" + i + ")=" + qna_list.get(i));
+			List<?> qna_answer_list = ajaxMemberDAO
+					.selectQNA_AnswerList((HashMap<String, Object>) qna_list
+							.get(i));
+			Log.print(LOGGER, ">> qna_answer_list=" + qna_answer_list);
+
+			if (qna_answer_list.size() > 0) {
+				qna_answer_list.remove(0);
+			}
+			((Map<String, Object>) qna_list.get(i)).put("qna_answer_list",
+					qna_answer_list);
+		}
+
+		retMap.put("qna_list", qna_list);
+		retMap.put("retcode", "000");
+		retMap.put("retmsg", "정상적으로 조회되었습니다.");
+
+		return retMap;
+	}
+
+	/*
+	 * 뉴스&트랜드 [등록:'c',조회:'r',수정:'u'] : news_trand_reg
+	 */
+	@Override
+	public Map<String, Object> news_trand_reg(HashMap<String, Object> jsonMap,
+			HttpServletRequest request) throws Exception {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		if ("r".equals(jsonMap.get("crud_tp"))) {
+			retMap = ajaxMemberDAO.selectNewsTrand(jsonMap);
+			if (retMap == null) {
+				retMap = new HashMap<String, Object>();
+				retMap.put("retcode", "991");
+				retMap.put("retmsg", "존재하지 않은 정보입니다.");
+				return retMap;
+			}
+		}
+
+		if (!"r".equals(jsonMap.get("crud_tp")) && jsonMap.get("hits") == null) {
+
+			HashMap<String, Object> userInfo = ajaxMemberDAO
+					.selectUser_by_p_login_id(jsonMap);
+			if (userInfo == null) {
+				retMap = new HashMap<String, Object>();
+				retMap.put("retcode", "991");
+				retMap.put("retmsg", "존재하지 않은 사용자정보입니다.");
+				return retMap;
+			}
+		}
+
+		// retMap = new HashMap<String, Object>();
+		// TODO Auto-generated method stub
+		if ("c".equals(jsonMap.get("crud_tp"))) {
+			KakaoThumnail kaka = new KakaoThumnail(
+					(String) jsonMap.get("reg_url"));
+			Hashtable hKaka = kaka.run();
+			if (hKaka == null || hKaka.get("og_title") == null) {
+				retMap = new HashMap<String, Object>();
+				retMap.put("retcode", "990");
+				retMap.put("retmsg", "얻을 수 있는 사이트정보(og)가 없습니다.[" + hKaka + "]");
+				return retMap;
+			}
+			jsonMap.putAll(hKaka);
+
+			ajaxMemberDAO.createNewsTrand(jsonMap);
+
+		} else if ("u".equals(jsonMap.get("crud_tp"))) {
+			KakaoThumnail kaka = new KakaoThumnail(
+					(String) jsonMap.get("reg_url"));
+			Hashtable hKaka = kaka.run();
+			if (hKaka == null || hKaka.get("og_title") == null) {
+				retMap = new HashMap<String, Object>();
+				retMap.put("retcode", "990");
+				retMap.put("retmsg", "얻을 수 있는 사이트정보(og)가 없습니다.[" + hKaka + "]");
+				return retMap;
+			}
+			jsonMap.putAll(hKaka);
+
+			int ret = ajaxMemberDAO.updateNewsTrand(jsonMap);
+			if (ret <= 0) {
+				retMap.put("retcode", "991");
+				retMap.put("retmsg", "업데이트 오류입니다.");
+				return retMap;
+			}
+		} else if ("d".equals(jsonMap.get("crud_tp"))) {
+			int ret = ajaxMemberDAO.deleteNewsTrand(jsonMap);
+			if (ret <= 0) {
+				retMap.put("retcode", "992");
+				retMap.put("retmsg", "데이타 삭제 오류입니다.");
+				return retMap;
+			}
+		}
+
+		retMap.put("retcode", "000");
+		retMap.put("retmsg", "정상적으로 처리되었습니다.");
+		return retMap;
+	}
+
+	/*
+	 * 뉴스&트랜드 리스트 : news_trand_list
+	 */
+	@Override
+	public Map<String, Object> news_trand_list(HashMap<String, Object> jsonMap,
+			HttpServletRequest request) throws Exception {
+		// TODO Auto-generated method stub
+		int max_ret_count = jsonMap.get("max_ret_count") != null ? Integer
+				.parseInt((String) jsonMap.get("max_ret_count")) : 24;
+
+		int pageNum = Integer.parseInt((String) jsonMap.get("page_num"));
+		int start_index = (pageNum - 1) * max_ret_count;
+
+		jsonMap.put("start_index", start_index);
+		jsonMap.put("max_ret_count", max_ret_count);
+
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+
+		retMap.put("page_num", pageNum);
+		retMap.put("max_ret_count", max_ret_count);
+		retMap.put("start_index", start_index);
+
+		String area_cd = (String) jsonMap.get("area_cd");
+
+		long tot_count = ajaxMemberDAO.selectNewsTrand_TotalCount(jsonMap);
+		retMap.put("tot_count", tot_count);
+		if (tot_count == 0) {
+			retMap.put("retcode", "999");
+			retMap.put("retmsg", "데이타가 없습니다.");
+			return retMap;
+		}
+
+		List<?> newstrand_list = ajaxMemberDAO.selectNewsTrand_List(jsonMap);
+		retMap.put("newstrand_list", newstrand_list.size());
+		if (newstrand_list.size() == 0) {
+			retMap.put("retcode", "999");
+			retMap.put("retmsg", "조건에 맞는 데이타가 없습니다.");
+			return retMap;
+		}
+
+		retMap.put("newstrand_list", newstrand_list);
+		retMap.put("retcode", "000");
+		retMap.put("retmsg", "정상적으로 조회되었습니다.");
+
+		return retMap;
+	}
+
+	@Override
+	public Map<String, Object> follow_reg(HashMap<String, Object> jsonMap,
+			HttpServletRequest request) throws Exception {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+
+		if ("r".equals(jsonMap.get("crud_tp"))) {
+			long totcnt = ajaxMemberDAO.selectFollow_TotalCount(jsonMap);
+			retMap.put("totcnt", totcnt);
+			retMap.put("retcode", "000");
+			retMap.put("retmsg", "정상적으로 조회되었습니다.");
+			return retMap;
+		}
+
+		HashMap<String, Object> userInfo = ajaxMemberDAO
+				.selectUser_by_p_login_id(jsonMap);
+		if (userInfo == null) {
+			retMap = new HashMap<String, Object>();
+			retMap.put("retcode", "991");
+			retMap.put("retmsg", "존재하지 않은 사용자정보입니다.");
+			return retMap;
+		}
+
+		// retMap = new HashMap<String, Object>();
+		// TODO Auto-generated method stub
+		if ("c".equals(jsonMap.get("crud_tp"))) {
+			if (jsonMap.get("follower_user_uid") == null
+					|| jsonMap.get("following_user_uid") == null) {
+				retMap = new HashMap<String, Object>();
+				retMap.put("retcode", "990");
+				retMap.put("retmsg",
+						"등록시 follower_user_uid, following_user_uid 는 필수값 입니다.");
+				return retMap;
+			}
+
+			long totcnt = ajaxMemberDAO.selectFollow_TotalCount(jsonMap);
+			if (totcnt > 0) {
+				retMap = new HashMap<String, Object>();
+				retMap.put("retcode", "990");
+				retMap.put("retmsg", "이미 등록되었습니다.");
+				return retMap;
+			}
+
+			System.out.println("jsonMap=" + jsonMap);
+			ajaxMemberDAO.insertFollow(jsonMap);
+
+			// t_follower 업데이트
+			HashMap<String, Object> tmpHash = new HashMap();
+			tmpHash.put("follower_user_uid", jsonMap.get("follower_user_uid"));
+			long t_follower = ajaxMemberDAO.selectFollow_TotalCount(tmpHash);
+			tmpHash.put("user_uid", jsonMap.get("follower_user_uid"));
+			tmpHash.put("t_follower", t_follower);
+			System.out.println("t_follower 업데이트=" + tmpHash);
+			ajaxMemberDAO.updateUser_by_user_uid(tmpHash);
+
+			// t_following 업데이트
+			tmpHash = new HashMap();
+			tmpHash.put("following_user_uid", jsonMap.get("following_user_uid"));
+			long t_following = ajaxMemberDAO.selectFollow_TotalCount(tmpHash);
+			tmpHash.put("user_uid", jsonMap.get("following_user_uid"));
+			tmpHash.put("t_following", t_following);
+			System.out.println("t_following 업데이트=" + tmpHash);
+			ajaxMemberDAO.updateUser_by_user_uid(tmpHash);
+
+		} else if ("d".equals(jsonMap.get("crud_tp"))) {
+			int ret = ajaxMemberDAO.deleteFollow(jsonMap);
+			if (ret <= 0) {
+				retMap.put("retcode", "992");
+				retMap.put("retmsg", "데이타 삭제 오류입니다.");
+				return retMap;
+			}
+
+			// t_follower 업데이트
+			HashMap<String, Object> tmpHash = new HashMap();
+			tmpHash.put("follower_user_uid", jsonMap.get("follower_user_uid"));
+			long t_follower = ajaxMemberDAO.selectFollow_TotalCount(tmpHash);
+			tmpHash.put("user_uid", jsonMap.get("follower_user_uid"));
+			tmpHash.put("t_follower", t_follower);
+			System.out.println("t_follower 업데이트=" + tmpHash);
+			ajaxMemberDAO.updateUser_by_user_uid(tmpHash);
+
+			// t_following 업데이트
+			tmpHash = new HashMap();
+			tmpHash.put("following_user_uid", jsonMap.get("following_user_uid"));
+			long t_following = ajaxMemberDAO.selectFollow_TotalCount(tmpHash);
+			tmpHash.put("user_uid", jsonMap.get("following_user_uid"));
+			tmpHash.put("t_following", t_follower);
+			System.out.println("t_following 업데이트=" + tmpHash);
+			ajaxMemberDAO.updateUser_by_user_uid(tmpHash);
+		}
+
+		retMap.put("retcode", "000");
+		retMap.put("retmsg", "정상적으로 처리되었습니다.");
+		return retMap;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Map<String, Object> user_info_list(HashMap<String, Object> jsonMap,
+			HttpServletRequest request) throws Exception {
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+
+		int max_ret_count = jsonMap.get("max_ret_count") != null ? Integer
+				.parseInt((String) jsonMap.get("max_ret_count")) : 24;
+		int pageNum = Integer.parseInt((String) jsonMap.get("page_num"));
+		int start_index = (pageNum - 1) * max_ret_count;
+
+		jsonMap.put("start_index", start_index);
+		jsonMap.put("max_ret_count", max_ret_count);
+
+		retMap.put("page_num", pageNum);
+		retMap.put("max_ret_count", max_ret_count);
+		retMap.put("start_index", start_index);
+
+		long tot_count = ajaxMemberDAO.selectUserInfo_TotalCount(jsonMap);
+		retMap.put("tot_count", tot_count);
+		if (tot_count == 0) {
+			retMap.put("retcode", "999");
+			retMap.put("retmsg", "데이타가 없습니다.");
+			return retMap;
+		}
+
+		List<?> user_info_list = ajaxMemberDAO.selectUserInfo_List(jsonMap);
+		if (user_info_list.size() == 0) {
+			retMap.put("retcode", "999");
+			retMap.put("retmsg", "조건에 맞는 데이타가 없습니다.");
+			return retMap;
+		}
+
+		for (int i = 0; i < user_info_list.size(); i++) {
+			HashMap<String, Object> select_user_map = (HashMap<String, Object>) user_info_list
+					.get(i);
+
+			List<?> hold3dprinter_list = ajaxMemberDAO
+					.selectHold3DPrinter_List(select_user_map);
+			((Map<String, Object>) user_info_list.get(i)).put(
+					"hold_3d_printer_list", hold3dprinter_list);
+
+			HashMap<String, Object> modeler_info = ajaxMemberDAO
+					.selectModeler_info(select_user_map);
+
+			if (modeler_info != null) {
+				((Map<String, Object>) user_info_list.get(i))
+						.putAll(modeler_info);
+			}
+
+			List<?> work_tool_kind_list = ajaxMemberDAO
+					.selectWork_tool_kindList(select_user_map);
+			((Map<String, Object>) user_info_list.get(i)).put(
+					"work_tool_kind_list", work_tool_kind_list);
+		}
+		retMap.put("user_info_list", user_info_list);
+		retMap.put("retcode", "000");
+		retMap.put("retmsg", "정상적으로 조회되었습니다.");
+
+		return retMap;
+	}
+
+	@Override
+	public Map<String, Object> user_info_by_user_uid(
+			HashMap<String, Object> jsonMap, HttpServletRequest request)
+			throws Exception {
+		// TODO Auto-generated method stub
+
+		HashMap<String, Object> select_map = ajaxMemberDAO
+				.selectUser_by_user_uid(jsonMap);
+		if (select_map == null) {
+			jsonMap.put("retcode", "991");
+			jsonMap.put("retmsg", "존재하지 않는 USER_UID입니다.");
+			return jsonMap;
+		}
+
+		jsonMap.putAll(select_map);
+		jsonMap.put("retcode", "000");
+		jsonMap.put("retmsg", "정상적으로 조회되었습니다.");
+
+		return jsonMap;
+	}
+
+	/*
+	 * 사용자의 summary 정보 : Followers, Following, Design, Makes, Like, Collections
+	 */
+	@Override
+	public Map<String, Object> user_summary_etc_info(
+			HashMap<String, Object> jsonMap, HttpServletRequest request)
+			throws Exception {
+
+		HashMap<String, Object> select_map = ajaxMemberDAO
+				.selectUserSummaryEtcInfo(jsonMap);
+		jsonMap.putAll(select_map);
+		jsonMap.put("retcode", "000");
+		jsonMap.put("retmsg", "정상적으로 조회되었습니다.");
+
+		return jsonMap;
+	}
+
+	/*
+	 * 사용자의 summary 정보 리스트 : Followers, Following, Design, Makes, Like,
+	 * Collections
+	 */
+	@Override
+	public Map<String, Object> user_summary_etc_info_list(
+			HashMap<String, Object> jsonMap, HttpServletRequest request)
+			throws Exception {
+		// TODO Auto-generated method stub
+
+		int max_ret_count = jsonMap.get("max_ret_count") != null ? Integer
+				.parseInt((String) jsonMap.get("max_ret_count")) : 24;
+
+		int pageNum = Integer.parseInt((String) jsonMap.get("page_num"));
+		int start_index = (pageNum - 1) * max_ret_count;
+
+		jsonMap.put("start_index", start_index);
+		jsonMap.put("max_ret_count", max_ret_count);
+
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+
+		retMap.put("page_num", pageNum);
+		retMap.put("max_ret_count", max_ret_count);
+		retMap.put("start_index", start_index);
+
+		List<?> info_list = new ArrayList();
+		long tot_count = 0;
+		if ("followers".equals(jsonMap.get("info_tp"))) {
+			tot_count = ajaxMemberDAO.selectFollow_List_TotalCount(jsonMap);
+			info_list = ajaxMemberDAO.selectFollow_List(jsonMap);
+		} else if ("following".equals(jsonMap.get("info_tp"))) {
+			tot_count = ajaxMemberDAO.selectFollow_List_TotalCount(jsonMap);
+			info_list = ajaxMemberDAO.selectFollow_List(jsonMap);
+		} else if ("design".equals(jsonMap.get("info_tp"))) {
+
+		} else if ("makes".equals(jsonMap.get("info_tp"))) {
+
+		} else if ("like".equals(jsonMap.get("info_tp"))) {
+
+		} else if ("collections".equals(jsonMap.get("info_tp"))) {
+
+		}
+		retMap.put("tot_count", tot_count);
+		retMap.put("info_list", info_list);
+
+		if (info_list.size() == 0) {
+			retMap.put("retcode", "999");
+			retMap.put("retmsg", "조건에 맞는 데이타가 없습니다.");
+			return retMap;
+		}
+
+		retMap.put("retcode", "000");
+		retMap.put("retmsg", "정상적으로 조회되었습니다.");
+		return retMap;
+	}
+
+	/*
+	 * 메인페이지 정보
+	 */
+	@Override
+	public Map<String, Object> main_info(HashMap<String, Object> jsonMap,
+			HttpServletRequest request) throws Exception {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+
+		List<?> main_info_conts_3d_list_by_major_by_like = ajaxMemberDAO
+				.main_info_conts_3d_list_by_major_by_like(jsonMap);
+
+		retMap.put("main_info_conts_3d_list_by_major_by_like",
+				main_info_conts_3d_list_by_major_by_like);
+
+		retMap.put("retcode", "000");
+		retMap.put("retmsg", "정상적으로 조회되었습니다.");
+		return retMap;
+	}
+
+	/*
+	 * SNS 로그인
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public Map<String, Object> sns_login(HashMap<String, Object> jsonMap,
+			HttpServletRequest request) throws Exception {
+
+		request.getSession().invalidate();
+
+		HashMap<String, Object> map = ajaxMemberDAO
+				.selectUser_by_p_login_id(jsonMap);
+
+		Log.print(LOGGER, "ajaxMemberDAO.selectUser_by_p_login_id map=" + map);
+		if (map == null) {
+			ajaxMemberDAO.user_reg(jsonMap);
+			map = ajaxMemberDAO.selectUser_by_p_login_id(jsonMap);
+		}
+
+		map.putAll(jsonMap);
+
+		HashMap<String, Object> update_map = (HashMap<String, Object>) map
+				.clone();
+		// 회원정보업데이트
+		update_map.put("p_login_id", map.get("p_login_id"));
+		update_map.put("lst_login_dttm",
+				DateUtil.getDateNTimeByForm("yyyyMMddHHmmss"));
+		update_map.put("login_cnt", (map.get("login_cnt") == null ? 0
+				: (int) map.get("login_cnt")) + 1);
+		update_map.put("reg_cert_tp", "Y");
+		int upt = ajaxMemberDAO.updateUser_by_p_login_id(update_map);
+
+		Log.print(LOGGER, "ajaxMemberDAO.updateUser_by_p_login_id upt=[" + upt
+				+ "]");
+
+		jsonMap.put("retcode", "000");
+		jsonMap.put("retmsg", "정상적으로 로그인되었습니다.");
+
+		if ("000".equals(jsonMap.get("retcode"))) {
+			Log.print(LOGGER, "login OK : request.getSession().getId()=["
+					+ request.getSession().getId() + "]");
+			if (map.get("user_uid") != null) {
+				request.getSession().setAttribute("user_uid",
+						String.valueOf(map.get("user_uid")));
+
+				request.getSession().setAttribute("post_code",
+						String.valueOf(map.get("post_code")));
+				request.getSession().setAttribute("road_addr",
+						String.valueOf(map.get("road_addr")));
+				request.getSession().setAttribute("jibun_addr",
+						String.valueOf(map.get("jibun_addr")));
+				request.getSession().setAttribute("detail_addr",
+						String.valueOf(map.get("detail_addr")));
+				request.getSession().setAttribute("phone_num",
+						String.valueOf(map.get("phone_num")));
+
+				request.getSession().setAttribute("sns_id",
+						String.valueOf(map.get("sns_id")));
+				request.getSession().setAttribute("sns_tp",
+						String.valueOf(map.get("sns_tp")));
+				request.getSession().setAttribute("age",
+						String.valueOf(map.get("age")));
+				request.getSession().setAttribute("gender",
+						String.valueOf(map.get("gender")));
+				request.getSession().setAttribute("r_name",
+						String.valueOf(map.get("r_name")));
+
+				request.getSession().setAttribute("corp_p_login_id",
+						map.get("corp_p_login_id"));
+				request.getSession().setAttribute("corp_p_name",
+						map.get("corp_p_name"));
+				request.getSession().setAttribute("p_login_id",
+						map.get("p_login_id"));
+				request.getSession().setAttribute("p_name", map.get("p_name"));
+				request.getSession()
+						.setAttribute("user_tp", map.get("user_tp"));
+				request.getSession().setAttribute("compy_name",
+						map.get("compy_name"));
+				request.getSession().setAttribute("my_photo",
+						map.get("my_photo"));
+				request.getSession().setAttribute("lst_hit_dttm",
+						DateUtil.getDateNTimeByForm("yyyyMMddHHmmss"));
+			}
+		}
+
+		return jsonMap;
+	}
+
+	@Override
+	public Map<String, Object> point_reg(HashMap<String, Object> jsonMap,
+			HttpServletRequest request) throws Exception {
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+
+		if ("c".equals(jsonMap.get("crud_tp"))) {
+			ajaxMemberDAO.insert_point_info(jsonMap);
+			retMap.put("retcode", "000");
+			retMap.put("retmsg", "정상적으로 등록되었습니다.");
+
+		} else if ("r".equals(jsonMap.get("crud_tp"))) {
+			List<?> pointList = ajaxMemberDAO.select_point_list(jsonMap);
+			if (pointList == null || pointList.size() <= 0) {
+				retMap.put("retcode", "991");
+				retMap.put("retmsg", "데이터가 존재하지 않습니다.");
+				return retMap;
+			}
+			retMap.put("point_list", pointList);
+			retMap.put("retcode", "000");
+			retMap.put("retmsg", "정상적으로 조회되었습니다.");
+			return retMap;
+
+		} else if ("u".equals(jsonMap.get("crud_tp"))) {
+			int uptCnt = ajaxMemberDAO.update_point_info(jsonMap);
+			if (uptCnt <= 0) {
+				retMap.put("retcode", "991");
+				retMap.put("retmsg", "업데이트 오류입니다.");
+				return retMap;
+			}
+			retMap.put("retcode", "000");
+			retMap.put("retmsg", "정상적으로 수정되었습니다.");
+		}
+		return retMap;
+	}
+
+	@Override
+	public Map<String, Object> point_trans_reg(HashMap<String, Object> jsonMap,
+			HttpServletRequest request) throws Exception {
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+
+		if ("r".equals(jsonMap.get("crud_tp"))) {
+			int total_cnt = ajaxMemberDAO
+					.select_point_trans_list_total_cnt(jsonMap);
+			if (total_cnt <= 0) {
+				retMap.put("retcode", "991");
+				retMap.put("retmsg", "데이터가 존재하지 않습니다.");
+
+				return retMap;
+			}
+			retMap.put("total_cnt", total_cnt);
+
+			int max_ret_count = jsonMap.get("max_ret_count") != null ? Integer
+					.parseInt((String) jsonMap.get("max_ret_count")) : 24;
+			int pageNum = Integer.parseInt((String) jsonMap.get("page_num"));
+			int start_index = (pageNum - 1) * max_ret_count;
+
+			jsonMap.put("start_index", start_index);
+			jsonMap.put("max_ret_count", max_ret_count);
+
+			List<?> transList = ajaxMemberDAO.select_point_trans_list(jsonMap);
+			retMap.put("trans_list", transList);
+			retMap.put("retcode", "000");
+			retMap.put("retmsg", "정상적으로 조회되었습니다.");
+
+		} else if ("u".equals(jsonMap.get("crud_tp"))) {
+			// 전환신청 업데이트
+			int updateCnt = ajaxMemberDAO.update_point_trans_info(jsonMap);
+			if (updateCnt <= 0) {
+				retMap.put("retcode", "991");
+				retMap.put("retmsg", "업데이트오류 입니다.");
+			}
+
+			// 사용자 포인트 업데이트
+			// updateCnt = ajaxMemberDAO.update_user_point(jsonMap);
+			// System.out.println(">>>>>>>>>> update point : " + updateCnt);
+
+			// 포인트 리스트 등록
+			// jsonMap.put("add_tp", "02");
+			// jsonMap.put("point", jsonMap.get("sub_point"));
+			// jsonMap.put("point_seq", "99");
+			// jsonMap.put("point_name", "포인트전환");
+			// ajaxMemberDAO.insert_point_add_hist(jsonMap);
+
+			retMap.put("retcode", "000");
+			retMap.put("retmsg", "정상적으로 수정되었습니다.");
+		}
+		return retMap;
+	}
+
+	@Override
+	public Map<String, Object> point_add_hist_reg(
+			HashMap<String, Object> jsonMap, HttpServletRequest request)
+			throws Exception {
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+
+		if ("c".equals(jsonMap.get("crud_tp"))) {
+			if ("01".equals(jsonMap.get("add_tp")))
+				jsonMap.put("add_point", jsonMap.get("point"));
+			else
+				jsonMap.put("sub_point", jsonMap.get("point"));
+
+			ajaxMemberDAO.update_user_point(jsonMap);
+
+			ajaxMemberDAO.insert_point_add_hist(jsonMap);
+			retMap.put("retcode", "000");
+			retMap.put("retmsg", "정상적으로 등록되었습니다.");
+
+		} else if ("r".equals(jsonMap.get("crud_tp"))) {
+
+		} else if ("u".equals(jsonMap.get("crud_tp"))) {
+
+		}
+		return retMap;
+	}
+
+	@Override
+	public Map<String, Object> company_unpaid_list(
+			HashMap<String, Object> jsonMap, HttpServletRequest request)
+			throws Exception {
+
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		int tot_count = ajaxMemberDAO.company_unpaid_list_total(jsonMap);
+		retMap.put("tot_count", tot_count);
+		if (tot_count == 0) {
+			retMap.put("retcode", "999");
+			retMap.put("retmsg", "데이타가 없습니다.");
+			return retMap;
+		}
+
+		int max_ret_count = jsonMap.get("max_ret_count") != null ? Integer
+				.parseInt((String) jsonMap.get("max_ret_count")) : 18;
+		int pageNum = Integer.parseInt((String) jsonMap.get("page_num"));
+		int start_index = (pageNum - 1) * max_ret_count;
+
+		jsonMap.put("start_index", start_index);
+		jsonMap.put("max_ret_count", max_ret_count);
+
+		List<?> order_list = ajaxMemberDAO.company_unpaid_list(jsonMap);
+		retMap.put("order_list", order_list);
+		retMap.put("retcode", "000");
+		retMap.put("retmsg", "정상적으로 조회되었습니다.");
+		return retMap;
+	}
+
+	@Override
+	public Map<String, Object> company_unpaid_descript(
+			HashMap<String, Object> jsonMap, HttpServletRequest request)
+			throws Exception {
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		int tot_count = ajaxMemberDAO.company_unpaid_descript_total(jsonMap);
+
+		retMap.put("tot_count", tot_count);
+		if (tot_count == 0) {
+			retMap.put("retcode", "999");
+			retMap.put("retmsg", "데이타가 없습니다.");
+			return retMap;
+		}
+		System.out.println("tot_count = " + tot_count);
+		int max_ret_count = jsonMap.get("max_ret_count") != null ? Integer
+				.parseInt((String) jsonMap.get("max_ret_count")) : 18;
+		int pageNum = Integer.parseInt((String) jsonMap.get("page_num"));
+		int start_index = (pageNum - 1) * max_ret_count;
+
+		jsonMap.put("start_index", start_index);
+		jsonMap.put("max_ret_count", max_ret_count);
+
+		List<?> order_list = ajaxMemberDAO.company_unpaid_descript(jsonMap);
+		retMap.put("order_list", order_list);
+		retMap.put("retcode", "000");
+		retMap.put("retmsg", "정상적으로 조회되었습니다.");
+		return retMap;
+	}
+
+	@Override
+	public Map<String, Object> company_paid_list(
+			HashMap<String, Object> jsonMap, HttpServletRequest request)
+			throws Exception {
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		int tot_count = ajaxMemberDAO.company_paid_list_total(jsonMap);
+		retMap.put("tot_count", tot_count);
+		if (tot_count == 0) {
+			retMap.put("retcode", "999");
+			retMap.put("retmsg", "데이타가 없습니다.");
+			return retMap;
+		}
+		
+		int max_ret_count = jsonMap.get("max_ret_count") != null ? Integer
+				.parseInt((String) jsonMap.get("max_ret_count")) : 18;
+		int pageNum = Integer.parseInt((String) jsonMap.get("page_num"));
+		int start_index = (pageNum - 1) * max_ret_count;
+
+		jsonMap.put("start_index", start_index);
+		jsonMap.put("max_ret_count", max_ret_count);
+
+		List<?> order_list = ajaxMemberDAO.company_paid_list(jsonMap);
+		retMap.put("order_list", order_list);
+		retMap.put("retcode", "000");
+		retMap.put("retmsg", "정상적으로 조회되었습니다.");
+		return retMap;
+	}
+
+	@Override
+	public Map<String, Object> company_paid_descript(
+			HashMap<String, Object> jsonMap, HttpServletRequest request)
+			throws Exception {
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		int tot_count = ajaxMemberDAO.company_paid_descript_total(jsonMap);
+
+		retMap.put("tot_count", tot_count);
+		if (tot_count == 0) {
+			retMap.put("retcode", "999");
+			retMap.put("retmsg", "데이타가 없습니다.");
+			return retMap;
+		}
+		System.out.println("tot_count = " + tot_count);
+		int max_ret_count = jsonMap.get("max_ret_count") != null ? Integer
+				.parseInt((String) jsonMap.get("max_ret_count")) : 18;
+		int pageNum = Integer.parseInt((String) jsonMap.get("page_num"));
+		int start_index = (pageNum - 1) * max_ret_count;
+
+		jsonMap.put("start_index", start_index);
+		jsonMap.put("max_ret_count", max_ret_count);
+
+		List<?> order_list = ajaxMemberDAO.company_paid_descript(jsonMap);
+		retMap.put("order_list", order_list);
+		retMap.put("retcode", "000");
+		retMap.put("retmsg", "정상적으로 조회되었습니다.");
+		return retMap;
+	}
+	
+	@Override
+	public Map<String, Object> calculate_target_list(
+			HashMap<String, Object> jsonMap, HttpServletRequest request)
+			throws Exception {
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		HashMap<String, Object> admin_check = new HashMap<String, Object>();
+		if ("u".equals(jsonMap.get("crud_tp"))) {
+			admin_check = ajaxMemberDAO.admin_check(jsonMap);
+			if(!(admin_check.get("dep_target").equals("1"))){
+				retMap.put("target", admin_check.get("dep_target"));
+				retMap.put("retcode", "990");
+				retMap.put("retmsg", "권한이 없습니다.");
+				return retMap;
+			}else if(admin_check.get("dep_target").equals("1")){
+				calculate_target_list_u(jsonMap);
+				retMap.put("crud_tp", "u");
+			}
+		}
+		int tot_count = ajaxMemberDAO.calculate_target_list_total(jsonMap);
+		
+		retMap.put("tot_count", tot_count);
+		if (tot_count == 0) {
+			retMap.put("retcode", "999");
+			retMap.put("retmsg", "데이타가 없습니다.");
+			return retMap;
+		}
+		System.out.println("tot_count = " + tot_count);
+		int max_ret_count = jsonMap.get("max_ret_count") != null ? Integer
+				.parseInt((String) jsonMap.get("max_ret_count")) : 18;
+		int pageNum = Integer.parseInt((String) jsonMap.get("page_num"));
+		int start_index = (pageNum - 1) * max_ret_count;
+
+		jsonMap.put("start_index", start_index);
+		jsonMap.put("max_ret_count", max_ret_count);
+
+		List<?> order_list = ajaxMemberDAO.calculate_target_list(jsonMap);
+		retMap.put("order_list", order_list);
+		retMap.put("retcode", "000");
+		retMap.put("retmsg", "정상적으로 조회되었습니다.");
+		
+		return retMap;
+	}
+	public Map<String, Object> calculate_target_list_u(
+			HashMap<String, Object> jsonMap)
+			throws Exception {
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		
+		String check = jsonMap.get("check_val").toString();
+		String[] split = check.split(",");
+		for (int i = 0; i <= split.length - 1; i++) {
+			String dual = split[i];
+			dual = dual.substring(1, dual.length());
+			dual = dual.substring(0, dual.length() - 1);
+			String[] last = dual.split(":");
+			for (int j = 0; j <= last.length - 1; j++) {
+				if(j == 0){
+					jsonMap.put("withdraw_dt", last[j]);
+				}else{
+					jsonMap.put("user_uid", last[j]);
+				}
+			}
+			ajaxMemberDAO.calculate_target_list_u(jsonMap);
+		}
+		return retMap;
+	}
+	@Override
+	public Map<String, Object> calculate_deposit_list(HashMap<String, Object> jsonMap, HttpServletRequest request, HttpServletResponse response) throws Exception {
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		String conts = "";
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+		SimpleDateFormat ymd = new SimpleDateFormat("yyyyMMdd");
+		int tot_count = ajaxMemberDAO.calculate_deposit_list_total(jsonMap);
+		
+		retMap.put("tot_count", tot_count);
+		if (tot_count == 0) {
+			retMap.put("retcode", "999");
+			retMap.put("retmsg", "데이타가 없습니다.");
+			return retMap;
+		}
+		System.out.println("tot_count = " + tot_count);
+		int max_ret_count = jsonMap.get("max_ret_count") != null ? Integer
+				.parseInt((String) jsonMap.get("max_ret_count")) : 18;
+		int pageNum = Integer.parseInt((String) jsonMap.get("page_num"));
+		int start_index = (pageNum - 1) * max_ret_count;
+
+		jsonMap.put("start_index", start_index);
+		jsonMap.put("max_ret_count", max_ret_count);
+		
+		if ("u".equals(jsonMap.get("crud_tp"))) {
+			HashMap<String, Object> admin_check = new HashMap<String, Object>();
+			admin_check = ajaxMemberDAO.admin_check(jsonMap);
+			System.out.println("test1" + admin_check.get("dep_enroll"));
+			if(!"1".equals(admin_check.get("dep_enroll"))){
+				retMap.put("target", admin_check.get("dep_enroll"));
+				retMap.put("retcode", "990");
+				retMap.put("retmsg", "권한이 없습니다.");
+				return retMap;
+			}else if("1".equals(admin_check.get("dep_enroll"))){
+				calculate_deposit_list_u(jsonMap);
+				retMap.put("crud_tp", "u");		
+			}
+		}
+		if("ex".equals(jsonMap.get("excel_tp"))){
+			HashMap<String, Object> admin_check = new HashMap<String, Object>();
+			admin_check = ajaxMemberDAO.admin_check(jsonMap);
+			LOGGER.debug("admin_check test2 : " + admin_check.get("dep_enroll"));
+			System.out.println(admin_check.get("dep_enroll"));
+			if(!"1".equals(admin_check.get("dep_enroll"))){
+				retMap.put("target", "" + admin_check.get("dep_enroll"));
+				retMap.put("retcode", "990");
+				retMap.put("retmsg", "권한이 없습니다.");
+				return retMap;
+			}
+			
+			//Excel Write
+			HSSFWorkbook workbook = new HSSFWorkbook();
+			
+			HSSFSheet sheet = workbook.createSheet("Sheet1");
+
+			//Font 설정.
+			HSSFFont font = workbook.createFont();
+			font.setFontName(HSSFFont.FONT_ARIAL);
+			
+			//제목의 스타일 지정
+			HSSFCellStyle titlestyle = workbook.createCellStyle();
+			titlestyle.setFillForegroundColor(HSSFColor.SKY_BLUE.index);
+			titlestyle.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
+			titlestyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+			titlestyle.setFont(font);
+			
+			//Row 생성
+			HSSFRow row = sheet.createRow((short)0);
+			//Cell 생성
+			HSSFCell cell1 = row.createCell((short)0 );
+			/*cell1.setCellValue("은행코드");
+			cell1.setCellStyle(titlestyle);*/
+
+			HSSFCell cell2 = row.createCell((short)1);
+			/*cell2.setCellValue("계좌번호");
+			cell2.setCellStyle(titlestyle);*/
+			
+			HSSFCell cell3 = row.createCell((short)2);
+			/*cell3.setCellValue("예금주명");
+			cell3.setCellStyle(titlestyle);*/
+			
+			HSSFCell cell4 = row.createCell((short)3);
+			/*cell4.setCellValue("금액");
+			cell4.setCellStyle(titlestyle);*/
+			
+			HSSFCell cell5 = row.createCell((short)4);
+			/*cell5.setCellValue("");
+			cell5.setCellStyle(titlestyle);*/
+			
+			HSSFCell cell6 = row.createCell((short)5);
+			/*cell6.setCellValue("수신자통장내용");
+			cell6.setCellStyle(titlestyle);*/
+
+			HSSFCell cell7 = row.createCell((short)6);
+			/*cell7.setCellValue("발신자통장내용");
+			cell7.setCellStyle(titlestyle);*/
+			
+			//내용 스타일 지정
+			HSSFCellStyle style = workbook.createCellStyle();
+			style.setFont(font);
+
+			//내용중 가운데 정렬 추가
+			HSSFCellStyle styleCenter = workbook.createCellStyle();
+			styleCenter.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+			styleCenter.setFont(font);
+			
+			List<?> list = ajaxMemberDAO.calculate_excel_list(jsonMap);
+			System.out.println("///////////////////////////////");
+			System.out.println(list.iterator());
+			System.out.println("list.get(0)" + ajaxMemberDAO.calculate_excel_list(jsonMap));
+			for (int i=0; i<list.size();i++){
+			  /*  row = sheet.createRow((short)(i));
+			    HashMap<String, Object> excelMap = new HashMap<String, Object>();
+			    
+			    excelMap = (HashMap<String, Object>) list.get(i);
+			    cell1 = row.createCell((short)0 );
+			    cell1.setCellValue("" + excelMap.get("acct_bank"));
+			    cell1.setCellStyle(styleCenter);
+			    
+			    cell2 = row.createCell((short)1);
+			    cell2.setCellValue("" + excelMap.get("acct_num"));
+			    cell2.setCellStyle(style);
+			    
+			    cell3 = row.createCell((short)2);
+			    cell3.setCellValue("" + excelMap.get("acct_name"));
+			    cell3.setCellStyle(style);
+			    
+			    cell4 = row.createCell((short)3);
+			    cell4.setCellValue("" + excelMap.get("sttl_amt"));
+			    cell4.setCellStyle(style);
+			    
+			    cell5 = row.createCell((short)4);
+			    cell5.setCellValue("");
+			    cell5.setCellStyle(style);
+			    
+			    cell6 = row.createCell((short)5);
+			    cell6.setCellValue("(주)쓰리디뱅크");
+			    cell6.setCellStyle(style);
+			    if("null".equals(excelMap.get("compy_num")) || "".equals(excelMap.get("compy_num"))){
+			    	conts = "P" + ymd.format(excelMap.get("req_reg_dttm")) + excelMap.get("user_uid");
+			    }else{
+			    	conts = "" + excelMap.get("compy_num");
+			    }
+			    cell7 = row.createCell((short)6);
+			    cell7.setCellValue("" + excelMap.get("compy_num"));
+			    cell7.setCellStyle(style);*/
+					row = sheet.createRow((short)(i));
+				    HashMap<String, Object> excelMap = new HashMap<String, Object>();
+				    
+				    excelMap = (HashMap<String, Object>) list.get(i);
+				    cell1 = row.createCell((short)0 );
+				    cell1.setCellValue("" + excelMap.get("dep_bank_code"));
+				    cell1.setCellStyle(styleCenter);
+				    
+				    cell2 = row.createCell((short)1);
+				    cell2.setCellValue("" + excelMap.get("dep_bank_acct"));
+				    cell2.setCellStyle(style);
+				    
+				    cell3 = row.createCell((short)2);
+				    cell3.setCellValue("" + excelMap.get("acct_name"));
+				    cell3.setCellStyle(style);
+				    
+				    cell4 = row.createCell((short)3);
+				    cell4.setCellValue("" + excelMap.get("withdraw_appr_amt"));
+				    cell4.setCellStyle(style);
+				    
+				    cell5 = row.createCell((short)4);
+				    cell5.setCellValue("");
+				    cell5.setCellStyle(style);
+				    
+				    cell6 = row.createCell((short)5);
+				    cell6.setCellValue("(주)쓰리디뱅크");
+				    cell6.setCellStyle(style);
+				    if("null".equals(excelMap.get("compy_num")) || "".equals(excelMap.get("compy_num"))){
+				    	conts = "P" + ymd.format(excelMap.get("req_reg_dttm")) + excelMap.get("user_uid");
+				    }else{
+				    	conts = "" + excelMap.get("compy_num");
+				    }
+				    cell7 = row.createCell((short)6);
+				    cell7.setCellValue("" + excelMap.get("compy_num"));
+				    cell7.setCellStyle(style);
+			}
+			
+			
+			String ymdName = ymd.format(new java.util.Date());
+			String rndName = sdf.format(new java.util.Date()) + System.currentTimeMillis();
+			
+			// 실제 저장될 파일 이름
+			String realName = rndName + ".xls";
+			
+			// 실제로 저장될 파일 풀 경로
+			String url = "/home/vdiuser/3dbank/was1/admin-webapps/calculate_xls/";
+			File file = new File(url, realName);
+			
+			//엑셀 파일을 만듬
+			FileOutputStream fileOutput = new FileOutputStream(file);
+			
+			workbook.write(fileOutput);
+			fileOutput.close();
+			
+			String full_name = url + realName; 
+			
+			
+			SendMemberMail smm = new SendMemberMail("vlfldh@naver.com", ymdName + "일 3DBANK 정산내역 입니다." , ymdName + "일 3DBANK 정산내역 입니다.");
+			smm.run_file(full_name);
+			
+			String url2 = "/calculate_xls/";
+			retMap.put("excel_tp", "ex");
+			retMap.put("filename", realName);
+			retMap.put("url", url2);
+			retMap.put("realName", realName);
+		}
+		
+		List<?> order_list = ajaxMemberDAO.calculate_deposit_list(jsonMap);
+		retMap.put("order_list", order_list);
+		retMap.put("retcode", "000");
+		retMap.put("retmsg", "정상적으로 조회되었습니다.");
+		return retMap;
+	}
+	public Map<String, Object> calculate_deposit_list_u( HashMap<String, Object> jsonMap) throws Exception {
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		
+		String check = jsonMap.get("check_val").toString();
+		String[] split = check.split(",");
+		for (int i = 0; i <= split.length - 1; i++) {
+			String dual = split[i];
+			dual = dual.substring(1, dual.length());
+			dual = dual.substring(0, dual.length() - 1);
+			String[] last = dual.split(":");
+			for (int j = 0; j <= last.length - 1; j++) {
+				if(j == 0){
+					jsonMap.put("withdraw_dt", last[j]);
+				}else{
+					jsonMap.put("user_uid", last[j]);
+				}
+			}
+			/*for(int k = 1; k<=3 ; k++){
+				jsonMap.put("sell_tp", k);
+				int tot = ajaxMemberDAO.calculate_deposit_list_s(jsonMap);
+				System.out.println(tot);
+				if(tot != 0){
+					ajaxMemberDAO.calculate_deposit_list_u(jsonMap);
+				}
+			}*/
+			
+			ajaxMemberDAO.calculate_deposit_list_u(jsonMap);
+		}
+		return retMap;
+	}
+}

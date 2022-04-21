@@ -1,0 +1,25 @@
+HTML 
+{
+	width:100%;
+	height:100%;
+	margin: 0px;
+	padding : 0px;
+}
+
+
+BODY 
+{
+	font-family: consolas, monospace;
+	background-color:#eee; /*rgba(255,255,255,0.8)*/
+	color: #555555;
+	margin: 0px;
+	padding : 0px;
+	cursor:pointer;
+	overflow:hidden;
+	/*background-image: url(sample01.png);*/
+	background-position: center center;
+	/*background-size: 100% ;*/
+	background-repeat:no-repeat;
+}
+
+

@@ -1,0 +1,757 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="contentsDAO">
+
+	<!-- ///////////////////////////////////////////////// exhibition template operation /////////////////////////////////////////////////////// -->
+
+	<insert id="contentsDAO.insert_exh_tmpl_info">
+	<selectKey keyProperty="new_tmpl_uid" resultClass="int">
+		SELECT IFNULL(MAX(EXH_TMPL_UID),0)+1  FROM EXHIBITION_TMPL
+	</selectKey>
+	<![CDATA[
+		INSERT INTO EXHIBITION_TMPL (
+			EXH_TMPL_UID, TMPL_NAME, TMPL_TP, USE_YN, USER_UID
+		) VALUES (
+			#new_tmpl_uid#,
+			#tmpl_name#,
+			#tmpl_tp#,
+			#use_yn#,
+			#user_uid#
+		)
+	]]>
+	</insert>
+	
+	
+	
+	<insert id="contentsDAO.insert_exh_tmpl_prod">
+	<selectKey keyProperty="new_exh_tmpl_prod_uid" resultClass="int">
+		SELECT IFNULL(MAX(EXH_TMPL_PROD_UID),0)+1  FROM EXHIBITION_TMPL_PROD
+	</selectKey>
+	<![CDATA[
+		INSERT INTO EXHIBITION_TMPL_PROD (
+			EXH_TMPL_PROD_UID, EXH_TMPL_UID, PROD_TP, TMPL_PROD_LOC
+		) VALUES (
+			#new_exh_tmpl_prod_uid#,
+			#exh_tmpl_uid#,
+			#prod_tp#,
+			#tmpl_prod_loc#
+		)
+	]]>
+	</insert>
+	
+	
+	
+	<insert id="contentsDAO.insert_exh_tmpl_file">
+	<selectKey keyProperty="new_exh_tmpl_file_uid" resultClass="int">
+		SELECT IFNULL(MAX(EXH_TMPL_FILE_UID),0)+1  FROM EXHIBITION_TMPL_FILE
+	</selectKey>
+	<![CDATA[
+		INSERT INTO EXHIBITION_TMPL_FILE (
+			EXH_TMPL_FILE_UID, EXH_TMPL_UID, FILE_NAME, SAVE_NAME, FILE_TP, FILE_SIZE
+		) VALUES (
+			#new_exh_tmpl_file_uid#,
+			#exh_tmpl_uid#,
+			#file_name#,
+			#save_name#,
+			#file_tp#,
+			#file_size#
+		)
+	]]>
+	</insert>
+	
+	
+	
+	<select id="contentsDAO.select_exh_tmpl_list_total_cnt" resultClass="int">
+	<![CDATA[
+		SELECT COUNT(*) total_cnt FROM EXHIBITION_TMPL 
+		WHERE (IFNULL(#use_yn#,'') = '' OR USE_YN = #use_yn#) 
+		AND 
+		DEL_YN = 'N'
+		AND
+	 	( 	(IFNULL(#user_uid#,'') = '') OR
+	 		(USER_UID = #user_uid# and (USE_YN = 'Y' or USE_YN = 'N')) OR
+	 		(USER_UID != #user_uid# and USE_YN = 'Y')
+	 	)
+	]]>
+	</select>
+	
+	
+	<select id="contentsDAO.select_exh_tmpl_list" resultClass="java.util.HashMap">
+	<![CDATA[
+		SELECT
+			 EXH_TMPL_UID 		  exh_tmpl_uid, 
+			 TMPL_NAME 		      tmpl_name,
+			 TMPL_TP 			  tmpl_tp,
+			 USE_YN               use_yn,
+			 USER_UID             user_uid,
+			 (SELECT COUNT(*) FROM EXHIBITION_TMPL_PROD WHERE EXH_TMPL_UID = EXHIBITION_TMPL.EXH_TMPL_UID) prod_cnt, 	 
+			 (SELECT FILE_NAME FROM EXHIBITION_TMPL_FILE WHERE EXH_TMPL_UID = EXHIBITION_TMPL.EXH_TMPL_UID AND FILE_TP = '1' LIMIT 1) file_name
+	 	FROM EXHIBITION_TMPL 
+	 	WHERE (IFNULL(#use_yn#,'') = '' OR USE_YN = #use_yn#) 
+	 	AND 
+	 	DEL_YN = 'N'
+	 	AND
+	 	( 	(IFNULL(#user_uid#,'') = '') OR
+	 		(USER_UID = #user_uid# and (USE_YN = 'Y' or USE_YN = 'N')) OR
+	 		(USER_UID != #user_uid# and USE_YN = 'Y')
+	 	)	 		
+		LIMIT #start_index#, #max_ret_count#
+	]]>
+	</select>
+	
+	
+	
+	<select id="contentsDAO.select_exh_tmpl_info" resultClass="java.util.HashMap">
+	<![CDATA[
+		SELECT 	
+			EXH_TMPL_UID 						exh_tmpl_uid,
+			TMPL_NAME 		    				tmpl_name,
+			TMPL_TP 							tmpl_tp,
+			USE_YN 								use_yn,
+			DATE_FORMAT(UPT_DTTM, '%Y-%m-%d')   upt_dttm,
+			(SELECT COUNT(*) FROM EXHIBITION_TMPL_PROD WHERE EXH_TMPL_UID = EXHIBITION_TMPL.EXH_TMPL_UID) prod_cnt
+		FROM EXHIBITION_TMPL
+		WHERE EXH_TMPL_UID = #exh_tmpl_uid# AND DEL_YN = 'N' AND (IFNULL(#user_uid#,'') = '' OR USER_UID = #user_uid#)
+	]]>
+	</select>
+	
+	
+	
+	
+	<select id="contentsDAO.select_tmpl_prod_list" resultClass="java.util.HashMap">
+	<![CDATA[
+		SELECT
+			EXH_TMPL_PROD_UID    exh_tmpl_prod_uid,
+			EXH_TMPL_UID         exh_tmpl_uid,
+			PROD_TP				 prod_tp,
+			TMPL_PROD_LOC		 prod_loc,
+			DATE_FORMAT(UPT_DTTM, '%Y-%m-%d')   upt_dttm
+		FROM EXHIBITION_TMPL_PROD
+		WHERE EXH_TMPL_UID = #exh_tmpl_uid# ORDER BY TMPL_PROD_LOC
+	]]>
+	</select>
+	
+	
+	
+	
+	<select id="contentsDAO.select_tmpl_file_list" resultClass="java.util.HashMap">
+	<![CDATA[
+		SELECT
+			EXH_TMPL_FILE_UID    exh_tmpl_file_uid,
+			EXH_TMPL_UID         exh_tmpl_uid,
+			FILE_NAME			 file_name,
+			SAVE_NAME		     save_name,
+			FILE_TP				 file_tp,
+			FILE_SIZE            file_size,
+			UPT_DTTM   			 upt_date,
+			DATE_FORMAT(UPT_DTTM, '%Y-%m-%d')   upt_dttm
+		FROM EXHIBITION_TMPL_FILE
+		WHERE EXH_TMPL_UID = #exh_tmpl_uid#
+	]]>
+	</select>
+	
+	
+	
+	
+	<update id="contentsDAO.update_tmpl_info">
+		UPDATE EXHIBITION_TMPL   
+		<dynamic prepend="SET">
+			<isPropertyAvailable prepend="," property="exh_tmpl_uid"> 	UPT_DTTM = CURRENT_TIMESTAMP()  </isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="tmpl_name"> 		TMPL_NAME = #tmpl_name# 	    </isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="tmpl_tp"> 		TMPL_TP = #tmpl_tp# 		    </isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="use_yn"> 		USE_YN = #use_yn# 		    	</isPropertyAvailable>
+		</dynamic>
+		WHERE EXH_TMPL_UID = #exh_tmpl_uid#  
+	</update>
+	
+	
+	
+	
+	<update id="contentsDAO.deleteTmpl">
+		UPDATE EXHIBITION_TMPL   
+		<dynamic prepend="SET">
+			<isPropertyAvailable prepend="," property="exh_tmpl_uid"> 	UPT_DTTM = CURRENT_TIMESTAMP()  </isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="del_yn"> 		DEL_YN = #del_yn# 	    		</isPropertyAvailable>
+		</dynamic>
+		WHERE EXH_TMPL_UID = #exh_tmpl_uid#  
+	</update>
+	
+	
+	
+	
+	<delete id="contentsDAO.delete_tmpl_file">
+		<![CDATA[
+			DELETE FROM EXHIBITION_TMPL_FILE 
+			WHERE	EXH_TMPL_UID = #exh_tmpl_uid#
+			AND #save_name# IS NOT NULL
+     		AND SAVE_NAME = #save_name#
+		]]>
+	</delete>
+	
+	
+	
+	<update id="contentsDAO.update_file_info">
+		UPDATE EXHIBITION_TMPL_FILE   
+		<dynamic prepend="SET">
+			<isPropertyAvailable prepend="," property="tmpl_fl_uid"> 	    UPT_DTTM = CURRENT_TIMESTAMP()  </isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="tmpl_fl_tp"> 		FILE_TP = #tmpl_fl_tp# 	        </isPropertyAvailable> 
+		</dynamic>
+		WHERE EXH_TMPL_FILE_UID = #tmpl_fl_uid#  
+	</update>
+	
+	
+	
+	<update id="contentsDAO.update_exh_tmpl_prod">
+		UPDATE EXHIBITION_TMPL_PROD   
+		<dynamic prepend="SET">
+			<isPropertyAvailable prepend="," property="prod_uid"> 	 UPT_DTTM = CURRENT_TIMESTAMP()  </isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="prod_tp"> 	 PROD_TP = #prod_tp# 		     </isPropertyAvailable> 
+		</dynamic>
+		WHERE EXH_TMPL_PROD_UID = #prod_uid#  
+	</update>  
+	
+	
+	
+	<delete id="contentsDAO.delete_exh_tmpl_prod">
+		<![CDATA[
+			DELETE FROM EXHIBITION_TMPL_PROD 
+			WHERE	EXH_TMPL_PROD_UID = #exh_tmpl_prod_uid#
+		]]>
+	</delete>
+	
+	
+	
+	<!-- /////////////////////////////////////// contents operation ////////////////////////////////////////////////////////////////// -->
+	
+	<insert id="contentsDAO.insert_conts_info">
+	<selectKey keyProperty="new_conts_uid" resultClass="int">
+		SELECT IFNULL(MAX(CONTS_UID),0)+1  FROM EXHIBITION_CONTS_INFO
+	</selectKey>
+	<![CDATA[
+		INSERT INTO EXHIBITION_CONTS_INFO (
+			CONTS_UID, CONTS_NAME, CONTS_TP, CONTS_DESC, USE_YN, USER_UID
+		) VALUES (
+			#new_conts_uid#,
+			#conts_name#,
+			#conts_tp#,
+			#conts_desc#,
+			#use_yn#,
+			#user_uid#
+		)
+	]]>
+	</insert>
+	
+	
+	<insert id="contentsDAO.insert_conts_file">
+	<selectKey keyProperty="new_conts_file_seq" resultClass="int">
+		SELECT IFNULL(MAX(CONTS_FILE_SEQ),0)+1  FROM EXHIBITION_CONTS_FILE
+	</selectKey>
+	<![CDATA[
+		INSERT INTO EXHIBITION_CONTS_FILE (
+			CONTS_FILE_SEQ, CONTS_UID, CONTS_FILE_NAME, CONTS_SAVE_NAME, CONTS_FILE_SIZE
+		) VALUES (
+			#new_conts_file_seq#,
+			#conts_uid#,
+			#file_name#,
+			#save_name#,
+			#file_size#
+		)
+	]]>
+	</insert>
+	
+	
+	<select id="contentsDAO.selectContsList_TotalCnt" resultClass="java.util.HashMap">
+		<![CDATA[
+			SELECT
+				COUNT(*) tot_count
+			FROM
+			(
+				SELECT
+					EXHIBITION_CONTS_INFO.CONTS_UID
+				FROM	EXHIBITION_CONTS_INFO
+				WHERE						
+					(IFNULL(#conts_word#,'') = '' OR CONTS_NAME LIKE CONCAT('%',#conts_word#,'%'))
+					AND
+					(IFNULL(#use_yn#,'') = '' OR USE_YN = #use_yn#)
+					AND 
+					DEL_YN = 'N'
+					AND
+					(
+						(IFNULL(#conts_tp#,'ALL') = 'ALL')
+						or
+						((#conts_tp# = '1' or #conts_tp# = '2') and (conts_tp = 1 or conts_tp = 2))
+						or
+					    ((#conts_tp# <> '1' and #conts_tp# <> '2') and (conts_tp = 3))
+				    )
+				    AND
+				 	( 	(IFNULL(#user_uid#,'') = '') OR
+				 		(USER_UID = #user_uid# and (USE_YN = 'Y' or USE_YN = 'N')) OR
+				 		(USER_UID != #user_uid# and USE_YN = 'Y')
+				 	)
+			) A1
+		]]>
+    </select>
+	
+	
+	<select id="contentsDAO.selectContsList" resultClass="java.util.HashMap">
+	<![CDATA[
+      	SELECT
+     		CONTS_UID     conts_uid,
+			CONTS_NAME    conts_name,
+			CONTS_TP      conts_tp,
+			USE_YN		  use_yn,
+			USER_UID	  user_uid,
+			(SELECT  CONTS_SAVE_NAME  FROM	EXHIBITION_CONTS_FILE
+				WHERE CONTS_FILE_SEQ = EXHIBITION_CONTS_INFO.THUMBNAIL_FILE_SEQ) conts_save_name
+		FROM EXHIBITION_CONTS_INFO
+		WHERE
+			(IFNULL(#conts_word#,'') = '' OR CONTS_NAME LIKE CONCAT('%',#conts_word#,'%'))
+			AND
+			(IFNULL(#use_yn#,'') = '' OR USE_YN = #use_yn#)
+			AND DEL_YN = 'N'		
+			AND
+			(
+				(IFNULL(#conts_tp#,'ALL') = 'ALL')
+				or
+				((#conts_tp# = '1' or #conts_tp# = '2') and (conts_tp = 1 or conts_tp = 2))
+				or
+			    ((#conts_tp# <> '1' and #conts_tp# <> '2') and (conts_tp = 3))
+		    )
+		    AND
+		 	( 	(IFNULL(#user_uid#,'') = '') OR
+		 		(USER_UID = #user_uid# and (USE_YN = 'Y' or USE_YN = 'N')) OR
+		 		(USER_UID != #user_uid# and USE_YN = 'Y')
+		 	)					
+		limit #start_index#, #max_ret_count#
+ 		]]>
+    </select>
+    
+    
+    <update id="contentsDAO.update_conts_thumb_info">
+		UPDATE EXHIBITION_CONTS_INFO   
+		<dynamic prepend="SET">
+			<isPropertyAvailable prepend="," property="conts_uid"> 	    	UPT_DTTM = CURRENT_TIMESTAMP()  		  </isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="thumb_file_seq"> 	THUMBNAIL_FILE_SEQ = #thumb_file_seq# 	  </isPropertyAvailable> 
+		</dynamic>
+		WHERE CONTS_UID = #conts_uid#  
+	</update>
+    
+    
+    <select id="contentsDAO.selectContentsInfo" resultClass="java.util.HashMap">
+        <![CDATA[
+        SELECT
+     			EXHIBITION_CONTS_INFO.CONTS_UID             conts_uid
+			,	EXHIBITION_CONTS_INFO.CONTS_NAME    		conts_name
+			,	EXHIBITION_CONTS_INFO.CONTS_TP      		conts_tp
+			,	EXHIBITION_CONTS_INFO.CONTS_DESC    		conts_desc
+			,	EXHIBITION_CONTS_INFO.THUMBNAIL_FILE_SEQ  	thumbnail_file_seq
+			,	EXHIBITION_CONTS_INFO.USE_YN  				use_yn
+			,	EXHIBITION_CONTS_INFO.REG_DTTM   			reg_dttm
+			, 	EXHIBITION_CONTS_INFO.UPT_DTTM   			upt_dttm
+		FROM	EXHIBITION_CONTS_INFO
+		WHERE	EXHIBITION_CONTS_INFO.CONTS_UID = #conts_uid# 
+		AND DEL_YN = 'N'
+		AND (IFNULL(#user_uid#,'') = '' OR USER_UID = #user_uid#)
+        ]]>
+    </select>
+    
+    
+    <select id="contentsDAO.selectContentsFileList" resultClass="java.util.HashMap">
+        <![CDATA[
+     	SELECT
+			   CONTS_UID        conts_uid
+			,  CONTS_FILE_SEQ   conts_file_seq
+			,  CONTS_FILE_NAME  conts_file_name
+			,  CONTS_FILE_SIZE  conts_file_size
+			,  CONTS_SAVE_NAME  conts_save_name
+			,  UPT_DTTM         upt_dttm
+			,  REG_DTTM         reg_dttm
+     	FROM	EXHIBITION_CONTS_FILE
+     	WHERE	CONTS_UID = #conts_uid#
+        ]]>
+    </select>
+    
+    
+    <delete id="contentsDAO.delete_conts_file">
+		<![CDATA[
+			DELETE FROM EXHIBITION_CONTS_FILE 
+			WHERE CONTS_UID = #conts_uid#
+			AND #conts_save_name# IS NOT NULL
+     		AND CONTS_SAVE_NAME = #conts_save_name#
+		]]>
+	</delete>
+	
+	<update id="contentsDAO.updateContsInfo">
+		UPDATE EXHIBITION_CONTS_INFO   
+		<dynamic prepend="SET">
+			<isPropertyAvailable prepend="," property="conts_uid"> 				UPT_DTTM = CURRENT_TIMESTAMP()  				</isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="conts_name"> 			CONTS_NAME = #conts_name# 	    				</isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="conts_tp"> 				CONTS_TP = #conts_tp# 		    				</isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="conts_desc"> 			CONTS_DESC = #conts_desc# 		    			</isPropertyAvailable>
+			<isPropertyAvailable prepend="," property="thumbnail_file_seq"> 	THUMBNAIL_FILE_SEQ = #thumbnail_file_seq# 		</isPropertyAvailable>
+			<isPropertyAvailable prepend="," property="use_yn"> 				USE_YN = #use_yn# 								</isPropertyAvailable>
+		</dynamic>
+		WHERE CONTS_UID = #conts_uid#  
+	</update>
+	
+	
+	<update id="contentsDAO.deleteContentsInfo">
+		UPDATE EXHIBITION_CONTS_INFO   
+		<dynamic prepend="SET">
+			<isPropertyAvailable prepend="," property="conts_uid"> 		UPT_DTTM = CURRENT_TIMESTAMP()  </isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="del_yn"> 		DEL_YN = #del_yn# 	    		</isPropertyAvailable>
+		</dynamic>
+		WHERE CONTS_UID = #conts_uid#  
+	</update>
+	
+	
+	<select id="contentsDAO.selectContsVideoAndGlb" resultClass="java.util.HashMap">
+        <![CDATA[
+        SELECT
+     		CONTS_SAVE_NAME		save_name
+		FROM	EXHIBITION_CONTS_FILE
+		WHERE	CONTS_UID = #conts_uid# AND CONTS_SAVE_NAME LIKE CONCAT('%',#srch-word#) LIMIT 1
+        ]]>
+    </select>
+    
+    
+    <select id="contentsDAO.selectContsImgs" resultClass="java.util.HashMap">
+        <![CDATA[
+     	SELECT
+			   CONTS_SAVE_NAME		save_name
+     	FROM	EXHIBITION_CONTS_FILE
+     	WHERE	CONTS_UID = #conts_uid#
+     	AND (CONTS_SAVE_NAME LIKE CONCAT('%', '.jpg') OR CONTS_SAVE_NAME LIKE CONCAT('%', '.png') OR CONTS_SAVE_NAME LIKE CONCAT('%', '.gif'))
+        ]]>
+    </select>
+	
+	
+	
+	<!-- ////////////////////////// Exhibition operation ////////////////////////////////////////////////////////////////////////// -->
+	
+	<insert id="contentsDAO.insert_exh_info">
+	<selectKey keyProperty="new_exh_uid" resultClass="int">
+		SELECT IFNULL(MAX(EXH_UID),0)+1  FROM EXHIBITION_MAIN
+	</selectKey>
+	<![CDATA[
+		INSERT INTO EXHIBITION_MAIN (
+			EXH_UID, EXH_TMPL_UID, EXH_NAME, EXH_THUMB_FILE_SEQ, EXH_START_PERIOD, EXH_END_PERIOD, EXH_DESC, USE_YN, USER_UID
+		) VALUES (
+			#new_exh_uid#,
+			#exh_tmpl_uid#,
+			#exh_name#,
+			#exh_thumb_file_seq#,
+			#exh_start_period#,
+			#exh_end_period#,
+			#exh_desc#,
+			#use_yn#,
+			#user_uid#
+		)
+	]]>
+	</insert>
+	
+	
+	<insert id="contentsDAO.insert_exh_file">
+	<selectKey keyProperty="new_exh_file_seq" resultClass="int">
+		SELECT IFNULL(MAX(EXH_FILE_SEQ),0)+1  FROM EXHIBITION_MAIN_FILE
+	</selectKey>
+	<![CDATA[
+		INSERT INTO EXHIBITION_MAIN_FILE (
+			EXH_FILE_SEQ, EXH_UID, EXH_FILE_NAME, EXH_SAVE_NAME, EXH_FILE_SIZE
+		) VALUES (
+			#new_exh_file_seq#,
+			#exh_uid#,
+			#file_name#,
+			#save_name#,
+			#file_size#
+		)
+	]]>
+	</insert>
+	
+	
+	<update id="contentsDAO.update_exh_thumb_info">
+		UPDATE EXHIBITION_MAIN   
+		<dynamic prepend="SET">
+			<isPropertyAvailable prepend="," property="exh_uid"> 	    	UPT_DTTM = CURRENT_TIMESTAMP()  		  </isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="thumb_file_seq"> 	EXH_THUMB_FILE_SEQ = #thumb_file_seq# 	  </isPropertyAvailable> 
+		</dynamic>
+		WHERE EXH_UID = #exh_uid#  
+	</update>
+	
+	
+	
+	<insert id="contentsDAO.insert_exh_main_conts">
+	<selectKey keyProperty="new_exh_conts_uid" resultClass="int">
+		SELECT IFNULL(MAX(MAIN_CONTS_UID),0)+1  FROM EXHIBITION_MAIN_CONTS
+	</selectKey>
+	<![CDATA[
+		INSERT INTO EXHIBITION_MAIN_CONTS (
+			MAIN_CONTS_UID, EXH_UID, MAIN_CONTS_LOC, MAIN_CONTS_TP, MAIN_CONTS_NAME, CONTS_UID, ROOT_TP
+		) VALUES (
+			#new_exh_conts_uid#,
+			#exh_uid#,
+			#main_conts_loc#,
+			#main_conts_tp#,
+			#main_conts_name#,
+			#conts_uid#,
+			#root_tp#
+		)
+	]]>
+	</insert>
+	
+	
+	<select id="contentsDAO.select_exh_list_total_cnt" resultClass="java.util.HashMap">
+		<![CDATA[
+			SELECT
+				COUNT(*) tot_count
+			FROM
+			(
+				SELECT
+					EXHIBITION_MAIN.EXH_UID
+				FROM EXHIBITION_MAIN
+				WHERE
+					(USE_YN = #use_yn# OR IFNULL(#use_yn#,'ALL') = 'ALL')
+					AND
+					(IFNULL(#exh_word#,'') = '' OR EXH_NAME LIKE CONCAT('%',#exh_word#,'%'))
+					AND 
+					DEL_YN = 'N'
+					AND
+					(
+						(IFNULL(#user_uid#,'') = '') OR
+						(USE_YN = 'Y' AND (USER_UID = #user_uid# OR USER_UID != #user_uid#)) OR
+						(USE_YN = 'N' AND USER_UID = #user_uid#)
+					)
+			) A1
+		]]>
+    </select>
+    
+    
+    <select id="contentsDAO.select_exhibition_list" resultClass="java.util.HashMap">
+	<![CDATA[
+		SELECT
+			 EXH_UID 		  		exh_uid, 
+			 EXH_NAME 		      	exh_name,
+			 USE_YN 			  	use_yn,
+			 EXH_START_PERIOD       exh_start_period,
+			 EXH_END_PERIOD       	exh_end_period,
+			 EXH_TMPL_UID			exh_tmpl_uid,
+			 USER_UID				user_uid,
+			 (SELECT TMPL_NAME FROM EXHIBITION_TMPL WHERE EXH_TMPL_UID = EXHIBITION_MAIN.EXH_TMPL_UID AND DEL_YN = 'N') tmpl_name,
+			 (SELECT COUNT(*) FROM EXHIBITION_TMPL_PROD WHERE EXH_TMPL_UID = EXHIBITION_MAIN.EXH_TMPL_UID) conts_cnt,
+			 (SELECT COUNT(*) FROM EXHIBITION_MAIN_CONTS WHERE EXH_UID = EXHIBITION_MAIN.EXH_UID) main_conts_cnt
+	 	FROM EXHIBITION_MAIN
+	 	WHERE
+			(USE_YN = #use_yn# OR IFNULL(#use_yn#,'ALL') = 'ALL')
+			AND
+			(IFNULL(#exh_word#,'') = '' OR EXH_NAME LIKE CONCAT('%',#exh_word#,'%'))
+			AND 
+			DEL_YN = 'N'
+			AND
+			(
+				(IFNULL(#user_uid#,'') = '') OR
+				(USE_YN = 'Y' AND (USER_UID = #user_uid# OR USER_UID != #user_uid#)) OR
+				(USE_YN = 'N' AND USER_UID = #user_uid#)
+			)
+		LIMIT #start_index#, #max_ret_count#
+	]]>
+	</select>
+	
+	
+	<select id="contentsDAO.selectExhibitionInfo" resultClass="java.util.HashMap">
+        <![CDATA[
+        SELECT
+     		EXH_UID             				exh_uid,
+			EXH_TMPL_UID    					exh_tmpl_uid,
+			EXH_NAME      						exh_name,
+			EXH_THUMB_FILE_SEQ    				exh_thumb_file_seq,
+			EXH_START_PERIOD   					exh_start_period,
+			EXH_END_PERIOD  					exh_end_period,
+			EXH_DESC   							exh_desc,
+			USE_YN   							use_yn,
+			REG_DTTM   							reg_dttm,
+			DATE_FORMAT(UPT_DTTM, '%Y-%m-%d')   upt_dttm,
+			(SELECT TMPL_NAME FROM EXHIBITION_TMPL WHERE EXH_TMPL_UID = EXHIBITION_MAIN.EXH_TMPL_UID AND DEL_YN = 'N') tmpl_name,
+			(SELECT TMPL_TP FROM EXHIBITION_TMPL WHERE EXH_TMPL_UID = EXHIBITION_MAIN.EXH_TMPL_UID AND DEL_YN = 'N') tmpl_tp,
+			(SELECT COUNT(*) FROM EXHIBITION_TMPL_PROD WHERE EXH_TMPL_UID = EXHIBITION_MAIN.EXH_TMPL_UID) conts_cnt,
+			(SELECT SAVE_NAME FROM EXHIBITION_TMPL_FILE WHERE EXH_TMPL_UID = EXHIBITION_MAIN.EXH_TMPL_UID AND FILE_TP = '3' LIMIT 1) tmpl_thumb_name
+		FROM	EXHIBITION_MAIN
+		WHERE	EXH_UID = #exh_uid# 
+		AND 
+		DEL_YN = 'N' 
+		AND 
+		(IFNULL(#user_uid#,'') = '' OR USER_UID = #user_uid#)
+        ]]>
+    </select>
+    
+    
+    
+   	<select id="contentsDAO.selectExhibitionFileList" resultClass="java.util.HashMap">
+        <![CDATA[
+     	SELECT
+			   EXH_FILE_SEQ        					exh_file_seq
+			,  EXH_UID   							exh_uid
+			,  EXH_FILE_NAME  						exh_file_name
+			,  EXH_SAVE_NAME  						exh_save_name
+			,  EXH_FILE_SIZE  						exh_file_size
+			,  DATE_FORMAT(UPT_DTTM, '%Y-%m-%d')    upt_dttm
+			,  REG_DTTM         	reg_dttm
+     	FROM	EXHIBITION_MAIN_FILE
+     	WHERE	EXH_UID = #exh_uid#
+        ]]>
+    </select>
+    
+    
+    <select id="contentsDAO.selectExhibitionContsList" resultClass="java.util.HashMap">
+        <![CDATA[
+     	SELECT
+			   MAIN_CONTS_UID        				main_conts_uid
+			,  EXH_UID   							exh_uid
+			,  MAIN_CONTS_LOC  						main_conts_loc
+			,  MAIN_CONTS_TP  						main_conts_tp
+			,  CONTS_UID  							conts_uid
+			,  DATE_FORMAT(UPT_DTTM, '%Y-%m-%d')    upt_dttm
+			,  REG_DTTM         					reg_dttm
+			,  MAIN_CONTS_NAME         				main_conts_name
+			,  ROOT_TP         						root_tp
+			,  (SELECT CONTS_TP FROM EXHIBITION_CONTS_INFO B WHERE B.CONTS_UID = A.CONTS_UID AND B.DEL_YN = 'N') conts_tp
+			,  (SELECT CONTS_DESC FROM EXHIBITION_CONTS_INFO WHERE CONTS_UID = A.CONTS_UID AND DEL_YN = 'N') conts_desc
+			,  (SELECT PROD_TP FROM EXHIBITION_TMPL_PROD WHERE TMPL_PROD_LOC = A.main_conts_loc AND EXH_TMPL_UID = (SELECT EXH_TMPL_UID FROM EXHIBITION_MAIN where EXH_UID = A.EXH_UID)) prod_tp
+			,  (SELECT CONTS_SAVE_NAME FROM EXHIBITION_CONTS_FILE WHERE CONTS_FILE_SEQ = (SELECT THUMBNAIL_FILE_SEQ FROM EXHIBITION_CONTS_INFO where CONTS_UID = A.CONTS_UID AND DEL_YN = 'N' limit 1)) thumb_img 
+     	FROM	EXHIBITION_MAIN_CONTS A
+     	WHERE	EXH_UID = #exh_uid#
+        ]]>
+    </select>
+    
+    
+    
+    <delete id="contentsDAO.deleteExhibitionFile">
+		<![CDATA[
+			DELETE FROM EXHIBITION_MAIN_FILE 
+			WHERE EXH_UID = #exh_uid#
+			AND #exh_save_name# IS NOT NULL
+     		AND EXH_SAVE_NAME = #exh_save_name#
+		]]>
+	</delete>
+	
+	
+	<delete id="contentsDAO.deleteExhMainConts">
+		<![CDATA[
+			DELETE FROM EXHIBITION_MAIN_CONTS 
+			WHERE MAIN_CONTS_UID = #main_conts_uid#
+		]]>
+	</delete>
+	
+	
+	<update id="contentsDAO.updateExhMainConts">
+		UPDATE EXHIBITION_MAIN_CONTS   
+		<dynamic prepend="SET">
+			<isPropertyAvailable prepend="," property="main_conts_uid"> 			UPT_DTTM = CURRENT_TIMESTAMP()  			</isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="main_conts_loc"> 			MAIN_CONTS_LOC = #main_conts_loc# 	    	</isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="main_conts_tp"> 				MAIN_CONTS_TP = #main_conts_tp# 		    </isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="main_conts_name"> 			MAIN_CONTS_NAME = #main_conts_name# 		</isPropertyAvailable>
+			<isPropertyAvailable prepend="," property="conts_uid"> 					CONTS_UID = #conts_uid# 		    		</isPropertyAvailable>
+			<isPropertyAvailable prepend="," property="root_tp"> 					ROOT_TP = #root_tp# 		    			</isPropertyAvailable>
+		</dynamic>
+		WHERE MAIN_CONTS_UID = #main_conts_uid#  
+	</update>
+	
+	
+	<update id="contentsDAO.updateExhibitionInfo">
+		UPDATE EXHIBITION_MAIN   
+		<dynamic prepend="SET">
+			<isPropertyAvailable prepend="," property="exh_uid"> 	    		UPT_DTTM = CURRENT_TIMESTAMP()  		  		</isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="exh_tmpl_uid"> 			EXH_TMPL_UID = #exh_tmpl_uid# 	  				</isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="exh_name"> 				EXH_NAME = #exh_name# 	  						</isPropertyAvailable>
+			<isPropertyAvailable prepend="," property="exh_thumb_file_seq"> 	EXH_THUMB_FILE_SEQ = #exh_thumb_file_seq# 	  	</isPropertyAvailable>
+			<isPropertyAvailable prepend="," property="exh_start_period"> 		EXH_START_PERIOD = #exh_start_period# 	  		</isPropertyAvailable>
+			<isPropertyAvailable prepend="," property="exh_end_period"> 		EXH_END_PERIOD = #exh_end_period# 	  			</isPropertyAvailable>
+			<isPropertyAvailable prepend="," property="exh_desc"> 				EXH_DESC = #exh_desc# 	  						</isPropertyAvailable>
+			<isPropertyAvailable prepend="," property="use_yn"> 				USE_YN = #use_yn# 	  							</isPropertyAvailable>
+		</dynamic>
+		WHERE EXH_UID = #exh_uid#  
+	</update>
+	
+	
+	<select id="contentsDAO.selectExhibitionViewInfo" resultClass="java.util.HashMap">
+        <![CDATA[
+        SELECT
+     			EXH_UID             		exh_uid
+			,	EXH_TMPL_UID    			exh_tmpl_uid
+			,	EXH_NAME      				exh_name
+			,	EXH_THUMB_FILE_SEQ    		exh_thumb_file_seq
+			,	EXH_START_PERIOD   			exh_start_period
+			,	EXH_END_PERIOD  			exh_end_period
+			,	EXH_DESC   					exh_desc
+			, 	USE_YN   					use_yn
+			,	(SELECT SAVE_NAME FROM EXHIBITION_TMPL_FILE WHERE EXH_TMPL_UID = EXHIBITION_MAIN.EXH_TMPL_UID AND FILE_TP = '3') tmpl_structure_img
+		FROM	EXHIBITION_MAIN
+		WHERE	EXH_UID = #exh_uid# AND DEL_YN = 'N'
+        ]]>
+    </select>
+    
+    
+    
+   	<select id="contentsDAO.selectMainExhibitionInfo" resultClass="java.util.HashMap">
+        <![CDATA[
+        SELECT
+     		EXH_UID             				exh_uid,
+			EXH_TMPL_UID    					exh_tmpl_uid,
+			EXH_NAME      						exh_name,
+			EXH_THUMB_FILE_SEQ    				exh_thumb_file_seq,
+			EXH_DESC   							exh_desc,
+			USE_YN								use_yn,
+			EXH_START_PERIOD					start_period,
+			EXH_END_PERIOD						end_period,
+			(SELECT UPT_DTTM FROM EXHIBITION_TMPL_FILE WHERE EXH_TMPL_UID = EXHIBITION_MAIN.EXH_TMPL_UID AND FILE_TP = '1' LIMIT 1) upt_dttm,
+			(SELECT SAVE_NAME FROM EXHIBITION_TMPL_FILE WHERE EXH_TMPL_UID = EXHIBITION_MAIN.EXH_TMPL_UID AND FILE_TP = '1' LIMIT 1) save_name
+		FROM	EXHIBITION_MAIN
+		WHERE	EXH_UID = #exh_uid# AND DEL_YN = 'N'
+        ]]>
+    </select>
+    
+    
+   
+    
+    <select id="contentsDAO.selectExhibitionListByTmplUid" resultClass="java.util.HashMap">
+        <![CDATA[
+        SELECT
+     		EXH_UID             				exh_uid,
+			EXH_TMPL_UID    					exh_tmpl_uid,
+			EXH_NAME      						exh_name
+		FROM	EXHIBITION_MAIN
+		WHERE	EXH_TMPL_UID = #exh_tmpl_uid# AND DEL_YN = 'N'
+        ]]>
+    </select>
+    
+    
+    <select id="contentsDAO.countContents" resultClass="int">
+        <![CDATA[
+        SELECT COUNT(*)
+		FROM	EXHIBITION_MAIN_CONTS A
+		WHERE	CONTS_UID = #conts_uid#
+		AND 	(SELECT DEL_YN FROM EXHIBITION_MAIN WHERE EXH_UID = A.EXH_UID) = 'N'
+        ]]>
+    </select>
+    
+    
+    <update id="contentsDAO.deleteExhibitionInfo">
+		UPDATE EXHIBITION_MAIN   
+		<dynamic prepend="SET">
+			<isPropertyAvailable prepend="," property="exh_uid"> 		UPT_DTTM = CURRENT_TIMESTAMP()  </isPropertyAvailable> 
+			<isPropertyAvailable prepend="," property="del_yn"> 		DEL_YN = #del_yn# 	    		</isPropertyAvailable>
+		</dynamic>
+		WHERE EXH_UID = #exh_uid#
+	</update>
+	
+</sqlMap>
+
+
+
+
+
+
+
+
+
+

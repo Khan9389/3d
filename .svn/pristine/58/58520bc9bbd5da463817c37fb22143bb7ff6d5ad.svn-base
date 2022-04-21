@@ -1,0 +1,25 @@
+@charset "utf-8";
+.roll_thum_area{
+	position:relative;
+	width:560px;
+	height:84px;
+	overflow:hidden;
+	float:left;
+}
+.roll_thum_box{
+	position:absolute;
+	left:0;
+	top:0;
+	width:1200px;
+	height:84px;
+	overflow:hidden;
+}
+.roll_thum_box li{
+	float:left;
+}
+.roll_thum_box li.first{
+	margin-left:0;
+}
+.roll_thum_box li a{
+	display:block;
+}

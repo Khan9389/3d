@@ -1,0 +1,99 @@
+package com.asia3d.calculate.service.impl;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Hashtable;
+
+public class TransHttpPostData {
+
+	
+	public static void main(String args[]) throws Exception {
+		
+		TransHttpPostData transHttpPostData = new TransHttpPostData("http://naver.com");
+		
+		Hashtable hash = new Hashtable();
+		hash.put("key1", 1111);
+		hash.put("key2", 2222);
+		
+		transHttpPostData.submitData(hash);
+	}
+	
+	private String http_url = null;
+	private ArrayList resultLine = new ArrayList();
+	
+	public TransHttpPostData(String http_url) {
+		this.http_url = http_url;
+	}
+	
+	public ArrayList getResult() {
+		return resultLine;
+	}
+	public void submitData(Hashtable hash) throws Exception {
+		
+		OutputStreamWriter wr = null;
+		BufferedReader rd = null;
+
+		if(hash == null) {
+			hash = new  Hashtable(); 
+		}
+		
+		try {
+			// Construct data
+			StringBuffer sb = new StringBuffer();
+			
+			Enumeration eValue  =hash.elements();
+			Enumeration eKey    =hash.keys();
+			
+			while(eValue.hasMoreElements())
+			{
+		        Object oCurrValue   = eValue.nextElement();
+		        Object oCurrKey     = eKey.nextElement();
+				sb.append(URLEncoder.encode(String.valueOf(oCurrKey), "UTF-8") + "="	+ URLEncoder.encode(String.valueOf(oCurrValue), "UTF-8"));
+				sb.append("&");
+			}
+			
+			System.out.println("parameters sb:" + sb.toString());
+			
+			
+			// Send data
+			URL url = new URL(http_url);
+
+			URLConnection conn = url.openConnection();
+			conn.setDoOutput(true);
+			wr = new OutputStreamWriter(conn.getOutputStream());
+			wr.write(sb.toString());
+			wr.flush();
+
+			// Get the response
+			rd = new BufferedReader(new InputStreamReader(
+					//conn.getInputStream(), "UTF-8"));
+					conn.getInputStream(), "EUC-KR"));
+			String line;
+			while ((line = rd.readLine()) != null) {
+				if(line.length() <= 0) continue;
+				resultLine.add(line);
+			}
+
+		} finally {
+			try {
+				if (wr != null) {
+					wr.close();
+				}
+				if (rd != null) {
+					rd.close();
+				}
+			} catch (IOException ioe) {
+				System.out.println(ioe.toString());
+			} catch (Exception e) {
+				System.out.println(e.toString());
+			}
+		}
+	}
+}

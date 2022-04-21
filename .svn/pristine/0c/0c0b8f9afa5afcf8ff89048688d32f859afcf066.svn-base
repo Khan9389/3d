@@ -1,0 +1,796 @@
+package com.asia3d.web;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.net.URLDecoder;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.asia3d.contents.service.AjaxContentsService;
+import com.asia3d.member.service.AjaxMemberService;
+import com.asia3d.ordermade.service.AjaxOrderMadeService;
+import com.asia3d.util.DateUtil;
+import com.asia3d.util.Log;
+import com.asia3d.util.StrUtil;
+//guava
+import com.google.common.io.ByteStreams;
+
+/**
+ * @Class Name : Ajax3DBankController.java
+ * @Description : Ajax3DBankController Controller Class
+ * @Modification Information
+ * @
+ * @  수정일      수정자              수정내용
+ * @ ---------   ---------   -------------------------------
+ * @ 2016.04.18           최초생성
+ *
+ * @author 동양정보서비스
+ * @since 2016.04.18
+ * @version 1.0
+ * @see
+ *
+ *  Copyright (C) by (주)쓰리디뱅크 All right reserved.
+ */
+
+@Controller
+public class Ajax3DBankController {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(Ajax3DBankController.class);
+	
+	@Autowired
+	private  AjaxMemberService ajaxMemberService;
+
+	@Autowired
+	private  AjaxContentsService ajaxContentsService;
+	
+	@Autowired
+	private  AjaxOrderMadeService ajaxOrderMadeService;
+	
+	static String SEED = "PicketTown12345";
+	
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = "/Ajax3DBankController.do", method = RequestMethod.POST )
+	@ResponseBody
+	public Object get3DBankControllerJSON(	HttpServletRequest request,
+											HttpServletResponse response,
+											@RequestParam Map<String, String> params) {
+		
+		String jsondata = params.get("jsondata");
+				
+		boolean log_write = true;
+
+		long start_time = System.currentTimeMillis(); 
+
+		Log.print(LOGGER, "=====================================================================");
+		Log.print(LOGGER, "/Ajax3DBankController.do 데이타수신 ");	
+		Log.print(LOGGER, "=====================================================================");	
+				
+		ObjectMapper om = new ObjectMapper();
+		
+		Map<String, Object> resMap = new HashMap<String, Object>();
+		
+		try {
+			jsondata = URLDecoder.decode(jsondata, "UTF-8");
+			Log.print(LOGGER, "[URLDecoder.decode후(1)..]>jsondata=" +jsondata);
+		} catch (Exception e2) {
+			Log.print(LOGGER, e2);
+			resMap.put("retcode", "999");
+			resMap.put("retmsg", "수신데이타 파싱에러:" + e2);
+			return resMap;
+		} 
+		
+		boolean bFileDownLoad = false;
+		
+		// 주석을 삭제한다.
+		if(jsondata.indexOf("http:") < 0 && jsondata.indexOf("https:") < 0) 
+		{
+			jsondata = StrUtil.removeComment(jsondata);
+		}
+		jsondata = jsondata.replaceAll("”","\""); // 이상한 따옴표가...
+		jsondata = jsondata.replaceAll("“","\""); // 이상한 따옴표가...
+
+		if(log_write)
+		{
+			Log.print(LOGGER, "[URLDecoder.decode후(2)..]>jsondata=" +jsondata);
+		}
+		String service_tp = null;
+		try {
+
+        	ObjectMapper mapper = new ObjectMapper();
+        	HashMap<String, Object>  jsonMap  = mapper.readValue(jsondata, HashMap.class);
+        	service_tp = (String) jsonMap.get("service_tp");
+        	
+        	Log.print(LOGGER, "service_tp=[" +service_tp +"]");
+        
+        	Log.print(LOGGER, ">> ===== [세션정보] ====");
+        	Log.print(LOGGER, ">> request.getSession().getId()=[" + request.getSession().getId() + "]");
+        	Log.print(LOGGER, ">> user_uid  =[" + request.getSession().getAttribute("user_uid") + "]");
+        	
+        	Log.print(LOGGER, ">> corp_p_login_id =[" + request.getSession().getAttribute("corp_p_login_id") + "]");
+        	Log.print(LOGGER, ">> corp_p_name     =[" + request.getSession().getAttribute("corp_p_name") + "]");
+        	
+        	Log.print(LOGGER, ">> p_login_id=[" + request.getSession().getAttribute("p_login_id") + "]");
+        	Log.print(LOGGER, ">> p_name    =[" + request.getSession().getAttribute("p_name") + "]");
+        	Log.print(LOGGER, ">> user_tp   =[" + request.getSession().getAttribute("user_tp") + "]");
+        	Log.print(LOGGER, ">> compy_name=[" + request.getSession().getAttribute("compy_name") + "]");
+        	Log.print(LOGGER, ">> my_photo  =[" + request.getSession().getAttribute("my_photo") + "]");
+        	Log.print(LOGGER, ">> lst_hit_dttm=[" + request.getSession().getAttribute("lst_hit_dttm") + "]");
+  		
+     
+			String inputcheckret = null;
+			//getService_tp 값에 따른 case 처리 
+			switch (DefineService.Service.valueOf(service_tp))
+			{
+				/*
+				 * 메인페이지 정보 
+				 */
+		 		case 	main_info:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp",
+						
+					}))) != null) break;
+					
+					resMap = ajaxMemberService.main_info( jsonMap, request);
+					
+					break;
+
+				/*
+				 *	SNS 로그인
+				 */
+		 		case 	sns_login:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp","p_login_id",
+						/* 개별부 */	"sns_id", "sns_tp", 
+					}))) != null) break;
+					resMap = ajaxMemberService.sns_login( jsonMap, request);
+					break;
+
+				/*
+				 *	회원 가입
+				 */
+		 		case 	user_reg:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp","p_login_id",
+						/* 개별부 */	"crud_tp",
+					}))) != null) break;
+					if("c".equals(jsonMap.get("crud_tp")) && (inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	"user_tp","p_name","p_login_id","p_pswd", // 개별부			
+					}))) != null) break;	
+					
+					resMap = ajaxMemberService.user_reg( jsonMap, request);
+					
+					break;
+					
+				/*
+				 *	일반회원 로그인
+				 */
+		 		case 	user_login:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp","p_login_id",
+						/* 개별부 */	"p_pswd" 
+					}))) != null) break;
+					resMap = ajaxMemberService.user_login( jsonMap, request);
+					break;
+				
+				/**
+				 * 운영자 로그인
+				 */
+		 		case 	admin_login:
+		 			if((inputcheckret = check_intpufield(jsonMap,(new String[]
+		 					{	/* 공통부 */	"service_tp","p_login_id",
+		 					/* 개별부 */	"p_pswd" 
+		 					}))) != null) break;
+		 			resMap = ajaxMemberService.admin_login( jsonMap, request);
+		 			break;
+
+				/*
+				 *	일반회원 로그아웃
+				 */
+		 		case 	user_logout:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp","p_login_id",
+						/* 개별부 */
+					}))) != null) break;
+					resMap = ajaxMemberService.user_logout( jsonMap, request);
+					break;
+		
+				/*
+				 *	회원 조회 by user_uid
+				 */
+		 		case 	user_info_by_user_uid:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp",
+						/* 개별부 */
+					}))) != null) break;
+					resMap = ajaxMemberService.user_info_by_user_uid( jsonMap, request);
+					break;
+					
+				/*
+				 *	회원가입메일인증(메일내용에서 링크) : mail_auth_confirm
+				 */
+		 		case 	mail_auth_confirm:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp","p_login_id",
+						/* 개별부 */	"reg_cert_num" 
+					}))) != null) break;
+					resMap = ajaxMemberService.mail_auth_confirm( jsonMap);
+					break;
+					
+				/*
+				 *	출력업체정보 업데이트
+				 */
+		 		case 	print_corp_info_reg:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp", 
+						/* 개별부 */ "crud_tp",
+					}))) != null) break;
+					resMap = ajaxMemberService.print_corp_info_reg( jsonMap);
+					break;
+
+				/*
+				 *	모델러정보 업데이트
+				 */
+		 		case 	modeler_info_reg:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp",
+						/* 개별부 */	"crud_tp",
+					}))) != null) break;
+					resMap = ajaxMemberService.modeler_info_reg( jsonMap);
+					break;
+					
+		 		case cgrp_reg:
+		 			if((inputcheckret = check_intpufield(jsonMap,(new String[] { }))) != null) 
+		 				break;
+		 			
+		 			resMap = ajaxContentsService.cgrp_reg( jsonMap);
+		 			break;
+		 			
+		 		case cgrp_list:
+		 			if((inputcheckret = check_intpufield(jsonMap,(new String[] { }))) != null) 
+		 				break;
+		 			
+		 			resMap = ajaxContentsService.cgrp_list( jsonMap);
+		 			break;
+					
+				/*
+				 *	일반회원 사진 다운로드
+				 */
+		 		case 	user_photo_download:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp","p_login_id"
+					}))) != null) break;
+					resMap = ajaxMemberService.user_photo_download( jsonMap);
+					response.setHeader("retcode",(String)resMap.get("retcode"));
+					response.setHeader("retmsg",(String)resMap.get("retmsg"));
+					response.setHeader("photo_file",(String)resMap.get("photo_file"));
+					if(StrUtil.isNull((String)resMap.get("photo_file")).length() > 0)
+					{
+						runFileDownload(response, (String)resMap.get("photo_file_path"), (String) resMap.get("photo_file"));
+						bFileDownLoad = true;
+					}
+					break;
+					
+
+
+				/*
+				 *	 3D콘텐츠정보 리스트
+				 */
+		 		case 	conts_3d_info_list:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp",
+						/* 개별부 */	"page_num"
+					}))) != null) break;
+					
+					resMap = ajaxContentsService.conts_3d_info_list( jsonMap, request);
+					
+					break;
+					
+
+				/*
+				 *	 3D콘텐츠정보 관심정보 업데이트/조회(좋아요,평점,즐겨찾기,조회수)
+				 */
+		 		case 	conts_3d_reg_interest:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp",
+						/* 개별부 */	"reg_tp"
+					}))) != null) break;
+					
+					resMap = ajaxContentsService.conts_3d_reg_interest( jsonMap, request);
+					
+					break;	
+
+				/*
+				 *	 출력이력 관심정보 업데이트/조회(좋아요,평점,즐겨찾기,조회수)
+				 */
+		 		case 	print_hist_interest:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp",
+						/* 개별부 */	"reg_tp"
+					}))) != null) break;
+					
+					resMap = ajaxContentsService.print_hist_interest( jsonMap, request);
+					
+					break;	
+				
+				/*
+				 *	 관심콘텐츠 리스트
+				 */
+		 		case 	interest_conts_list:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp",
+						/* 개별부 */	"page_num"
+					}))) != null) break;
+					
+					resMap = ajaxContentsService.interest_conts_list( jsonMap, request);
+					break;						
+				/*
+				 *	 다운로드콘텐츠 리스트
+				 */
+		 		case 	download_conts_list:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp",
+						/* 개별부 */	"page_num"
+					}))) != null) break;
+					
+					resMap = ajaxContentsService.download_conts_list( jsonMap, request);
+					break;						
+				/*
+				 *	 업로드콘텐츠 리스트
+				 */
+		 		case 	upload_conts_list:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp",
+						/* 개별부 */	"page_num"
+					}))) != null) break;
+					
+					resMap = ajaxContentsService.upload_conts_list( jsonMap, request);
+					break;							
+				/*
+				 *	 출력이력정보 리스트
+				 */
+		 		case 	print_history_info_list:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp",
+						/* 개별부 */	"page_num"
+					}))) != null) break;
+					
+					resMap = ajaxContentsService.print_history_info_list( jsonMap, request);
+					break;					
+
+				/*
+				 *	 지역별 소장처 조회 리스트
+				 */
+		 		case 	hold_loc_list:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp",
+						/* 개별부 */	"page_num", "area_cd", 
+					}))) != null) break;
+				
+					resMap = ajaxContentsService.hold_loc_list( jsonMap, request);
+					break;	
+
+				/*
+				 *	 출력업체 조회 리스트
+				 */
+		 		case 	print_corp_list:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp",
+						/* 개별부 */	"page_num",
+					}))) != null) break;
+					
+					resMap = ajaxContentsService.print_corp_list( jsonMap, request);
+					break;						
+
+				/*
+				 *	 코멘트 등록(수정/삭제)
+				 */
+		 		case 	comment_reg:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp",
+						/* 개별부 */	"conts_uid","cmt_tp","crud_tp","contents"
+					}))) != null) break;
+					
+					resMap = ajaxContentsService.comment_reg( jsonMap, request);
+					
+					break;	
+					
+				/*
+				 *	 코멘트 조회 리스트
+				 */
+		 		case 	comment_list:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp",
+						/* 개별부 */	"conts_uid","cmt_tp","page_num",
+					}))) != null) break;
+					
+					resMap = ajaxContentsService.comment_list( jsonMap, request);
+					break;		
+
+				
+				/*
+				 *	 QNA 등록(수정/삭제)
+				 */
+		 		case 	qna_reg:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp",
+						/* 개별부 */	"svc_tp","crud_tp",
+					}))) != null) break;
+					
+					resMap = ajaxMemberService.qna_reg( jsonMap, request);
+					
+					break;	
+					
+				/*
+				 *	 QNA 조회 리스트
+				 */
+		 		case 	qna_list:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp",
+						/* 개별부 */	"svc_tp","page_num",
+					}))) != null) break;
+					
+					resMap = ajaxMemberService.qna_list( jsonMap, request);
+					break;	
+
+				/*
+				 *	 뉴스&트랜드 [등록:'c',조회:'r',수정:'u'] : news_trand_reg
+				 */
+		 		case 	news_trand_reg:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp",
+						/* 개별부 */	"crud_tp",
+					}))) != null) break;
+					if("c".equals(jsonMap.get("crud_tp")) && (inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"user_uid","p_login_id",
+						/* 개별부 */	"reg_url"		
+					}))) != null) break;	
+					if("r".equals(jsonMap.get("crud_tp")) && (inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	
+						/* 개별부 */	"nt_seq", 			
+					}))) != null) break;
+					if("u".equals(jsonMap.get("crud_tp")) && (inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	
+						/* 개별부 */	"nt_seq", 				
+					}))) != null) break;					
+					if("d".equals(jsonMap.get("crud_tp")) && (inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"user_uid","p_login_id",
+						/* 개별부 */	"nt_seq", 				
+					}))) != null) break;
+					resMap = ajaxMemberService.news_trand_reg(jsonMap, request);
+					
+					break;	
+					
+				/*
+				 *	 뉴스&트랜드 리스트  : news_trand_list
+				 */
+		 		case 	news_trand_list:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp",
+						/* 개별부 */	"page_num",
+					}))) != null) break;
+					
+					resMap = ajaxMemberService.news_trand_list( jsonMap, request);
+					break;	
+
+				/*
+				 *	 Follow[s] [등록:'c',조회:'r',수정:'u'] : follow_reg
+				 */
+		 		case 	follow_reg:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp",
+						/* 개별부 */	
+					}))) != null) break;
+					if("c".equals(jsonMap.get("crud_tp")) && (inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	
+						/* 개별부 */	"follower_user_uid","following_user_uid"						
+					}))) != null) break;	
+					if("d".equals(jsonMap.get("crud_tp")) && (inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	
+						/* 개별부 */	"follower_user_uid","following_user_uid"
+					}))) != null) break;
+					resMap = ajaxMemberService.follow_reg(jsonMap, request);
+					
+					break;	
+
+				/*
+				 * 사용자의 summary 정보 :  Followers, Following, Design, Makes, Like, Collections
+				 */
+		 		case 	user_summary_etc_info:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp", "user_uid",
+						/* 개별부 */	
+					}))) != null) break;
+					resMap = ajaxMemberService.user_summary_etc_info(jsonMap, request);
+					
+					break;	
+					
+				/*
+				 * 사용자의 summary 정보 :  Followers, Following, Design, Makes, Like, Collections
+				 */
+		 		case 	user_summary_etc_info_list:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp", "user_uid",
+						/* 개별부 */	"page_num", "info_tp",
+					}))) != null) break;
+					resMap = ajaxMemberService.user_summary_etc_info_list(jsonMap, request);
+					
+					break;		
+					
+				/*
+				 * 회원리스트 (일반회원 / 디자이너소개 / 출력업체소개) 
+				 */
+		 		case 	user_info_list:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp",
+						/* 개별부 */	"page_num"
+					}))) != null) break;
+					
+					resMap = ajaxMemberService.user_info_list( jsonMap, request);
+					
+					break;
+					
+				/*
+				 * 제작정보리스트 
+				 */
+		 		case 	make_info_list:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp",
+						/* 개별부 */	"page_num",
+					}))) != null) break;
+					
+					resMap = ajaxOrderMadeService.make_info_list( jsonMap, request);
+					
+					break;
+						
+				/*
+				 *	 견적[업체]정보(ESTIMATE_INFO) 등록/조회/수정/삭제 : estimate_info_reg
+				 */
+		 		case 	estimate_info_reg:
+					if((inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"service_tp",
+						/* 개별부 */	"crud_tp",
+					}))) != null) break;
+					if("c".equals(jsonMap.get("crud_tp")) && (inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"user_uid","p_login_id",
+						/* 개별부 */	"make_uid",		
+					}))) != null) break;	
+					if("r".equals(jsonMap.get("crud_tp")) && (inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	
+						/* 개별부 */	"user_uid", "make_uid", 			
+					}))) != null) break;
+					if("u".equals(jsonMap.get("crud_tp")) && (inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"user_uid","p_login_id",
+						/* 개별부 */	"make_uid", 				
+					}))) != null) break;					
+					if("d".equals(jsonMap.get("crud_tp")) && (inputcheckret = check_intpufield(jsonMap,(new String[]
+					{	/* 공통부 */	"user_uid","p_login_id",
+						/* 개별부 */	"make_uid", 				
+					}))) != null) break;
+					resMap = ajaxOrderMadeService.estimate_info_reg(jsonMap, request);
+					
+					break;
+					
+		 		case disp_list:
+		 			if((inputcheckret = check_intpufield(jsonMap,(new String[] {"service_tp"}))) != null) 
+		 				break;
+		 			
+		 			resMap = ajaxContentsService.disp_list(jsonMap, request);
+					break;
+					
+		 		case point_reg:
+		 			if((inputcheckret = check_intpufield(jsonMap,(new String[] {"service_tp", "crud_tp"}))) != null) 
+		 				break;
+		 			
+		 			resMap = ajaxMemberService.point_reg(jsonMap, request);
+		 			break;
+		 		
+		 		case pay_list:
+		 			if((inputcheckret = check_intpufield(jsonMap,(new String[] {"service_tp"}))) != null) 
+		 				break;
+		 			
+		 			resMap = ajaxOrderMadeService.pay_list(jsonMap, request);
+		 			break;
+		 		case pay_calculate_list:
+		 			if((inputcheckret = check_intpufield(jsonMap,(new String[] {"service_tp"}))) != null) 
+		 				break;
+		 			
+		 			resMap = ajaxOrderMadeService.pay_calculate_list(jsonMap, request);
+		 			break;
+		 			
+		 		case refund_list:
+		 			if((inputcheckret = check_intpufield(jsonMap,(new String[] {"service_tp"}))) != null) 
+		 				break;
+		 			
+		 			resMap = ajaxOrderMadeService.refund_list(jsonMap, request);
+		 			break;
+		 			
+		 		case refund_reg:
+		 			if((inputcheckret = check_intpufield(jsonMap,(new String[] {"service_tp", "crud_tp"}))) != null) 
+		 				break;
+		 			
+		 			resMap = ajaxOrderMadeService.refund_reg(jsonMap, request);
+		 			break;
+		 			
+		 		case point_trans_reg:
+		 			if((inputcheckret = check_intpufield(jsonMap,(new String[] {"service_tp"}))) != null) 
+		 				break;
+		 			
+		 			resMap = ajaxMemberService.point_trans_reg(jsonMap, request);
+		 			break;
+		 			
+		 		case deposit_list:
+		 			if((inputcheckret = check_intpufield(jsonMap,(new String[] {"service_tp"}))) != null) 
+		 				break;
+		 			
+		 			resMap = ajaxOrderMadeService.deposit_list(jsonMap, request);
+		 			break;
+		 			
+		 		case point_add_hist_reg:
+		 			if((inputcheckret = check_intpufield(jsonMap,(new String[] {"service_tp", "crud_tp"}))) != null) 
+		 				break;
+		 			
+		 			resMap = ajaxMemberService.point_add_hist_reg(jsonMap, request);
+		 			break;	
+		 			
+		 		case company_unpaid_list:
+		 			if((inputcheckret = check_intpufield(jsonMap,(new String[] {"service_tp"}))) != null) 
+		 				break;
+		 			
+		 			resMap = ajaxMemberService.company_unpaid_list(jsonMap, request);
+		 			break;
+		 			
+		 		case company_unpaid_descript:
+		 			if((inputcheckret = check_intpufield(jsonMap,(new String[] {"service_tp"}))) != null) 
+		 				break;
+		 			
+		 			resMap = ajaxMemberService.company_unpaid_descript(jsonMap, request);
+		 			break;
+		 		case company_paid_list:
+		 			if((inputcheckret = check_intpufield(jsonMap,(new String[] {"service_tp"}))) != null) 
+		 				break;
+		 			
+		 			resMap = ajaxMemberService.company_paid_list(jsonMap, request);
+		 			break;
+		 			
+		 		case company_paid_descript:
+		 			if((inputcheckret = check_intpufield(jsonMap,(new String[] {"service_tp"}))) != null) 
+		 				break;
+		 			
+		 			resMap = ajaxMemberService.company_paid_descript(jsonMap, request);
+		 			break;
+		 		case calculate_target_list:
+		 			if((inputcheckret = check_intpufield(jsonMap,(new String[] {"service_tp"}))) != null) 
+		 				break;
+		 			
+		 			resMap = ajaxMemberService.calculate_target_list(jsonMap, request);
+		 			break;	
+		 		case calculate_deposit_list:
+		 			if((inputcheckret = check_intpufield(jsonMap,(new String[] {"service_tp"}))) != null) 
+		 				break;
+		 			
+		 			resMap = ajaxMemberService.calculate_deposit_list(jsonMap, request);
+		 			break;	
+		 		
+				default :
+					resMap.put("retcode", "991");
+					resMap.put("retmsg", "알수없는 구분값임.service_tp=[" +service_tp+ "]");
+					break;
+			}
+
+			if(inputcheckret != null)
+			{
+				resMap.put("retcode", "992");
+				resMap.put("retmsg", inputcheckret);
+			}
+
+		} catch (Exception e) {
+			
+			Log.print(LOGGER, "error jsondata 수신=" + jsondata);
+			
+			try {
+				resMap.put("retcode", "999");
+				resMap.put("retmsg", "시스템오류입니다.[" + e.getMessage()+ "]");
+				
+			} catch (Exception e1) {}
+			
+			System.out.println("JSONController error. : [" + e + "]");
+			Log.print(LOGGER, "JSONController error...");
+			Log.print(LOGGER, e);
+		}
+		
+		resMap.put("service_tp", service_tp);
+		
+		response.setHeader("retcode", (String)resMap.get("retcode"));
+		response.setHeader("retmsg", (String)resMap.get("retmsg"));
+		
+		String jsonString = null;
+		try {
+			jsonString = om.writeValueAsString(resMap);
+		} catch (Exception e) {
+			e.printStackTrace();
+			jsonString = e.getMessage();
+		}
+		
+		Log.print(LOGGER, "결과:" + jsonString + "");
+		long end_time = System.currentTimeMillis(); 
+		Log.print(LOGGER, "/Ajax3DBankController.do 결과전송, 처리시간(TimeMillis)=[" + (end_time-start_time) + "]");
+		Log.print(LOGGER, "=====================================================================\n\r");
+		
+		if(bFileDownLoad) return null;
+
+		return resMap;
+	}
+	
+
+	private void runFileDownload(HttpServletResponse response, String path,	String filename) throws Exception {
+
+		response.setHeader("Content-Disposition", "attachment;filename=" + filename);
+		response.setContentType("text/plain");
+
+
+		FileInputStream fileIn = null;
+		try {
+			File down_file = new File(path +  filename);
+			fileIn = new FileInputStream(down_file);
+			ByteStreams.copy(fileIn, response.getOutputStream());
+
+			response.flushBuffer();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			throw new Exception("시스템에서 첨부파일 [" + path + filename + "]를 찾을수 없습니다." );
+		} 
+		finally {
+			try { fileIn.close(); }catch(Exception e2) {}
+		}
+	}	
+
+	private String check_intpufield(Map<String, Object>  jsonMap, String field[]) {
+
+		String retmsg = null;
+		for(int i=0;i<field.length;i++)
+		{
+			try
+			{
+				if(jsonMap.get(field[i]) == null ||String.valueOf(jsonMap.get(field[i])).trim().length() == 0)
+				{
+					retmsg = "입력필드를 확인하세요. 필드[" + field[i] + "]가 없거나 데이타가 셋팅이 안되어있음.";
+					break;
+				}
+			}catch(Exception ee)
+			{
+				Log.print(LOGGER, ee);
+			}
+			
+			if(field[i].equals("inq_start_date") || field[i].equals("inq_end_date"))
+			{
+				if(!DateUtil.checkDateFormat((String) jsonMap.get(field[i]), "yyyyMMdd"))
+				{
+					retmsg = "inq_start_date/inq_end_date는 yyyyMMdd 형식입니다. ";
+					break;
+				}
+				
+				if(StrUtil.bigCompareTo((String) jsonMap.get("inq_start_date"), (String) jsonMap.get("inq_end_date")) > 0)
+				{
+					retmsg = "시작날짜가 종료날짜보다 큽니다.";
+					break;
+				}
+			}
+		}
+		return retmsg;
+	}
+}

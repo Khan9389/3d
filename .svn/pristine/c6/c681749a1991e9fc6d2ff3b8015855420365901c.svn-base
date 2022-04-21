@@ -1,0 +1,75 @@
+
+
+#
+# 메일 전송 정보
+# gmail사용시 안될경우 참고 : http://lucetedaniel.tistory.com/202
+#
+MAIL_ID=asia3dbank@gmail.com
+MAIL_PWD=asia3dbank1!
+MAIL_HOST=smtp.gmail.com
+MAIL_FROM=asia3dbank@gmail.com
+	
+#
+# 사이트도메인
+#
+SITE_DOMAIN=http://3dbank.xyz
+#SITE_DOMAIN=localhost:8080
+
+#
+# 이미지 업로드 위치
+#
+IMG_UPLOAD_PATH=/data/3dbank/upload_data/
+
+
+#
+# SPRITE 이미지 저장 위치
+#
+IMG_UPLOAD_PATH_SPRITE_IMG=/data/3dbank/upload_sprite_img/
+
+
+#
+# 이미지 업로드 위치
+#
+IMG_UPLOAD_NOTICE_PATH=/data/3dbank/upload_data/notice/
+
+#
+# 유저별 이미지 임시 업로드 위치(file upload를 통해 실시간으로 1차업로드 후 저장시 유효함)
+#
+IMG_UPLOAD_USER_TMP_PATH=/data/3dbank/upload_tmp_data/
+
+#
+# meshconv 변환기
+#
+MESHCONV_EXE		=/home/vdiuser/3dbank/node_modules/meshconv/meshconv
+
+#
+# MESHCONV_DATA BASE DIR
+#
+MESHCONV_DATA=/data/3dbank/upload_data/meshconv/
+
+#
+# logs BASE DIR
+#
+LOGS_BASE_DIR		=/data/3dbank/logs/
+
+
+#
+# STL File -> 이미지 변환
+#
+STL2IMAGES_SCAD_PATH			=/home/vdiuser/3dbank/node_modules/openscad/
+STL2IMAGES_STL2PNG_SHELL 		=/home/vdiuser/3dbank/node_modules/openscad/stl2png.sh
+STL2IMAGES_IMAGEMAGICK_SHELL 	=/home/vdiuser/3dbank/node_modules/imagemagick/imagemagick.sh
+STL2IMAGES_SAVE_IMAGES_PATH 	=/data/3dbank/upload_data/makeImages/
+
+#
+# STL File -> VOLUME , WEIGHT 얻기
+#
+STL2VOLUMEWEIGHT_MOCHA	=/usr/local/bin/mocha
+STL2VOLUMEWEIGHT_PARSEJS=/home/vdiuser/3dbank/node_modules/node-stl/parse.js
+
+#
+# STL File -> x,y,z 얻기
+#
+STL2LOADERXYZ_MOCHA		=/usr/local/bin/mocha
+STL2LOADERXYZ_PARSEJS	=/home/vdiuser/3dbank/node_modules/three-stl-loader/stlLoaderXYZ.js
+

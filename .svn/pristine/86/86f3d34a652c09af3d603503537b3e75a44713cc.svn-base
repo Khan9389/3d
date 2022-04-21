@@ -1,0 +1,25 @@
+﻿$(document).ready(function(e){
+	var Tween_state="close";
+	TweenMax.to($(".pwrap"),0.5,{rotation:0})
+	$(".pwrap").on("click",function(e){
+		if(Tween_state=="close"){
+			TweenMax.to($(".arrow_area"),0.3,{rotation:180});
+			$(".top_right_c_arro_wrap").show();
+			Tween_state="open";
+		} else {
+			TweenMax.to($(".arrow_area"),0.3,{rotation:0});
+			$(".top_right_c_arro_wrap").hide();
+			Tween_state="close";
+		}
+		return false;
+	});
+
+	$(".preparation_btn").on("click",function(e){
+		Preparation();
+	});
+
+	function Preparation(){
+		alert("서비스 준비중입니다.");
+	}
+});
+

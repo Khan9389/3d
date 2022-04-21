@@ -1,0 +1,418 @@
+/*
+ * Copyright 2008-2009 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.asia3d.web;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.support.SessionStatus;
+import org.springmodules.validation.commons.DefaultBeanValidator;
+
+import com.asia3d.ordermade.service.AjaxOrderMadeService;
+
+/**
+ * @Class Name : EgovSampleController.java
+ * @Description : EgovSample Controller Class
+ * @Modification Information
+ * @
+ * @  수정일      수정자              수정내용
+ * @ ---------   ---------   -------------------------------
+ * @ 2009.03.16           최초생성
+ *
+ * @author 개발프레임웍크 실행환경 개발팀
+ * @since 2009. 03.16
+ * @version 1.0
+ * @see
+ *
+ *  Copyright (C) by MOPAS All right reserved.
+ */
+
+@Controller
+public class Page3DBankController {
+
+	@Autowired
+	private  AjaxOrderMadeService ajaxOrderMadeService;
+	
+	/** Validator */
+	@Resource(name = "beanValidator")
+	protected DefaultBeanValidator beanValidator;
+
+	// 메인
+	@RequestMapping(value = "index.do")
+	public String index(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status, HttpSession session) {
+		String page = null;
+		if (session != null && session.getAttribute("p_login_id") != null) 
+			page = "index";
+		else
+			page = "redirect:/member/login.do";
+		
+		return page;
+	}
+
+	// 로그인
+	@RequestMapping(value = "member/login.do")
+	public String login(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status) {
+		
+		return "member/login";
+	}
+	
+	// STL Viewer
+	@RequestMapping(value = "model/stl_viewer.do")
+	public String stl_viewer(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status) {
+		
+		return "model/stl_viewer";
+	}
+	// OBJ VIewer
+	@RequestMapping(value = "model/obj_viewer.do")
+	public String obj_viewer(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status) {
+		
+		return "model/obj_viewer";
+	}
+
+	 // 회원목록
+	@RequestMapping(value = "member/member_list.do")
+	public String member_list(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status, HttpSession session) {
+		String page = null;
+		if (session != null && session.getAttribute("p_login_id") != null) 
+			page = "member/member_list";
+		else
+			page = "redirect:/member/login.do";
+		
+		return page;
+	}
+	
+	 // 회원상세정보
+	@RequestMapping(value = "member/member_info.do")
+	public String member_info(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status, HttpSession session) {
+		String page = null;
+		if (session != null && session.getAttribute("p_login_id") != null) 
+			page = "member/member_info";
+		else
+			page = "redirect:/member/login.do";
+		
+		return page;
+	}
+	
+	 // 모델러 상세정보
+	@RequestMapping(value = "member/modeller_info.do")
+	public String modeller_info(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status, HttpSession session) {
+		String page = null;
+		if (session != null && session.getAttribute("p_login_id") != null) 
+			page = "member/modeller_info";
+		else
+			page = "redirect:/member/login.do";
+		
+		return page;
+	}
+	
+	 // 출력업체 상세정보
+	@RequestMapping(value = "member/printer_info.do")
+	public String printer_info(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status, HttpSession session) {
+		String page = null;
+		if (session != null && session.getAttribute("p_login_id") != null) 
+			page = "member/printer_info";
+		else
+			page = "redirect:/member/login.do";
+		
+		return page;
+	}
+	
+	// 콘텐츠그룹 등록/수정
+	@RequestMapping(value = "event/cgrp_write.do")
+	public String cgrp_write(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status, HttpSession session) {
+		String page = null;
+		if (session != null && session.getAttribute("p_login_id") != null) 
+			page = "event/cgrp_write";
+		else
+			page = "redirect:/member/login.do";
+		
+		return page;
+	}
+	
+	// 콘텐츠그룹 목록
+	@RequestMapping(value = "event/cgrp_list.do")
+	public String cgrp_list(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status, HttpSession session) {
+		String page = null;
+		if (session != null && session.getAttribute("p_login_id") != null) 
+			page = "event/cgrp_list";
+		else
+			page = "redirect:/member/login.do";
+		
+		return page;
+	}
+	
+	// 기획전시 등록/수정
+	@RequestMapping(value = "event/exhibition_write.do")
+	public String exhibition_write(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status, HttpSession session) {
+		String page = null;
+		if (session != null && session.getAttribute("p_login_id") != null) 
+			page = "event/exhibition_write";
+		else
+			page = "redirect:/member/login.do";
+		
+		return page;
+	}
+	
+	// 기획전시 목록
+	@RequestMapping(value = "event/exhibition_list.do")
+	public String exhibition_list(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status, HttpSession session) {
+		String page = null;
+		if (session != null && session.getAttribute("p_login_id") != null) 
+			page = "event/exhibition_list";
+		else
+			page = "redirect:/member/login.do";
+		
+		return page;
+	}
+	
+	// 컨트롤 장치 등록/수정
+	@RequestMapping(value = "event/device_modify.do")
+	public String device_modify(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status, HttpSession session) {
+		String page = null;
+		if (session != null && session.getAttribute("p_login_id") != null) 
+			page = "event/device_modify";
+		else
+			page = "redirect:/member/login.do";
+		
+		return page;
+	}
+		
+	// 컨트롤 장치 목록
+	@RequestMapping(value = "event/device_list.do")
+	public String device_list(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status, HttpSession session) {
+		String page = null;
+		if (session != null && session.getAttribute("p_login_id") != null) 
+			page = "event/device_list";
+		else
+			page = "redirect:/member/login.do";
+		
+		return page;
+	}
+	
+	// 포인트 등록
+	@RequestMapping(value = "member/point_write.do")
+	public String member_write(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status, HttpSession session) {
+		String page = null;
+		if (session != null && session.getAttribute("p_login_id") != null) 
+			page = "member/point_write";
+		else
+			page = "redirect:/member/login.do";
+		
+		return page;
+	}
+	
+	// 결제목록
+	@RequestMapping(value = "pay/pay_list.do")
+	public String pay_list(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status, HttpSession session) {
+		String page = null;
+		if (session != null && session.getAttribute("p_login_id") != null) 
+			page = "pay/pay_list";
+		else
+			page = "redirect:/member/login.do";
+		
+		return page;
+	}
+	// 입금목록
+	@RequestMapping(value = "pay/calculate_list.do")
+	public String calculate_list(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status, HttpSession session) {
+		String page = null;
+		if (session != null && session.getAttribute("p_login_id") != null) 
+			page = "pay/calculate_list";
+		else
+			page = "redirect:/member/login.do";
+		
+		return page;
+	}
+	// 입금상세목록
+	@RequestMapping(value = "pay/deposit_list.do")
+	public String deposit_list(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status, HttpSession session) {
+		String page = null;
+		if (session != null && session.getAttribute("p_login_id") != null) 
+			page = "pay/deposit_list";
+		else
+			page = "redirect:/member/login.do";
+		
+		return page;
+	}
+	// 취소목록
+	@RequestMapping(value = "pay/pay_cancel_list.do")
+	public String pay_cancel_list(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status, HttpSession session) {
+		String page = null;
+		if (session != null && session.getAttribute("p_login_id") != null) 
+			page = "pay/pay_cancel_list";
+		else
+			page = "redirect:/member/login.do";
+		
+		return page;
+	}
+	// 입금상세정보
+	@RequestMapping(value = "pay/order_info.do")
+	public String order_info(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status, HttpSession session) {
+		String page = null;
+		if (session != null && session.getAttribute("p_login_id") != null) 
+			page = "pay/order_info";
+		else
+			page = "redirect:/member/login.do";
+		
+		return page;
+	}
+	// 환불목록
+	@RequestMapping(value = "pay/refund_list.do")
+	public String refund_list(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status, HttpSession session) {
+		String page = null;
+		if (session != null && session.getAttribute("p_login_id") != null) 
+			page = "pay/refund_list";
+		else
+			page = "redirect:/member/login.do";
+		
+		return page;
+	}
+	
+	// 환불상세보기
+	@RequestMapping(value = "pay/refund_info.do")
+	public String refund_info(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status, HttpSession session) {
+		String page = null;
+		if (session != null && session.getAttribute("p_login_id") != null) 
+			page = "pay/refund_info";
+		else
+			page = "redirect:/member/login.do";
+		
+		return page;
+	}
+
+	// nice 결제취소 요청
+	@RequestMapping(value = "pay/cancelRequest.do")
+	public String cancelRequest(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status, HttpSession session) {
+		String page = null;
+		if (session != null && session.getAttribute("p_login_id") != null) 
+			page = "pay/cancelRequest";
+		else
+			page = "redirect:/member/login.do";
+		
+		return page;
+	}
+	// nice 결제취소 응답
+	@RequestMapping(value = "pay/cancelResult.do")
+	public String cancelResult(@ModelAttribute HashMap<Object, Object> searchVO, @RequestParam Map<String, String> params, BindingResult bindingResult, Model model, HttpServletRequest request, SessionStatus status, HttpSession session) throws Exception {
+		String page = null;
+		if (session != null && session.getAttribute("p_login_id") != null) {
+			page = "pay/cancelResult";
+			
+			ajaxOrderMadeService.setCancelResult(params, model, session, request);
+			
+		} else
+			page = "redirect:/member/login.do";
+		
+		return page;
+	}
+	
+	// 전환신청 목록
+	@RequestMapping(value = "member/trans_list.do")
+	public String trans_list(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status, HttpSession session) {
+		String page = null;
+		if (session != null && session.getAttribute("p_login_id") != null) 
+			page = "member/trans_list";
+		else
+			page = "redirect:/member/login.do";
+		
+		return page;
+	}
+	
+	// 업체정산 - 미입금목록
+	@RequestMapping(value = "pay/company_unpaid_list.do")
+	public String company_unpaid_list(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status, HttpSession session) {
+		String page = null;
+		if (session != null && session.getAttribute("p_login_id") != null) 
+			page = "pay/company_unpaid_list";
+		else
+			page = "redirect:/member/login.do";
+		
+		return page;
+	}
+	// 업체정산 - 미입금목록
+	@RequestMapping(value = "pay/company_unpaid_descript.do")
+	public String company_unpaid_descript(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status, HttpSession session) {
+		String page = null;
+		if (session != null && session.getAttribute("p_login_id") != null) 
+			page = "pay/company_unpaid_descript";
+		else
+			page = "redirect:/member/login.do";
+		
+		return page;
+	}
+	@RequestMapping(value = "pay/company_paid_list.do")
+	public String company_paid_list(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status, HttpSession session) {
+		String page = null;
+		if (session != null && session.getAttribute("p_login_id") != null) 
+			page = "pay/company_paid_list";
+		else
+			page = "redirect:/member/login.do";
+		
+		return page;
+	}
+	// 업체정산 - 미입금목록
+	@RequestMapping(value = "pay/company_paid_descript.do")
+	public String company_paid_descript(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status, HttpSession session) {
+		String page = null;
+		if (session != null && session.getAttribute("p_login_id") != null) 
+			page = "pay/company_paid_descript";
+		else
+			page = "redirect:/member/login.do";
+		
+		return page;
+	}
+	@RequestMapping(value = "pay/calculate_target_list.do")
+	public String calculate_target_list(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status, HttpSession session) {
+		String page = null;
+		if (session != null && session.getAttribute("p_login_id") != null) 
+			page = "pay/calculate_target_list";
+		else
+			page = "redirect:/member/login.do";
+		return page;
+	}
+	@RequestMapping(value = "pay/calculate_deposit_list.do")
+	public String calculate_deposit_list(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status, HttpSession session) {
+		String page = null;
+		if (session != null && session.getAttribute("p_login_id") != null) 
+			page = "pay/calculate_deposit_list";
+		else
+			page = "redirect:/member/login.do";
+		
+		return page;
+	}
+	@RequestMapping(value = "pay/all_script_list.do")
+	public String all_script_list(@ModelAttribute HashMap<Object, Object> searchVO, BindingResult bindingResult, Model model, SessionStatus status, HttpSession session) {
+		String page = null;
+		if (session != null && session.getAttribute("p_login_id") != null) 
+			page = "pay/all_script_list";
+		else
+			page = "redirect:/member/login.do";
+		
+		return page;
+	}
+	
+}

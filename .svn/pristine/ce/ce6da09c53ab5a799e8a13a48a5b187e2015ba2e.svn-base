@@ -1,0 +1,529 @@
+/*
+ * Copyright 2008-2009 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.asia3d.contents.service.impl;
+
+import java.util.HashMap;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Repository;
+
+import com.asia3d.util.Log;
+
+import egovframework.rte.psl.dataaccess.EgovAbstractDAO;
+
+/**
+ * @Class Name : SampleDAO.java
+ * @Description : Sample DAO Class
+ * @Modification Information
+ * @
+ * @  수정일      수정자              수정내용
+ * @ ---------   ---------   -------------------------------
+ * @ 2009.03.16           최초생성
+ *
+ * @author 개발프레임웍크 실행환경 개발팀
+ * @since 2009. 03.16
+ * @version 1.0
+ * @see
+ *
+ *  Copyright (C) by MOPAS All right reserved.
+ */
+
+@Repository("contentsDAO")
+public class AjaxContentsDAO extends EgovAbstractDAO {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(AjaxContentsDAO.class);
+
+	public void insertContents3dInfo_reg(HashMap<String, Object> jsonMap) {
+		int new_conts_uid = (int)insert("contentsDAO.insertContents3dInfo_reg", jsonMap);
+		Log.print(LOGGER, "insertContents3dInfo_reg new_contents_uid=" + new_conts_uid);
+		jsonMap.put("conts_uid", new_conts_uid);
+	}
+
+	@SuppressWarnings("unchecked")
+	public HashMap<String, Object> selectContents3DInfo(HashMap<String, Object> jsonMap) {
+		return (HashMap<String, Object>) select("contentsDAO.selectContents3DInfo", jsonMap);
+	}
+
+	public List<?> selectContentsFileList(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return list("contentsDAO.selectContentsFileList", jsonMap);
+	}
+
+	public int updateContents3DInfo(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return update("contentsDAO.updateContents3DInfo", jsonMap);
+	}
+
+	/*
+	 * 콘텐츠파일[=세부블럭] 정보 추가
+	 */
+	public void insertContentsFile(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		int new_conts_file_seq = (int)insert("contentsDAO.insertContentsFile", jsonMap);
+		Log.print(LOGGER, "insertContentsFile new_conts_file_seq=" + new_conts_file_seq);
+		jsonMap.put("conts_file_seq", new_conts_file_seq);
+	}
+	/*
+	 * 콘텐츠파일[=세부블럭] 정보 업데이트
+	 */
+	public int updateContentsFile(HashMap<String, Object> contents) {
+		// TODO Auto-generated method stub
+		return update("contentsDAO.updateContentsFile", contents);
+	}
+	
+	/*
+	 * 콘텐츠파일[=세부블럭] 정보 조회
+	 */
+	public HashMap<String, Object> selectContentsFile(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return (HashMap<String, Object>) select("contentsDAO.selectContentsFile", jsonMap);
+	}
+
+	/*
+	 * 콘텐츠파일[=세부블럭] 정보 삭제
+	 */
+	public int deleteContentsFile(HashMap<String, Object> jsonMap) {
+		return delete("contentsDAO.deleteContentsFile", jsonMap);
+	}
+	
+	/*
+	 * 콘텐츠파일[=세부블럭] 정보 삭제(CONTS_UID 에 대한 파일이 아닌 글인 경우..)
+	 */
+	public int deleteContentsNotFileALL(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return delete("contentsDAO.deleteContentsNotFileALL", jsonMap);
+	}
+
+	public List<?> selectContents3DInfoList(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return list("contentsDAO.selectContents3DInfoList", jsonMap);
+	}
+
+	public long selectContents3DInfoList_TotalCount(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		HashMap map = (HashMap) select("contentsDAO.selectContents3DInfoList_TotalCount", jsonMap);
+		Log.print(LOGGER, "contentsDAO.selectContents3DInfoList_TotalCount map=" + map);
+		return map == null ? 0 : (long)map.get("tot_count");	
+	}
+	
+	/*
+	 * 출력이력 등록
+	 */
+	public void insertPrintHistoryInfo(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		System.out.println(">>>>>>>>>>>>>>>>>>>>1111 : " + jsonMap);
+		int new_print_hist_uid = (int)insert("contentsDAO.insertPrintHistoryInfo", jsonMap);
+		Log.print(LOGGER, "insertContentsFile new_print_hist_uid=" + new_print_hist_uid);
+		jsonMap.put("print_hist_uid", new_print_hist_uid);
+	}
+
+	/*
+	 * 출력이력 조회
+	 */
+	public HashMap<String, Object> selectPrintHistoryInfo(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return (HashMap<String, Object>) select("contentsDAO.selectPrintHistoryInfo", jsonMap);
+	}
+	
+	/*
+	 * 출력이력 업데이트
+	 */
+	public int updatePrintHistoryInfo(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		int ret = update("contentsDAO.updatePrintHistoryInfo", jsonMap);
+		Log.print(LOGGER, "updatePrintHistoryInfo ret=" + ret);
+		return ret;
+	}
+	
+	/*
+	 * 출력이력 삭제
+	 */
+	public int deletePrintHistoryInfo(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		int ret = (int)delete("contentsDAO.deletePrintHistoryInfo", jsonMap);
+		Log.print(LOGGER, "insertContentsFile ret=" + ret);
+		return ret;
+	}
+
+	/*
+	 * [주문,출력정보등록]콘텐츠추가정보 등록
+	 */
+	public void insertContentsImg(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		int new_conts_seq = (int)insert("contentsDAO.insertContentsImg", jsonMap);
+		Log.print(LOGGER, "insertContentsImg new_conts_seq=" + new_conts_seq);
+		jsonMap.put("conts_seq", new_conts_seq);
+	}
+	
+	/*
+	 * [주문,출력정보등록]콘텐츠추가정보 업데이트
+	 */
+	public int updateContentsImg(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		int upt = update("contentsDAO.updateContentsImg", jsonMap);
+		Log.print(LOGGER, "updateContentsImg upt=" + upt);
+		return upt;
+	}
+	
+	
+	/*
+	 * [주문,출력정보등록]콘텐츠추가정보 리스트조회
+	 */
+	public List<?> selectContentsImgList(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return list("contentsDAO.selectContentsImgList", jsonMap);
+		
+	}
+	
+	
+	/*
+	 * [주문,출력정보등록]콘텐츠추가정보 삭제
+	 */
+	public int deleteContentsImg(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		int ret = (int)delete("contentsDAO.deleteContentsImg", jsonMap);
+		Log.print(LOGGER, "deleteContentsImg ret=" + ret);
+		return ret;
+	}
+
+	/*
+	 * [주문,출력정보등록]콘텐츠추가정보 삭제(CONTS_UID 에 대한 파일이 아닌 글인 경우..)
+	 */
+	public int deleteContentsImgNotFileALL(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		int ret = (int)delete("contentsDAO.deleteContentsImgNotFileALL", jsonMap);
+		//Log.print(LOGGER, "deleteContentsImgNotFileALL ret=" + ret);
+		return ret;
+	}
+
+	/*
+	 * 3D콘텐츠정보 관심정보 조회(특정사용자)(좋아요,평점,즐겨찾기)
+	 */
+	public HashMap selectConts3dRegInterestInfo(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return (HashMap<String, Object>) select("contentsDAO.selectConts3dRegInterestInfo", jsonMap);
+	}
+	
+	/*
+	 * 3D콘텐츠정보 관심정보 조회(전체사용자)(좋아요,평점,즐겨찾기)
+	 */
+	public HashMap selectConts3dRegInterestInfoSum(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return (HashMap<String, Object>) select("contentsDAO.selectConts3dRegInterestInfoSum", jsonMap);
+	}
+
+	/*
+	 * 3D콘텐츠정보 관심정보 추가(특정사용자)(좋아요,평점,즐겨찾기)
+	 */
+	public void insertConts3dRegInterestInfo(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		insert("contentsDAO.insertConts3dRegInterestInfo", jsonMap);
+		
+	}
+	/*
+	 * 3D콘텐츠정보 관심정보 업데이트(특정사용자)(좋아요,평점,즐겨찾기)
+	 */
+	public int  updateConts3dRegInterestInfo(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return update("contentsDAO.updateConts3dRegInterestInfo", jsonMap);
+		
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	
+	/*
+	 * 출력이력-관심정보 조회(특정사용자)(좋아요,평점,즐겨찾기)
+	 */
+	public HashMap selectPrintHistoryInterestInfo(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return (HashMap<String, Object>) select("contentsDAO.selectPrintHistoryInterestInfo", jsonMap);
+	}
+	
+	/*
+	 * 출력이력-관심정보 조회(전체사용자)(좋아요,평점,즐겨찾기)
+	 */
+	public HashMap selectPrintHistoryInterestInfoSum(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return (HashMap<String, Object>) select("contentsDAO.selectPrintHistoryInterestInfoSum", jsonMap);
+	}
+
+	/*
+	 * 출력이력-관심정보 추가(특정사용자)(좋아요,평점,즐겨찾기)
+	 */
+	public void insertPrintHistoryInterestInfo(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		insert("contentsDAO.insertPrintHistoryInterestInfo", jsonMap);
+		
+	}
+	/*
+	 * 출력이력-관심정보 업데이트(특정사용자)(좋아요,평점,즐겨찾기)
+	 */
+	public int  updatePrintHistoryInterestInfo(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return update("contentsDAO.updatePrintHistoryInterestInfo", jsonMap);
+		
+	}
+	
+	////////////////////////////////////////////////////////////////////////////////////////
+	/*
+	 * 출력이력 총 갯수
+	 */
+	public long selectPrintHistoryInfoList_TotalCount(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		HashMap map = (HashMap) select("contentsDAO.selectPrintHistoryInfoList_TotalCount", jsonMap);
+		Log.print(LOGGER, "contentsDAO.selectPrintHistoryInfoList_TotalCount map=" + map);
+		return map == null ? 0 : (long)map.get("tot_count");
+	}
+
+	/*
+	 * 출력이력 리스트
+	 */
+	public List<?> selectPrintHistoryInfoList(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return list("contentsDAO.selectPrintHistoryInfoList", jsonMap);
+	}
+
+	/*
+	 * 3D콘텐츠정보 삭제
+	 */
+	public int deleteContents3DInfo_by_deleteButton(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		int delcnt = 0;
+		delcnt += update("contentsDAO.deleteContents3DInfo", jsonMap);
+		delcnt += update("contentsDAO.deleteCONTS_FILE", jsonMap);
+		delcnt += update("contentsDAO.deletePRINT_HIST_by_conts_uid", jsonMap);
+		delcnt += update("contentsDAO.deleteCONTS_IMG_by_conts_uid", jsonMap);
+		
+		return delcnt;
+	}
+	
+	/*
+	 * 출력이력정보 삭제
+	 */
+	public int deletePrintHistoryInfo_by_deleteButton(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		int delcnt = 0;
+		delcnt += update("contentsDAO.deletePRINT_HIST_by_print_hist_uid", jsonMap);
+		delcnt += update("contentsDAO.deleteCONTS_IMG_by_print_hist_uid", jsonMap);
+		
+		return delcnt;
+	}
+
+	public long selectHold_loc_TotalCount(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		HashMap map = (HashMap) select("contentsDAO.selectHold_loc_TotalCount", jsonMap);
+		Log.print(LOGGER, "contentsDAO.selectHold_loc_TotalCount map=" + map);
+		return map == null ? 0 : (long)map.get("tot_count");
+	}
+
+	public List<?> selectHold_loc_List(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return (List<?>) list("contentsDAO.selectHold_loc_List", jsonMap);
+	}
+
+	public long selectPrint_Corp_TotalCount(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		HashMap map = (HashMap) select("contentsDAO.selectPrint_Corp_TotalCount", jsonMap);
+		Log.print(LOGGER, "contentsDAO.selectPrint_Corp_TotalCount map=" + map);
+		return map == null ? 0 : (long)map.get("tot_count");
+	}
+
+	public List<?> selectPrint_Corp_List(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return (List<?>) list("contentsDAO.selectPrint_Corp_List", jsonMap);
+	}
+
+	/*
+	 * 코멘트 상세조회
+	 */
+	public HashMap<String, Object> selectComment(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return (HashMap<String, Object>) select("contentsDAO.selectComment", jsonMap);
+	}
+	/*
+	 * 코멘트 추가
+	 */
+	public void createComment(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		insert("contentsDAO.createComment", jsonMap);
+	}
+	/*
+	 * 코멘트 업데이트
+	 */
+	public int updateComment(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return update("contentsDAO.updateComment", jsonMap);
+	}
+	/*
+	 * 코멘트 삭제
+	 */
+	public int deleteComment(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return delete("contentsDAO.deleteComment", jsonMap);
+	}
+	/*
+	 * 코멘트 리스트 갯수
+	 */
+	public long selectComment_TotalCount(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		HashMap map = (HashMap) select("contentsDAO.selectComment_TotalCount", jsonMap);
+		Log.print(LOGGER, "contentsDAO.selectComment_TotalCount map=" + map);
+		return map == null ? 0 : (long)map.get("tot_count");
+	}
+	/*
+	 * 코멘트 리스트
+	 */
+	public List<?> selectComment_List(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return list("contentsDAO.selectComment_List", jsonMap);
+	}
+
+	/*
+	 *	 관심콘텐츠 리스트
+	 */
+	public List<?> selectInterestConts_List(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return list("contentsDAO.selectInterestConts_List", jsonMap);
+	}
+
+	/*
+	 *	 다운로드콘텐츠 리스트
+	 */
+	public List<?> selectDownloadConts_List(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return list("contentsDAO.selectDownloadConts_List", jsonMap);
+	}
+	
+	/*
+	 *	 업로드콘텐츠 리스트
+	 */
+	public List<?> selectUploadConts_List(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return list("contentsDAO.selectUploadConts_List", jsonMap);
+	}
+
+	/*
+	 * DELEGATE_YN 값을 새로 업데이트한다.
+	 */
+	public int updateContentsFile_Delegate_yn(HashMap<String, Object> jsonMap) {
+		return update("contentsDAO.updateContentsFile_Delegate_yn", jsonMap);
+	}
+
+	/**
+	 * 콘텐츠그룹 등록 
+	 */
+	public void insert_cgrp(HashMap<String, Object> jsonMap) {
+		insert("contentsDAO.insert_cgrp", jsonMap);
+	}
+	/**
+	 *	콘텐츠그룹 상세조회
+	 */
+	@SuppressWarnings("unchecked")
+	public HashMap<String, Object> select_cgrp_info(HashMap<String, Object> jsonMap) {
+		return (HashMap<String, Object>) select("contentsDAO.select_cgrp_info", jsonMap);
+	}
+	/**
+	 * 콘텐츠그룹_콘텐츠 조회 
+	 */
+	public List<?> select_cgrp_contents_uid(HashMap<String, Object> jsonMap) {
+		return list("contentsDAO.select_cgrp_contents_uid", jsonMap);
+	}
+	/**
+	 * 콘텐츠그룹 수정 
+	 */
+	public int update_cgrp(HashMap<String, Object> jsonMap) {
+		return update("contentsDAO.update_cgrp", jsonMap);
+	}
+	/**
+	 * 콘텐츠그룹 삭제
+	 */
+	public int delete_cgrp(HashMap<String, Object> jsonMap) {
+		return delete("contentsDAO.delete_cgrp", jsonMap);
+	}
+	/**
+	 * 콘텐츠그룹 리스트
+	 */
+	public List<?> select_cgrp_list(HashMap<String, Object> jsonMap) {
+		return list("contentsDAO.select_cgrp_list", jsonMap);
+	}
+	/**
+	 * 콘텐츠그룹 리스트_total_cnt
+	 */
+	public int select_cgrp_total_cnt(HashMap<String, Object> jsonMap) {
+		return (int) select("contentsDAO.select_cgrp_total_cnt", jsonMap);
+	}
+
+	/**
+	 * 3D전시 정보 등록
+	 */
+	public int insert_disp_info(HashMap<String, Object> jsonMap) {
+		int disp_id = (int) insert("contentsDAO.insert_disp_info", jsonMap);
+		Log.print(LOGGER, ">>>>>>> insert_disp_info : disp_id = " + disp_id);
+		return disp_id;
+	}
+
+	public void insert_disp_file(HashMap<String, Object> dispMap) {
+		insert("contentsDAO.insert_disp_file", dispMap);
+	}
+
+	public int update_disp_info(HashMap<String, Object> jsonMap) {
+		return update("contentsDAO.update_disp_info", jsonMap);
+	}
+
+	public int delete_disp_file(HashMap<String, Object> jsonMap) {
+		return delete("contentsDAO.delete_disp_file", jsonMap);
+	}
+
+	public int delete_disp_file_all(HashMap<String, Object> jsonMap) {
+		return delete("contentsDAO.delete_disp_file_all", jsonMap);
+	}
+
+	public int update_disp_file_delegate(HashMap<String, Object> jsonMap) {
+		return update("contentsDAO.update_disp_file_delegate_n", jsonMap);
+	}
+
+	public int update_disp_file_delegate_all(HashMap<String, Object> dispMap) {
+		return update("contentsDAO.update_disp_file_delegate_all", dispMap);
+	}
+
+	public int update_disp_file(HashMap<String, Object> dispMap) {
+		return update("contentsDAO.update_disp_file", dispMap);
+	}
+
+	@SuppressWarnings("unchecked")
+	public HashMap<String, Object> select_disp_info(HashMap<String, Object> jsonMap) {
+		return (HashMap<String, Object>) select("contentsDAO.select_disp_info", jsonMap);
+	}
+
+	public List<?> select_disp_file_list(HashMap<String, Object> jsonMap) {
+		return list("contentsDAO.select_disp_file_list", jsonMap);
+	}
+
+	public int delete_disp_info(HashMap<String, Object> jsonMap) {
+		return delete("contentsDAO.delete_disp_info", jsonMap);
+	}
+
+	public int select_disp_list_total_cnt(HashMap<String, Object> jsonMap) {
+		return (int) select("contentsDAO.select_disp_list_total_cnt", jsonMap);
+	}
+
+	public List<?> select_disp_list(HashMap<String, Object> jsonMap) {
+		return list("contentsDAO.select_disp_list", jsonMap);
+	}
+
+}

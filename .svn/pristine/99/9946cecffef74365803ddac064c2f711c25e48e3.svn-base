@@ -1,0 +1,1141 @@
+<%@page import="com.asia3d.util.JspUtil"%>
+<%@ page language="java" contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
+<%
+boolean isLogin = false;
+String user_uid = "";
+String p_login_id = "";
+String p_name = "";
+String user_tp = "";
+String user_tp_name = "";
+String compy_name = "";
+String my_photo = "";
+String loginName = "";
+String profile_name = "";
+
+String title = "3DBANK";
+String default_profile_img = "/asia3d/images/phto/default_img.png";
+String stl_path = "/downStlImg.do?file=";
+String img_path = "/downStlImg.do?file=";
+
+String notice_path = "/downStlImg.do?file=notice/";
+String stl_img_path = "/downStlImg.do?file=makeImages/";
+
+if (session != null && session.getAttribute("p_login_id") != null) {
+	isLogin = true;
+	user_uid = "" + session.getAttribute("user_uid");
+	user_tp = (String) session.getAttribute("user_tp");
+	user_tp_name = JspUtil.getUserType(user_tp);
+	compy_name = (String) session.getAttribute("compy_name");
+	p_login_id = (String) session.getAttribute("p_login_id");
+	p_name = (String) session.getAttribute("p_name");
+	my_photo = (session.getAttribute("my_photo") == null) ? default_profile_img : img_path + (String) session.getAttribute("my_photo");
+	profile_name = (session.getAttribute("compy_name") != null) ? compy_name : p_name; 
+	
+	if ("3".equals(user_tp) || "4".equals(user_tp))
+		loginName = p_name + " [" + compy_name + "]";
+	else
+		loginName = p_name;
+}
+%>
+<meta name="keywords" content="things, digital design, physical objects, rapid prototyping, 3D objects, 3D printing, 3dbank, 쓰리디뱅크, 3dbank.xyz, 출력,3D,3D프린트,3D프린팅,3D프린터,3D프린터소식,3D프린터교육,PLA,필라멘트,얼티메이커,피규어,3D모델링,3D Print,3D printer,3D printing,3Dprintkor">
+<meta name="naver-site-verification" content="2fa9e973ad0b4384d19fb40a5c740123ac672d1c"/>
+<meta name="description" content="한국 최대 3D콘텐츠 보유하고 있으며 3D프린팅의 모든것을 제공 합니다." />
+
+
+<meta name="robots" content="follow,index">
+<meta property="og:type" content="website">
+<meta property="og:title" content="3d프린팅">
+<meta property="og:url" content="http://www.3dbank.xyz">
+<meta property="og:image" content="http://3dbank.xyz/asia3d/main/img/logo.png">
+<meta property="og:description" content="한국 최대 3D콘텐츠 보유하고 있으며 3D프린팅의 모든것을 제공 합니다.">
+<!-- <meta property="og:description" content="3dbank,쓰리디뱅크,3D프린트,3D프린터,printer,3D"> -->
+
+<script src="/asia3d/js/jquery-2.2.3.js" type="text/javascript"></script>
+<link rel="stylesheet" type="text/css" href="/asia3d/css/common.css" /> 
+<link rel="stylesheet" type="text/css" href="/asia3d/css/global.css" />
+<link rel="shortcut icon" href="/asia3d/main/img/favicon.ico" type="image/x-icon" />
+<link rel="icon" href="/asia3d/main/img/favicon.ico" type="image/x-icon" />
+
+<script type="text/javascript">
+var title = "3D BANK";
+var default_profile_img = "/asia3d/images/phto/no_img.png";
+var default_img = "/asia3d/images/phto/no_img2.jpg";
+
+var img_path = "/downStlImg.do?file=";
+var stl_path = "/downStlImg.do?file=";
+//var img_path_split = "http://3dbank.xyz/downStlSpriteImg.do?file=";
+var img_path_split = "/downStlSpriteImg.do?file=";
+var stl_img_path = "/downStlImg.do?file=makeImages/";
+var loc_img_path = "/downStlImg.do?file=hold_loc_data/";
+var disp_img_path = "/downStlImg.do?file=exhibition/";
+
+var presentName = ("<%=compy_name%>" && "<%=compy_name%>" != "null") ? "<%=compy_name%>" : "<%=p_name%>";
+var admin_uid = 1;
+
+// 로그 출력
+function printLog(tmpName, tmpValue) {
+//	alert(tmpName + " :: " + tmpValue);
+	console.log(">>>>>>>>>> " + tmpName + " : " + tmpValue);
+}
+
+// 페이지 이동
+function movePage(URL, PARAMS) {
+	var temp=document.createElement("form");
+	temp.action=URL;
+	temp.method="POST";
+	temp.style.display="none";
+	
+	for(var x in PARAMS) {
+		var opt=document.createElement("textarea");
+		opt.name=x;
+		opt.value=PARAMS[x];
+		temp.appendChild(opt);
+	}
+	
+	document.body.appendChild(temp);
+	temp.submit();
+	return temp;
+}
+
+// 결제요청팝업 호출
+function moveToPost_Popup(url, params) {
+    method = "post";  
+    var form = document.createElement("form");
+    form.setAttribute("method", method);
+    form.setAttribute("action", url);
+    form.setAttribute("target", "pay_pop");
+    
+    for(var key in params) {
+        var hiddenField = document.createElement("input");
+        hiddenField.setAttribute("type", "hidden");
+        hiddenField.setAttribute("name", key);
+        hiddenField.setAttribute("value", params[key]);
+        form.appendChild(hiddenField);
+    }
+    document.body.appendChild(form);
+    
+    var status = "toolbar=no,directories=no,scrollbar=no,resizable=no,status=no,menubar=no,top=0,left=20,width=630,height=650"; 
+    window.open('about:blank', 'pay_pop', status);
+    form.submit();
+}
+
+// 이미지 경로 리턴
+function getImgUrl(tmpObj) {
+	return (tmpObj.stl_thumnail != null) ? stl_img_path + tmpObj.stl_thumnail + "_tmp2" : img_path + tmpObj.conts_save_name;
+}
+// 잘린 이미지 경로 리턴
+function getImgUrl2(tmpObj) {
+	return (tmpObj.stl_thumnail != null) ? stl_img_path + tmpObj.stl_thumnail + "_tmp2" : img_path_split + tmpObj.conts_save_name;
+}
+
+// 이름 가져오기
+function getName(tmpObj) {
+	return (tmpObj.compy_name && tmpObj.compy_name != "null") ? tmpObj.compy_name : tmpObj.p_name;
+}
+
+// 텍스트 decode
+function getDecodeTxt(tmpTxt) {
+	var desc = "";
+	try {
+		desc = decodeURI(Base64.decode(tmpTxt));
+	} catch(e) {
+		desc = tmpTxt;
+	}
+	return desc;
+}
+
+function getDecodeTxt2(tmpTxt) {
+	var txt = decodeURIComponent(decodeURIComponent(tmpTxt));
+	return txt.replace(/<br>/gi, "\n");
+}
+
+// 프로필 이미지 세팅
+function setImg(tmpObj, tmpUrl) {
+	var imgProfile = new Image(); 
+	imgProfile.src = tmpUrl;
+	imgProfile.onload = function() {
+		if (imgProfile.height > 0 && imgProfile.width > 0) 
+			tmpObj.attr("src", tmpUrl);
+	}
+}
+
+// 이미지 확인
+function checkImg(tmpName) {
+	if (!tmpName)
+		return false;
+	
+	var ext = tmpName.slice(tmpName.lastIndexOf(".")+1).toLowerCase();
+	if (!ext)
+		return false;
+	
+	if (ext == "bmp" || ext == "jpg" || ext == "jpeg" || ext == "gif" || ext == "png" || ext == "tif" || ext == "png_tmp2")
+		return true;
+	
+	return false;
+}
+
+// 확장자 리턴
+function getExt(tmpName) {
+	return tmpName.slice(tmpName.lastIndexOf(".")+1).toLowerCase();
+}
+
+// 날짜포맷 리턴
+function getText_DateFormat(tmpTxt) {
+	if (!tmpTxt)
+		return "";
+	
+	return tmpTxt.substring(0,4) + "-" + tmpTxt.substring(4,6) + "-" + tmpTxt.substring(6,8);
+}
+function getText_DateFormatHH(tmpTxt) {
+	if (!tmpTxt)
+		return "";
+	
+	return tmpTxt.substring(0,4) + "-" + tmpTxt.substring(4,6) + "-" + tmpTxt.substring(6,8) + " " +
+			tmpTxt.substring(8,10) + ":" + tmpTxt.substring(10,12) + ":" + tmpTxt.substring(12,14);
+}
+function getText_Money(tmpTxt) {
+	if (!tmpTxt || tmpTxt == 'null')
+		return '0';
+	
+	return tmpTxt.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+// 숫자만 추출
+function getText_Number(tmpTxt) {
+	if (!tmpTxt)
+		return tmpTxt;
+	
+	return tmpTxt.replace(/[^0-9]/g,'');
+} 
+
+// 전화번호 - 표시
+function getText_PhoneNum(tmpTxt) {
+	if (!tmpTxt)
+		return tmpTxt;
+	
+	return tmpTxt.toString().replace(/(^02.{0}|^01.{1}|[0-9]{3})([0-9]+)([0-9]{4})/, "$1-$2-$3");
+}
+
+// 오늘날짜 가져오기
+function getDate(tmpType) {
+	var today = new Date();
+	var year = today.getFullYear();
+	var month = today.getMonth() + 1;
+	var day = today.getDate();
+	var hour = today.getHours();
+	var min = today.getMinutes();
+	var sec = today.getSeconds();
+ 
+	if (tmpType)
+		return year.toString() + leadingZeros(month, 2) + leadingZeros(day, 2) + leadingZeros(hour, 2) + leadingZeros(min, 2) + leadingZeros(sec, 2);
+	else
+		return year.toString() + leadingZeros(month, 2) + leadingZeros(day, 2);
+}
+//오늘날짜 가져오기
+function getDate2(tmpDay) {
+	var today = new Date();
+	
+	if(tmpDay)
+		today.setDate(today.getDate() + tmpDay);
+	
+	var year = today.getFullYear();
+	var month = today.getMonth() + 1;
+	var day = today.getDate();
+	var hour = today.getHours();
+	var min = today.getMinutes();
+	var sec = today.getSeconds();
+ 
+	return year.toString() + leadingZeros(month, 2) + leadingZeros(day, 2);
+}
+function leadingZeros(n, digits) {
+	var zero = '';
+	n = n.toString();
+
+	if (n.length < digits) {
+		for (i = 0; i < digits - n.length; i++) {
+	    	zero += '0';
+		}
+	}
+	return zero + n;
+}
+
+// 팝업 가운데 띄우기
+jQuery.fn.center = function () {
+	var left = ( $(window).scrollLeft() + ($(window).width() - $(this).width()) / 2 );
+	var top = ( $(window).height() - $(this).height()) / 2 ;
+	
+	$(this).css({'left':left,'top':top, 'position':'absolute'});
+}
+
+// 확대팝업 세팅 
+function setPop_Enlarge(tmpImgUrl, tmpProfile, tmpName, tmpContents) {
+	var tmpImg = new Image();
+	tmpImg.src = tmpImgUrl;
+	tmpImg.onload = function() {
+		$('#img_pop_enlarge').attr("src", tmpImg.src);
+		tmpImg = null;
+	}
+	
+	$('#img_profile_enlarge').attr("src", tmpProfile);
+	$('#name_enlarge').text(tmpName);
+	$('#conts_name_enlarge').text(tmpContents);
+	
+	$('#div_pop_enlarge').fadeIn();
+}
+
+// 암호화 + br 변환
+function getText_Encode(tmpTxt) {
+	if (!tmpTxt)
+		return "";
+	
+	var txt = tmpTxt.replace(/\n/gi, "<br>");
+	txt = encodeURIComponent(encodeURIComponent(txt));
+	return txt;
+}
+
+//중분류 세팅
+function setCategory() {
+	$('#conts_minor').empty();
+	
+	switch ($('#conts_major').val()) {
+	case "1":
+		$("#conts_minor").append("<option value='ALL'>전체</option>");
+		$("#conts_minor").append("<option value='01'>건조물</option>");
+		$("#conts_minor").append("<option value='02'>과학기술</option>");
+		$("#conts_minor").append("<option value='03'>금속공예</option>");
+		$("#conts_minor").append("<option value='04'>기록유산</option>");
+		$("#conts_minor").append("<option value='05'>불교공예</option>");
+		$("#conts_minor").append("<option value='06'>불교조각</option>");
+		$("#conts_minor").append("<option value='07'>생활공예</option>");
+		$("#conts_minor").append("<option value='08'>왕실무덤</option>");
+		$("#conts_minor").append("<option value='09'>탑</option>");
+		$("#conts_minor").append("<option value='10'>도자기공예</option>");
+		$("#conts_minor").append("<option value='99'>기타</option>");
+		
+		$('#img_logo').attr("src", "/asia3d/images/sub/top_img01.jpg");
+		break;
+	case "2":
+		$("#conts_minor").append("<option value='ALL'>전체</option>");
+		$("#conts_minor").append("<option value='01'>골갑패갑</option>");
+		$("#conts_minor").append("<option value='02'>광물</option>");
+		$("#conts_minor").append("<option value='03'>금속</option>");
+		$("#conts_minor").append("<option value='04'>나무</option>");
+		$("#conts_minor").append("<option value='05'>도자기</option>");
+		$("#conts_minor").append("<option value='06'>석(돌)</option>");
+		$("#conts_minor").append("<option value='07'>유리보석</option>");
+		$("#conts_minor").append("<option value='08'>종이</option>");
+		$("#conts_minor").append("<option value='09'>토제</option>");
+		$("#conts_minor").append("<option value='10'>화석</option>");
+		$("#conts_minor").append("<option value='11'>민속</option>");
+		$("#conts_minor").append("<option value='99'>기타</option>");
+		
+		$('#img_logo').attr("src", "/asia3d/images/sub/top_img01_1.jpg");
+		break;
+	case "3":
+		$("#conts_minor").append("<option value='ALL'>전체</option>");
+		$("#conts_minor").append("<option value='01'>거미류</option>");
+		$("#conts_minor").append("<option value='02'>곤충류</option>");
+		$("#conts_minor").append("<option value='03'>어류</option>");
+		$("#conts_minor").append("<option value='04'>조류</option>");
+		$("#conts_minor").append("<option value='05'>파충류</option>");
+		$("#conts_minor").append("<option value='06'>포유류</option>");
+		$("#conts_minor").append("<option value='07'>해양-갑각류</option>");
+		$("#conts_minor").append("<option value='08'>해양-기타</option>");
+		$("#conts_minor").append("<option value='09'>해양-패류</option>");
+		$("#conts_minor").append("<option value='10'>공룡</option>");
+		$("#conts_minor").append("<option value='99'>기타</option>");
+		
+		$('#img_logo').attr("src", "/asia3d/images/sub/top_img01_2.jpg");
+		break;
+	case "4":
+		$("#conts_minor").append("<option value='ALL'>전체</option>");
+		$("#conts_minor").append("<option value='01'>생활도구</option>");
+		$("#conts_minor").append("<option value='02'>아트(문화예술)</option>");
+		$("#conts_minor").append("<option value='03'>패션</option>");
+		$("#conts_minor").append("<option value='04'>주얼리</option>");
+		$("#conts_minor").append("<option value='05'>부품</option>");
+		$("#conts_minor").append("<option value='06'>장난감</option>");
+		$("#conts_minor").append("<option value='07'>피규어</option>");
+		$("#conts_minor").append("<option value='08'>교육</option>");
+		$("#conts_minor").append("<option value='99'>기타</option>");
+		
+		$('#img_logo').attr("src", "/asia3d/images/sub/top_img01_3.jpg");
+		break;
+	default:
+		$("#conts_minor").append("<option value='ALL'>전체</option>");
+		break;
+	}
+}
+
+// 대분류 텍스트값 리턴
+function getTextMajor(tmpCode) {
+	switch (tmpCode) {
+	case "ALL":		return "전체";	
+	case "1":		return "문화유산";	
+	case "2":		return "박물관";	
+	case "3":		return "생물,과학관";	
+	case "4":		return "모델링";
+	default:			return "";
+	}
+}
+
+function getText_Delivery(tmpCode) {
+	switch (tmpCode) {
+	case "01":		return "택배";	
+	case "02":		return "방문";
+	default:			return "";
+	}
+}
+
+// 제작분야 텍스트값 리턴
+function getText_MakeFieldTp(tmpCode) {
+	switch (tmpCode) {
+	case "01":		return "기계설계";		
+	case "02":		return "건축설계";	
+	case "03":		return "맞춤제작";	
+	case "04":		return "의학설계";	
+	case "05":		return "3D스캔(역설계)";	
+	case "06":		return "주얼리디자인";	
+	case "07":		return "산업디자인";	
+	case "08":		return "조형디자인";	
+	case "09":		return "캐릭터디자인";	
+	case "99":		return "기타";	
+	default:			return "";
+	}
+}
+
+// 제작방식
+function getText_MakeReqTp(tmpCode) {
+	switch (tmpCode) {
+	case "01":		return "제작신청";	
+	case "02":		return "제작공모";	
+	case "03":		return "지정제작";	
+	case "04":		return "3D콘텐츠구매";	
+	case "05":		return "빠른견적구매";	
+	default:			return "";
+	}
+}
+
+// 제작방식
+function getText_ProcSt(tmpCode) {
+	switch (tmpCode) {
+	case "11":		return "견적신청";		
+	case "21":		return "견적완료";	
+	case "22":		return "견적불가";	
+	case "31":		return "결제완료";	
+	case "32":		return "결제취소";	
+	case "41":		return "제작완료";	
+	case "42":		return "제작거부";	
+	case "51":		return "배송요청";	
+	case "52":		return "재제작요청";	
+	case "61":		return "배송중";	
+	case "71":		return "구매확정";	
+	case "81":		return "환불요청";	
+	case "82":		return "환불등록";	
+	case "83":		return "환불동의";	
+	case "84":		return "환불거부";	
+	case "85":		return "환불완료";	
+	default:			return "";
+	}
+}
+
+// 제작분류 텍스트값 리턴
+function getText_MakeTp(tmpCode) {
+	switch (tmpCode) {
+	case "01":		return "3D모델링";		
+	case "02":		return "3D프린팅";	
+	case "03":		return "모델링&프린팅";	
+	case "04":		return "3D스캐닝";
+	case "05":		return "피규어제작";
+	default:			return "";
+	}
+}
+
+// 회원상태 리턴
+function getText_UserCondition(tmpCode) {
+	switch (tmpCode) {
+	case "01":		return "정상";		
+	case "02":		return "정지";	
+	case "03":		return "탈퇴";	
+	default:			return "";
+	}
+}
+
+// 프링팅인지 리턴
+function isPrinting(tmpMakeTp) {
+	if (tmpMakeTp == "02" || tmpMakeTp == "03" || tmpMakeTp == "05")
+		return true;
+	
+	return false;
+}
+
+// post 방식으로 화면이동
+function moveToPost(url, params) {
+    method = "post";  
+    var form = document.createElement("form");
+    form.setAttribute("method", method);
+    form.setAttribute("action", url);
+    
+    for(var key in params) {
+        var hiddenField = document.createElement("input");
+        hiddenField.setAttribute("type", "hidden");
+        hiddenField.setAttribute("name", key);
+        hiddenField.setAttribute("value", params[key]);
+        form.appendChild(hiddenField);
+    }
+    document.body.appendChild(form);
+    form.submit();
+}
+
+// 중분류 텍스트 
+function getTextMinor(tmpMajor, tmpMinor) {
+	var tmpText = "";
+	
+	switch (tmpMajor) {
+	case "1":
+		if (tmpMinor == "01")
+			tmpText = "건조물";
+		else if (tmpMinor == "02")
+			tmpText = "과학기술";
+		else if (tmpMinor == "03")
+			tmpText = "금속공예";
+		else if (tmpMinor == "04")
+			tmpText = "기록유산";
+		else if (tmpMinor == "05")
+			tmpText = "불교공예";
+		else if (tmpMinor == "06")
+			tmpText = "불교조각";
+		else if (tmpMinor == "07")
+			tmpText = "생활공예";
+		else if (tmpMinor == "08")
+			tmpText = "왕실무덤";
+		else if (tmpMinor == "09")
+			tmpText = "탑";
+		else if (tmpMinor == "10")
+			tmpText = "토도자공예";
+		else if (tmpMinor == "99")
+			tmpText = "기타";
+		break;
+	case "2":
+		if (tmpMinor == "01")
+			tmpText = "골갑패갑";
+		else if (tmpMinor == "02")
+			tmpText = "광물";
+		else if (tmpMinor == "03")
+			tmpText = "금속";
+		else if (tmpMinor == "04")
+			tmpText = "나무";
+		else if (tmpMinor == "05")
+			tmpText = "도자기";
+		else if (tmpMinor == "06")
+			tmpText = "석(돌)";
+		else if (tmpMinor == "07")
+			tmpText = "유리보석";
+		else if (tmpMinor == "08")
+			tmpText = "종이";
+		else if (tmpMinor == "09")
+			tmpText = "토제";
+		else if (tmpMinor == "10")
+			tmpText = "화석";
+		else if (tmpMinor == "11")
+			tmpText = "민속";
+		else if (tmpMinor == "99")
+			tmpText = "기타";
+		break;
+	case "3":
+		if (tmpMinor == "01")
+			tmpText = "거미류";
+		else if (tmpMinor == "02")
+			tmpText = "곤충류";
+		else if (tmpMinor == "03")
+			tmpText = "어류";
+		else if (tmpMinor == "04")
+			tmpText = "조류";
+		else if (tmpMinor == "05")
+			tmpText = "파충류";
+		else if (tmpMinor == "06")
+			tmpText = "포유류";
+		else if (tmpMinor == "07")
+			tmpText = "해양-갑각류";
+		else if (tmpMinor == "08")
+			tmpText = "해양-기타";
+		else if (tmpMinor == "09")
+			tmpText = "해양-패류";
+		else if (tmpMinor == "10")
+			tmpText = "공룡";
+		else if (tmpMinor == "99")
+			tmpText = "기타";
+		break;
+	case "4":
+		if (tmpMinor == "01")
+			tmpText = "생활도구";
+		else if (tmpMinor == "02")
+			tmpText = "아트(문화예술)";
+		else if (tmpMinor == "03")
+			tmpText = "패션";
+		else if (tmpMinor == "04")
+			tmpText = "주얼리";
+		else if (tmpMinor == "05")
+			tmpText = "부품";
+		else if (tmpMinor == "06")
+			tmpText = "장난감";
+		else if (tmpMinor == "07")
+			tmpText = "피규어";
+		else if (tmpMinor == "08")
+			tmpText = "교육";
+		else if (tmpMinor == "99")
+			tmpText = "기타";
+	}
+	return tmpText;
+}
+
+function getAreaCode(tmpCode) {
+	switch (tmpCode) {
+	case 0:	return "10,11,12,13,14,15";					// 서울 
+	case 1:	return "40,41,42,43,44,45,46,47,48";		// 경기,인천 
+	case 2:	return "30,31,32,33,34,35,36,37,38,39";	// 대전,충청
+	case 3:	return "20,21,22,23,24,25,26";				// 강원
+	case 4:	return "60,61,62,63,64,65,66,67,68";		// 부산,경남
+	case 5:	return "70,71,72,73,74,75,76,77,78,79";	// 대구,경북
+	case 6:	return "50,51,52,53,54,55,56,57,58,59";	// 광주,전라
+	case 7:	return "69";										// 제주
+	default: return "ALL";
+	}
+}
+
+// 소장처 구분
+function getText_HoldLocTp(tmpCode) {
+	switch (tmpCode) {
+		case "1":	return "국립";	
+		case "2":	return "공립";	
+		case "3":	return "사립법인";
+		case "4":	return "법인";
+		case "9":	return "기타";
+		default:		return "";
+	}
+}
+
+// 소장처 종류
+function getText_HoldLocKind(tmpCode) {
+	switch (tmpCode) {
+		case "1":	return "박물관";	
+		case "2":	return "미술관";	
+		case "3":	return "과학관";
+		case "9":	return "기타";
+		default:		return "";
+	}
+} 
+
+// 서비스종류 텍스트값 리턴
+function getText_PrintSvcTp(tmpCode) {
+	switch (tmpCode) {
+	case "01":		return "서포터제거";			 
+	case "02":		return "후가공(표면)";			 
+	case "03":		return "후가공(표면+도색)";			 
+	default:			return "";							
+	}
+}
+
+// 출력방식 텍스트값 가져오기
+function getText_PrintMethod1(tmpCode) {
+	switch (tmpCode) {
+	case "01":		return "FDM(고체방식)";			 
+	case "02":		return "SLA(액체방식)";			 
+	case "03":		return "DLP(액체방식)";			 
+	case "04":		return "Polyjet(액체방식)";		 
+	case "05":		return "MJM(액체방식)";			 
+	case "06":		return "SLS(분말방식)";			 
+	case "07":		return "3DP(분말방식)";			 
+	case "08":		return "LOM(시트방식)";			 
+	case "09":		return "AOM(기타방식)";		 
+	default:			return "";							
+	}
+}
+function getText_PrintMethod2(tmpCode) {
+	switch (tmpCode) {
+	case "01":		return "FDM";
+	case "02":		return "SLA";
+	case "03":		return "DLP";
+	case "04":		return "Polyjet";
+	case "05":		return "MJM";
+	case "06":		return "SLS";
+	case "07":		return "3DP";
+	case "08":		return "LOM";
+	case "09":		return "AOM";
+	default:			return "";
+	}
+}
+function getText_PayTp(tmpCode) {
+	switch (tmpCode) {
+	case "1":		return "무료다운로드";			 
+	case "2":		return "유료다운로드";			 
+	case "3":		return "출력전용";			 
+	case "4":		return "조회전용";			 
+	default:			return "";							
+	}
+}
+
+// 출력제료 텍스트값 리턴
+function getText_printMeterial(tmpCode) {
+	switch (tmpCode) {
+	case "01":		return "PLA-일반";		
+	case "02":		return "PLA-형광";		
+	case "03":		return "PLA-우드";		
+	case "04":		return "PLA-우레탄";		
+	case "05":		return "PLA-변온";
+	case "06":		return "PLA-광변";		
+	default:			return "";		
+	}
+}
+
+// 시대 텍스트값 리턴
+function getText_Age(tmpCode) {
+	switch (tmpCode) {
+	case "01":		return "고생대";		
+	case "02":		return "중생대";		
+	case "03":		return "신생대";		
+	case "04":		return "구석기";		
+	case "05":		return "신석기";		
+	case "06":		return "청동기";		
+	case "07":		return "철기";		
+	case "08":		return "원삼국";		
+	case "09":		return "삼국";		
+	case "10":		return "가야";		
+	case "11":		return "고구려";		
+	case "12":		return "백제";		
+	case "13":		return "낙랑";		
+	case "14":		return "신라";		
+	case "15":		return "통일신라";		
+	case "16":		return "고려";		
+	case "17":		return "조선";		
+	case "18":		return "대한제국";		
+	case "19":		return "근현대";		
+	
+	case "51":		return "상나라";		
+	case "52":		return "춘추(春秋)";		
+	case "53":		return "진(秦)";		
+	case "54":		return "한(漢)";		
+	case "55":		return "신(新)";		
+	case "56":		return "후한(後漢)";		
+	case "57":		return "남북조";	
+	case "58":		return "당(唐)";		
+	case "59":		return "5호16국";		
+	case "60":		return "송";		
+	case "61":		return "원(元)";		
+	case "62":		return "동진(東晉)";		
+	case "63":		return "명(明)";		
+	case "64":		return "청(淸)";
+	case "65":		return "수나라";		
+	case "99":		return "시대미상";
+	
+	default:			return "";		
+	}
+}
+
+function getText_ContsTp(tmpCode) {
+	switch (tmpCode) {
+	case "1":		return "국보";
+	case "2":		return "보물";
+	case "3":		return "중요민속";
+	case "4":		return "시지정";
+	case "5":		return "도지정";
+	case "6":		return "시도지정";
+	case "8":		return "문화재자료";
+	case "11":		return "등록문화재";
+	case "10":		return "사적";
+	case "7":		return "기타";
+	case "9":		return "없음";
+	default:			return "";
+	}
+}
+
+function getText_WorkTool(tmpCode) {
+	switch (tmpCode) {
+	case "01":		return "솔리드윅스";
+	case "02":		return "카티야";
+	case "03":		return "NX UG";
+	case "04":		return "라이노";
+	case "05":		return "Fusion360";
+	case "06":		return "스케치업";
+	case "07":		return "3DMAX";
+	case "08":		return "Z-Brush";
+	case "99":		return "기타";
+	default:			return "";
+	}
+}
+
+function getText_DispSt(tmpCode) {
+	switch (tmpCode) {
+	case "01":		return "전시중";
+	case "09":		return "정시중지";
+	default:			return "전시중지";
+	}
+}
+
+//정산대사 거래상태 리턴
+function setText_CsttlSt() {
+	switch (tmpCode) {
+	case "0":		return "승인";
+	case "1":		return "매입전취소";
+	case "2":		return "매입후취소";
+	default:			return "";
+	}
+}
+	
+//정산대사 진행상태 리턴
+function setText_CsttlProcSt() {
+	switch (tmpCode) {
+	case "01":		return "승인";
+	case "02":		return "정산";
+	case "03":		return "오류";
+	default:			return "";
+	}
+}
+	
+function getText_DispTemp(tmpCode) {
+	switch (tmpCode) {
+	case "01":		return "템플릿A";
+	case "02":		return "템플릿B";
+	default:			return "";
+	}
+}
+
+//History 세팅
+function setHistory(tmpFileName, tmpValue) {
+	var pageDesc = "";
+	var txt1Depth = "";
+	var txt2Depth = "";
+	
+	switch (tmpFileName) {
+	case "member_list":
+		pageDesc = "회원 목록";
+		break;
+	case "member_info":
+		pageDesc = "개인회원 상세조회";
+		break;
+	case "cgrp_write":
+		pageDesc = "콘텐츠그룹 등록";
+		break;
+	case "cgrp_write2":
+		pageDesc = "콘텐츠그룹 수정";
+		break;
+	case "cgrp_list":
+		pageDesc = "콘텐츠그룹 목록";
+		break;
+	case "exhibition_list":
+		pageDesc = "3D전시 목록";
+		break;
+	case "exhibition_write":
+		pageDesc = "3D전시 등록";
+		break;
+	case "exhibition_write2":
+		pageDesc = "3D전시 수정";
+		break;
+	case "point_write":
+		pageDesc = "포인트정책 등록";
+		break;
+	case "pay_list":
+		pageDesc = "결제승인 목록";
+		break;
+	case "order_info":
+		pageDesc = "결제 상세조회";
+		break;
+	case "refund_list":
+		pageDesc = "환불 목록";
+		break;
+	case "refund_info":
+		pageDesc = "환불 상세조회";
+		break;
+	case "trans_list":
+		pageDesc = "전환신청 목록";
+		break;
+	case "calculate_list":
+		pageDesc = "PG입금 목록";
+		break;
+	case "deposit_list":
+		pageDesc = "PG정산상세 목록";
+		break;
+	case "company_unpaid_list":
+		pageDesc = "입금미완료목록";
+		break;
+	case "company_unpaid_descript":
+		pageDesc = "입금미완료 상세목록";
+		break;
+	case "company_paid_list":
+		pageDesc = "입금완료목록";
+		break;
+	case "company_paid_descript":
+		pageDesc = "입금완료 상세목록";
+		break;
+	case "calculate_target_list":
+		pageDesc = "입금대상등록";
+		break;
+	case "calculate_deposit_list":
+		pageDesc = "입금처리등록";
+		break;
+	case "all_script_list":
+		pageDesc = "정산통합목록";
+		break;	
+	default:
+		break;
+	}
+	var tmpHtml = 
+		"<h4>" + pageDesc + "</h4>";
+		
+	$('.con-tit1').empty();
+	$('.con-tit1').append(tmpHtml);
+}
+
+function setPaging(startIndex, totalCount, tmpBlock) {
+	var pagingHTML = "";
+	var pageBlock = (tmpBlock) ? tmpBlock : 24;
+	var navigatorNum	 = 10;
+	var firstPageNum	= 1;
+	var page = parseInt(startIndex);
+	var lastPageNum	= Math.floor((totalCount-1) / pageBlock) + 1;
+	var previewPageNum = (page == 1) ? 1 : page-1;
+	var nextPageNum	 = (page == lastPageNum) ? lastPageNum : page+1;
+	var indexNum = (startIndex <= navigatorNum)  ? 0 : parseInt((startIndex-1)/navigatorNum) * navigatorNum;
+	
+	if (totalCount > 1) {
+		if (startIndex > 1) {
+			pagingHTML += "<a class='dire cursor_hand' onclick='goPage(1);' title='처음 페이지로'><img src='/asia3d/images/sub/page_01.gif' alt='처음 페이지로' /></a>";
+			pagingHTML += "<a class='dire first cursor_hand' onclick='goPage(" + previewPageNum + ");' title='이전 페이지로'><img src='/asia3d/images/sub/page_02.gif' alt='이전 페이지로' /></a>";
+		}
+		
+		for (var i=1; i<=navigatorNum; i++) {
+			var pageNum = i + indexNum;
+			
+			if (pageNum == startIndex) 
+				pagingHTML += "<strong>" + pageNum + "</strong>";
+			else 
+				pagingHTML += "<a class='cursor_hand' onclick='goPage(" + pageNum + ");'>" + pageNum + "</a>";
+			
+			if (pageNum==lastPageNum)
+				break;
+		}
+		
+		if (startIndex < lastPageNum) {
+			pagingHTML += "<a class='dire last cursor_hand' onclick='goPage(" + nextPageNum + ");' title='다음 페이지로' ><img src='/asia3d/images/sub/page_03.gif' alt='다음 페이지로' /></a>";
+			pagingHTML += "<a class='dire cursor_hand' onclick='goPage(" + lastPageNum + ");' title='끝 페이지로' ><img src='/asia3d/images/sub/page_04.gif' alt='끝 페이지로' /></a>";
+		}
+	}
+	
+	$(".paginate").html(pagingHTML);
+}
+
+function bank_code_conv(code){
+	var cpay_cbank_cd = "";
+	
+	if(code == "01"){
+		cpay_cbank_cd = "비씨"
+	}else if(code == "02"){
+		cpay_cbank_cd = "KB국민";
+	}else if(code == "03"){
+		cpay_cbank_cd = "외환";
+	}else if(code == "04"){
+		cpay_cbank_cd = "삼성";
+	}else if(code == "06"){
+		cpay_cbank_cd = "신한";
+	}else if(code == "07"){
+		cpay_cbank_cd = "현대";
+	}else if(code == "08"){
+		cpay_cbank_cd = "롯데";
+	}else if(code == "11"){
+		cpay_cbank_cd = "씨티";
+	}else if(code == "12"){
+		cpay_cbank_cd = "NH채움";
+	}else if(code == "13"){
+		cpay_cbank_cd = "수협";
+	}else if(code == "14"){
+		cpay_cbank_cd = "신협";
+	}else if(code == "15"){
+		cpay_cbank_cd = "우리";
+	}else if(code == "16"){
+		cpay_cbank_cd = "하나SK";
+	}else if(code == "21"){
+		cpay_cbank_cd = "광주";
+	}else if(code == "22"){
+		cpay_cbank_cd = "전북";
+	}else if(code == "23"){
+		cpay_cbank_cd = "제주";
+	}else if(code == "24"){
+		cpay_cbank_cd = "산은캐피탈";
+	}else if(code == "25"){
+		cpay_cbank_cd = "해외비자";
+	}else if(code == "26"){
+		cpay_cbank_cd = "해외마스터";
+	}else if(code == "27"){
+		cpay_cbank_cd = "해외다이너스";
+	}else if(code == "28"){
+		cpay_cbank_cd = "해외AMX";
+	}else if(code == "29"){
+		cpay_cbank_cd = "해외JCB";
+	}else if(code == "32"){
+		cpay_cbank_cd = "우체국";
+	}else if(code == "33"){
+		cpay_cbank_cd = "저축은행";
+	}else if(code == "34"){
+		cpay_cbank_cd = "은련";
+	}else if(code == "35"){
+		cpay_cbank_cd = "새마을금고";
+	}else if(code == "36"){
+		cpay_cbank_cd = "KDB산업";
+	}else if(code == "002"){
+		cpay_cbank_cd = "산업은행";
+	}else if(code == "003"){
+		cpay_cbank_cd = "기업은행";
+	}else if(code == "004"){
+		cpay_cbank_cd = "국민은행";
+	}else if(code == "005"){
+		cpay_cbank_cd = "외환은행";
+	}else if(code == "007"){
+		cpay_cbank_cd = "수협중앙회";
+	}else if(code == "011"){
+		cpay_cbank_cd = "농협중앙회";
+	}else if(code == "012"){
+		cpay_cbank_cd = "농협회원조합";
+	}else if(code == "020"){
+		cpay_cbank_cd = "우리은행";
+	}else if(code == "023"){
+		cpay_cbank_cd = "SC제일은행";
+	}else if(code == "027"){
+		cpay_cbank_cd = "한국씨티은행";
+	}else if(code == "031"){
+		cpay_cbank_cd = "대구은행";
+	}else if(code == "032"){
+		cpay_cbank_cd = "부산은행";
+	}else if(code == "034"){
+		cpay_cbank_cd = "광주은행";
+	}else if(code == "035"){
+		cpay_cbank_cd = "제주은행";
+	}else if(code == "037"){
+		cpay_cbank_cd = "전북은행";
+	}else if(code == "039"){
+		cpay_cbank_cd = "경남은행";
+	}else if(code == "045"){
+		cpay_cbank_cd = "새마을금고연합회";
+	}else if(code == "048"){
+		cpay_cbank_cd = "신협중앙회";
+	}else if(code == "050"){
+		cpay_cbank_cd = "상호저축은행";
+	}else if(code == "052"){
+		cpay_cbank_cd = "모건스탠리은행";
+	}else if(code == "054"){
+		cpay_cbank_cd = "HSBC은행";
+	}else if(code == "055"){
+		cpay_cbank_cd = "도이치은행";
+	}else if(code == "056"){
+		cpay_cbank_cd = "에이비엔암로은행";
+	}else if(code == "057"){
+		cpay_cbank_cd = "제이피모간체이스은행";
+	}else if(code == "058"){
+		cpay_cbank_cd = "미즈호코퍼레이트은행";
+	}else if(code == "059"){
+		cpay_cbank_cd = "미쓰비시도쿄UFJ은행";
+	}else if(code == "060"){
+		cpay_cbank_cd = "BOA";
+	}else if(code == "064"){
+		cpay_cbank_cd = "산림조합";
+	}else if(code == "071"){
+		cpay_cbank_cd = "정보통신부 우체국";
+	}else if(code == "081"){
+		cpay_cbank_cd = "하나은행";
+	}else if(code == "088"){
+		cpay_cbank_cd = "신한은행";
+	}else if(code == "209"){
+		cpay_cbank_cd = "동양종합금융증권";
+	}else if(code == "218"){
+		cpay_cbank_cd = "현대증권";
+	}else if(code == "230"){
+		cpay_cbank_cd = "미래에셋증권";
+	}else if(code == "238"){
+		cpay_cbank_cd = "대우증권";
+	}else if(code == "240"){
+		cpay_cbank_cd = "삼성증권";
+	}else if(code == "243"){
+		cpay_cbank_cd = "한국투자증권";
+	}else if(code == "247"){
+		cpay_cbank_cd = "우리투자증권";
+	}else if(code == "261"){
+		cpay_cbank_cd = "교보증권";
+	}else if(code == "262"){
+		cpay_cbank_cd = "하이투자증권";
+	}else if(code == "263"){
+		cpay_cbank_cd = "에이치엠씨투자증권";
+	}else if(code == "264"){
+		cpay_cbank_cd = "키움증권";
+	}else if(code == "265"){
+		cpay_cbank_cd = "이트레이드증권";
+	}else if(code == "266"){
+		cpay_cbank_cd = "에스케이증권";
+	}else if(code == "267"){
+		cpay_cbank_cd = "대신증권";
+	}else if(code == "268"){
+		cpay_cbank_cd = "솔로몬투자증권";
+	}else if(code == "269"){
+		cpay_cbank_cd = "한화증권";
+	}else if(code == "270"){
+		cpay_cbank_cd = "하나대투증권";
+	}else if(code == "278"){
+		cpay_cbank_cd = "신한금융투자";
+	}else if(code == "279"){
+		cpay_cbank_cd = "동부증권";
+	}else if(code == "280"){
+		cpay_cbank_cd = "유진투자증권";
+	}else if(code == "287"){
+		cpay_cbank_cd = "메리츠증권";
+	}else if(code == "289"){
+		cpay_cbank_cd = "엔에이치투자증권";
+	}else if(code == "290"){
+		cpay_cbank_cd = "부국증권";
+	}else if(code == "291"){
+		cpay_cbank_cd = "신영증권";
+	}else if(code == "292"){
+		cpay_cbank_cd = "엘아이지투자증권";
+	}
+	return cpay_cbank_cd;
+}
+
+function setEditorConfig() {
+	var config = {
+			txHost: '', /* 런타임 시 리소스들을 로딩할 때 필요한 부분으로, 경로가 변경되면 이 부분 수정이 필요. ex) http://xxx.xxx.com */
+			txPath: '', /* 런타임 시 리소스들을 로딩할 때 필요한 부분으로, 경로가 변경되면 이 부분 수정이 필요. ex) /xxx/xxx/ */
+			txService: 'sample', /* 수정필요없음. */
+			txProject: 'sample', /* 수정필요없음. 프로젝트가 여러개일 경우만 수정한다. */
+			initializedId: "", /* 대부분의 경우에 빈문자열 */
+			wrapper: "tx_trex_container", /* 에디터를 둘러싸고 있는 레이어 이름(에디터 컨테이너) */
+			form: "tx_editor_form" + "", /* 등록하기 위한 Form 이름 */
+			txIconPath: "/asia3d/editor/images/icon/editor/", /*에디터에 사용되는 이미지 디렉터리, 필요에 따라 수정한다. */
+			txDecoPath: "/asia3d/editor/images/deco/contents/", /*본문에 사용되는 이미지 디렉터리, 서비스에서 사용할 때는 완성된 컨텐츠로 배포되기 위해 절대경로로 수정한다. */
+			canvas: {
+				styles: {
+					color: "#123456", /* 기본 글자색 */
+					fontFamily: "굴림", /* 기본 글자체 */
+					fontSize: "10pt", /* 기본 글자크기 */
+					backgroundColor: "#fff", /*기본 배경색 */
+					lineHeight: "1.5", /*기본 줄간격 */
+					padding: "8px" /* 위지윅 영역의 여백 */
+				},
+				showGuideArea: false
+			},
+			events: {
+				preventUnload: false
+			},
+			sidebar: {
+				attachbox: {
+					show: true,
+					confirmForDeleteAll: true
+				}
+			},
+			size: {
+				//contentWidth: 700 /* 지정된 본문영역의 넓이가 있을 경우에 설정 */
+			}
+		};
+		EditorJSLoader.ready(function(Editor) {
+			editor = new Editor(config);
+		});
+}
+
+</script>
+

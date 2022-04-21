@@ -1,0 +1,79 @@
+CALL proc_3dbank_qna(1, '01');
+
+DROP TABLE _buffer_3dbank_qna;
+DROP PROCEDURE proc_3dbank_qna;
+
+CREATE PROCEDURE proc_3dbank_qna(p_start_value INT, p_svc_tp VARCHAR(20))
+BEGIN
+  DECLARE recursive_count INT UNSIGNED;
+  DECLARE current_lv INT UNSIGNED;
+  DECLARE parent_ids VARCHAR(1000);
+
+  SET SESSION sql_log_bin=OFF;
+  SET SESSION tx_isolation='READ-COMMITTED';
+  SET recursive_count = 1;
+  SET @_current_lv := 1;
+
+  CREATE TEMPORARY TABLE IF NOT EXISTS _buffer_3dbank_qna(
+
+ QNA_SEQ  int(11) NOT NULL,
+ SVC_TP varchar(20) NOT NULL,
+ TITLE varchar(400) DEFAULT NULL,
+ QNA_TP varchar(2) DEFAULT NULL,
+ UP_QNA_SEQ int(11) DEFAULT NULL,
+ HITS int(11) DEFAULT NULL,
+ USER_UID int(11) DEFAULT NULL,
+ REG_DTTM varchar(14) DEFAULT NULL,
+    lv int,
+    INDEX ix_lv(lv)
+
+  ) ENGINE=MEMORY DEFAULT CHARSET=utf8;
+
+  INSERT INTO _buffer_3dbank_qna
+    SELECT QNA_SEQ, SVC_TP, TITLE, QNA_TP, UP_QNA_SEQ, HITS,
+               USER_UID, REG_DTTM, @_current_lv AS lv
+      FROM QNA WHERE QNA_SEQ = p_start_value AND SVC_TP = p_svc_tp;
+
+  recursion: REPEAT
+    SELECT GROUP_CONCAT(QNA_SEQ) INTO parent_ids
+      FROM _buffer_3dbank_qna WHERE lv=@_current_lv;
+
+    IF parent_ids IS NULL OR parent_ids="" THEN
+      LEAVE recursion;
+    END IF;
+
+    SET @query = CONCAT("INSERT INTO _buffer_3dbank_qna 
+            SELECT QNA_SEQ , SVC_TP, TITLE, QNA_TP, UP_QNA_SEQ, HITS, 
+               USER_UID, REG_DTTM, (? + 1) AS lv 
+            FROM QNA WHERE UP_QNA_SEQ IN (",parent_ids,")");
+
+    PREPARE stmt3 FROM @query;
+    EXECUTE stmt3 USING @_current_lv;
+
+    SET @_current_lv = @_current_lv + 1;
+    SET recursive_count = recursive_count + 1;
+    IF recursive_count > 10 THEN
+      LEAVE recursion;
+    END IF;
+  UNTIL 0 END REPEAT;
+
+ SELECT
+        A.QNA_SEQ			qna_seq
+     ,  A.SVC_TP			svc_tp
+     ,  A.TITLE				title
+     ,  A.QNA_TP			qna_tp
+     ,  A.UP_QNA_SEQ		up_qna_seq
+     ,  A.HITS				hits
+     ,  A.USER_UID			user_uid
+     ,  A.REG_DTTM			reg_dttm
+     ,  A.lv				lv
+     ,  USER.COMPY_NAME		compy_name
+     ,  USER.P_NAME			p_name
+     ,  USER.MY_PHOTO		my_photo
+ FROM _buffer_3dbank_qna A LEFT OUTER JOIN USER
+      ON A.USER_UID = USER.USER_UID;
+
+  TRUNCATE TABLE _buffer_3dbank_qna;
+  SET SESSION sql_log_bin=ON;
+  SET SESSION tx_isolation='REPEATABLE-READ';
+END;

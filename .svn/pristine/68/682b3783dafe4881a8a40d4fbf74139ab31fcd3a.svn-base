@@ -1,0 +1,233 @@
+<%@ page contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ko" xml:lang="ko">
+
+<head>
+	<%@ include file="../comm/util.jsp" %>
+	<meta name="keywords" content="3DBANK" />
+	<script type="text/javascript" charset="utf-8" src="/asia3d/js/jquery.cookie.js"></script>
+	<title><%=title%></title>
+</head>
+
+<body>
+<%
+%>
+
+<script type="text/javascript">
+var mInfo;
+
+$(document).ready(function() {
+	setHistory("point_write", null);
+	readList();
+	
+	// 숫자체크
+	$('#point_amount').blur(function() {
+		if (!$(this).val())
+			return;
+			
+		if (!jQuery.isNumeric($(this).val())) {
+			alert("숫자만 입력 가능합니다.")
+			$(this).val("");
+			$(this).focus();
+		}
+	});
+});
+
+function setList() {
+	for (var i=0; i<mInfo.point_list.length; i++) {
+		var pointInfo = mInfo.point_list[i];
+		var selected1 = "";
+		var selected2 = "";
+		
+		if (pointInfo.point_amount_tp == "01")
+			selected1 = "selected='selected'";
+		else
+			selected2 = "selected='selected'";
+		
+		var tmpHtml = 
+			"<tr>" +
+				"<th scope='col'>" + pointInfo.point_name + "</th>" +
+				"<td class='bdRno'>" +
+					"<input type='text' class='input02' name='input10' style='width: 80px;' value='" + getText_Money(pointInfo.point_amount) + "' />" +
+					"<select name='select' style='width:70px;'>" +
+						"<option value='01' " + selected1 + ">point</option>" +
+						"<option value='02' " + selected2 + ">%</option>" +
+					"</select>" +
+					"<input type='button' name='sch_button7' class='input_btn' value='수정' onclick='updatePoint(this, " + pointInfo.point_seq + ");' />" +
+				"</td>" +
+			"</tr>";
+			
+		if (pointInfo.point_object == "01")
+			$('#tbody_member').append(tmpHtml);
+		else
+			$('#tbody_recomm').append(tmpHtml);
+	}
+}
+
+function clickBtnSave() {
+	var point_name = $('#point_name').val();
+	var point_amount = $('#point_amount').val();
+	
+	if (!point_name) {
+		alert("적립금명칭을 입력하세요.")
+		$('#point_name').focus();
+		return;
+	}
+	if (!point_amount) {
+		alert("지급적립금을 입력하세요.")
+		$('#point_amount').focus();
+		return;
+	}
+	
+	var jsonParam = new Object();
+	jsonParam.service_tp = "point_reg";
+	jsonParam.crud_tp = "c";
+	jsonParam.point_object = $('#point_object').val();
+	jsonParam.point_name = point_name;
+	jsonParam.point_amount = point_amount;
+	jsonParam.point_amount_tp = $('#point_amount_tp').val();
+	
+	doCommunication(jsonParam);
+}
+	
+function readList() {
+	var jsonParam = new Object(); 
+	jsonParam.service_tp = "point_reg";
+	jsonParam.crud_tp = "r";
+	
+	doCommunication(jsonParam);
+}
+
+function updatePoint(tmpObj, tmpSeq) {
+	var objAmount = $(tmpObj).prev().prev();
+	var objAmountTp = $(tmpObj).prev();
+	
+	if (!$(objAmount).val()) {
+		alert("금액을 입력해주세요.");
+		$(objAmount).focus();
+		return;
+	}
+	if (!jQuery.isNumeric(objAmount.val())) {
+		alert("숫자만 입력 가능합니다.");
+		$(objAmount).val("");
+		$(objAmount).focus();
+		return;
+	}
+	
+	var jsonParam = new Object();
+	jsonParam.service_tp = "point_reg";
+	jsonParam.crud_tp = "u";
+	jsonParam.point_seq = tmpSeq;
+	jsonParam.point_amount = $(objAmount).val();
+	jsonParam.point_amount_tp = $(tmpObj).prev().val();
+	
+	doCommunication(jsonParam);
+}
+
+function doCommunication(jsonParam) {
+	var jsondata = "jsondata=" + JSON.stringify(jsonParam);
+	printLog("send data", jsondata);
+	
+	$.ajax({
+        type : "POST",  
+        url : "/Ajax3DBankController.do",
+        data : jsondata,
+        success : function(result) {
+        	printLog("response data", JSON.stringify(result));
+        	
+        	if (result.retcode == "000") {
+        		if (jsonParam.crud_tp == "r") {
+					mInfo = result;
+					setList();
+					
+        		} else if (jsonParam.crud_tp == "c" || jsonParam.crud_tp == "u") {
+        			alert("저장완료 되었습니다.")
+        			location.href = "/member/point_write.do";
+        		}
+			} else {
+				alert(result.retmsg);
+			}
+        }
+    });
+}
+</script>
+<%@ include file="../comm/menu.jsp" %>
+
+<div id="container">
+	<div class="SubContents">
+        <!-- //sub_left -->
+        <div class="Acontents">
+             <!--타이틀-->
+            <div class="con-tit1"></div>
+            
+            <div class="clear">
+				<table summary="" class="DetailTable" style="width: 100%">
+					<colgroup>
+						<col width="20%" />
+						<col width="" />
+					</colgroup>
+					<tbody>
+						<tr>
+							<th scope="col">포인트지급대상</th>
+							<td class="bdRno"><select id="point_object" name="select">
+								<option value="01">회원</option>
+								<option value="02">추천인</option>
+							</select></td>
+						</tr>
+						<tr>
+							<th scope="col">적립금명칭</th>
+							<td class="bdRno"><input id="point_name" class="input02" type="text" name="input" maxlength="100" style="width:300px;" /></td>
+						</tr>
+						<tr>
+							<th scope="col">지급적립금</th>
+							<td class="bdRno">
+								<input id="point_amount" class="input02" type="text" name="input4" maxlength="4" style="width:100px;" />
+								<select id="point_amount_tp" name="select">
+									<option value="01">point</option>
+									<option value="02">%</option>
+								</select>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+
+				<div class="btnR">
+					<button class="btnList" type="submit" onclick="clickBtnSave();">저장</button>
+             	</div>
+
+				<table width="100%" height="144" class="tabel_h6">
+					<tr>
+						<td width="50%"><h6 class="mt15 mb10">회원</h6></td>
+						<td width="20">&nbsp;</td>
+						<td width="346"><h6 class="mt15 mb10">추천인</h6></td>
+					</tr>
+					<tr>
+						<td>
+							<table summary="" class="DetailTable" style="width: 100%">
+								<colgroup>
+									<col width="40%" />
+									<col width="" />
+								</colgroup>
+								<tbody id="tbody_member"></tbody>
+							</table>
+						</td>
+						<td valign="top">&nbsp;</td>
+						<td valign="top">
+							<table summary="" class="DetailTable" style="width: 100%">
+								<colgroup>
+									<col width="40%" />
+									<col width="" />
+								</colgroup>
+								<tbody id="tbody_recomm"></tbody>
+							</table>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+<%@ include file="../comm/footer.jsp" %>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+
+<%
+String targetposturl = "/Ajax3DBankController.do" ;
+%>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Test Page</title>
+</head>
+<a href="upload.jsp">Multipart 이용한 연동(파일업로드)</a>&nbsp;&nbsp;
+<a href="upload2.jsp">STL 다운로드</a>&nbsp;&nbsp;
+<a href="http://jsonlint.com" target="new" >http://jsonlint.com</a>&nbsp;&nbsp;
+<a href="http://json.parser.online.fr" target="new" >http://json.parser.online.fr</a>
+<script language="javascript" src="http://ajax.googleapis.com/ajax/libs/prototype/1.7.1.0/prototype.js"></script>
+<script language="javascript">
+<!--
+function transJSON1()
+{
+  var params1 = Form.serialize($('frm1'));
+  //alert(params1);
+  
+  new Ajax.Request('<%= targetposturl %>',{
+      method:'post',   
+      parameters: params1,
+      requestHeaders: {Accept: 'application/json'}, 
+      onSuccess: function(transport){
+        //alert(transport.responseText);
+        //document.getElementById("res_json").innerText = transport.responseText;
+        document.all.res_json.value = transport.responseText;
+      } 
+  });
+}
+
+function setReqdata(jsondata)
+{
+  document.getElementById("req_json").value = jsondata;
+}
+//-->
+</script>
+
+<body>
+<hr>
+<form name="frm1" id="frm1">
+<textarea rows="15" cols="120" id="jsondata" name="jsondata">
+{
+   "service_tp":""  // I:서비스구분
+,  "p_login_id":"admin@3dbank.xyz"  // I:일반사용자로그인ID
+,  "user_uid":"1"  //로그인 후는 회원UID 셋팅
+}
+</textarea><br>
+<input type=button onClick='javascript:transJSON1();' value='== Ajax3DBankController.do =='>  (전송 URL : <%= targetposturl %>)
+</form>
+
+<hr>결과값 JSON<br> 
+  <textarea rows="10" cols="100" id="res_json" name="res_json"></textarea>
+</body>
+</html>
+
+<hr>
+<pre>
+
+============ 연동규격 정리 ===============

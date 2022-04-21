@@ -1,0 +1,200 @@
+<%@ page contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ko" xml:lang="ko">
+
+<head>
+	<%@ include file="../comm/util.jsp" %>
+	<meta name="keywords" content="3DBANK" />
+	<script type="text/javascript" charset="utf-8" src="/asia3d/js/jquery.cookie.js"></script>
+	<title><%=title%></title>
+</head>
+
+<body>
+<%
+String inq_user_tp = request.getParameter("inq_user_tp");
+String user_condition = request.getParameter("user_condition");
+String conts_word = request.getParameter("conts_word");
+String page_num = request.getParameter("page_num");
+%>
+
+<script type="text/javascript">
+var inq_user_tp = ("<%=inq_user_tp%>" != "null") ? '<%=inq_user_tp%>' : "ALL";
+var user_condition = ("<%=user_condition%>" != "null") ? "<%=user_condition%>" : "ALL";
+var conts_word = ("<%=conts_word%>" != "null") ? '<%=conts_word%>' : '';
+conts_word = getDecodeTxt2(conts_word);
+var mPage = (<%=page_num%>) ? <%=page_num%> : 1;
+
+var mListInfo = new Array();
+
+$(document).ready(function() {
+	setHistory("member_list", null);
+	
+	$('#inq_user_tp').val(inq_user_tp);
+	$('#user_condition').val(user_condition);
+	$('#conts_word').val(conts_word);
+	
+	readList();
+	
+	// 회원분류
+	$('#inq_user_tp, #user_condition').change(function() {
+		mPage = 1;
+		refreshPage();
+	});
+});
+	
+// 화면 새로고침
+function refreshPage() {
+	var encodedWord = encodeURIComponent(encodeURIComponent(conts_word)); 
+	var pageUrl = "/member/member_list.do?inq_user_tp=" + $('#inq_user_tp').val() + "&user_condition=" + $('#user_condition').val() + "&conts_word=" + encodedWord + "&page_num=" + mPage;
+	location.href = pageUrl;
+}
+
+//페이지이동
+function goPage(tmpPage) {
+	mPage = tmpPage;
+	refreshPage();
+}
+
+// 검색버튼 클릭
+function clickBtnSearch() {
+	mPage = 1;
+	conts_word = $('#conts_word').val();
+	$('#inq_user_tp').val("ALL");
+	$('#user_condition').val("ALL");
+	
+	refreshPage();
+}
+
+// 리스트 세팅
+function setList() {
+	for (var i=0; i<mListInfo.user_info_list.length; i++) {
+		var userInfo = mListInfo.user_info_list[i];
+		var user_tp = (userInfo.user_tp == "1"	) ? "개인" : "기업";
+		var tmpHtml = 
+			"<tr>" + 
+			"<td>" + user_tp + "</td>" + 
+            "<td class='alignL'><a href='/member/member_info.do?user_uid=" + userInfo.user_uid + "&p_login_id=" + userInfo.p_login_id + "'>" + userInfo.p_login_id + "</a></td>" +
+            "<td class='alignL'><a href='/member/member_info.do?user_uid=" + userInfo.user_uid + "&p_login_id=" + userInfo.p_login_id + "'>" + getName(userInfo) + "</a></td>" + 
+            "<td>" + getText_UserCondition(userInfo.user_condition) + "</td>" + 
+            "<td>" + getText_DateFormat(userInfo.reg_dttm) + "</td>" +
+            "<td>" + getText_DateFormat(userInfo.stop_dttm) + "</td>" +
+			"<td>" + getText_Money(userInfo.use_pssb_point) + "</td>";
+			"</tr>" +
+		$('#tbody_list').append(tmpHtml);			
+	}
+	setPaging(mPage, mListInfo.tot_count);
+}
+
+function readList() {
+	var jsonParam = new Object(); 
+	jsonParam.service_tp = "user_info_list";
+	jsonParam.inq_user_tp = $('#inq_user_tp').val();
+	jsonParam.user_condition = $('#user_condition').val();
+	jsonParam.conts_word = conts_word;
+	jsonParam.page_num = "" + mPage;
+	jsonParam.inq_user = "1";
+	jsonParam.field_tp = "ALL";
+	
+	doCommunication(jsonParam);
+}
+
+
+function doCommunication(jsonParam) {
+	var jsondata = "jsondata=" + JSON.stringify(jsonParam);
+	printLog("send data", jsondata);
+	
+	$.ajax({
+        type : "POST",  
+        url : "/Ajax3DBankController.do",
+        data : jsondata,
+        success : function(result) {
+        	printLog("response data", JSON.stringify(result));
+        	
+        	if (result.retcode == "000") {
+				mListInfo = result;
+				setList();
+			}
+        },
+        beforeSend:function() {
+	        $('.wrap-loading').removeClass('display-none');
+	    },
+	    complete:function(){
+	        $('.wrap-loading').addClass('display-none');
+	    }
+    });
+}
+</script>
+<%@ include file="../comm/menu.jsp" %>
+
+<div id="container">
+	<div class="SubContents">
+        <!-- //sub_left -->
+        <div class="Acontents">
+        
+             <!--타이틀-->
+            <div class="con-tit1">				
+                <h4>개인 회원 목록 조회</h4>
+                <div class="history">
+                    <ul class="root">
+                        <li class="ico">홈</li>
+                    </ul>
+                    <ul class="category">
+                        <li>회원관리</li>
+                    </ul>
+                    <ul class="lastmenu">
+                        <li>회원 목록 조회</li>
+                    </ul>
+                </div>
+            </div>
+            
+			<div class="list_info mb10">
+				<select id="inq_user_tp" class="m_select select01" >
+					<option value="ALL">회원구분</option>
+					<option value="1">개인</option>
+					<option value="3">기업</option>
+				</select>
+				<select id="user_condition" class="m_select select01" >
+					<option value="ALL">회원상태</option>
+					<option value="01">정상</option>
+					<option value="02">정지</option>
+					<option value="03">탈퇴</option>
+				</select>
+			</div>
+			<fieldset class="alignR">
+				<legend class="hid">게시물검색</legend>
+				<input id="conts_word" name="searchWrd" type="text" size="50" title="검색어 입력" placeholder="검색어를 입력하세요." class="input_sch" onkeypress="if(event.keyCode==13) {clickBtnSearch(); return false;}" />
+				<input id="btn_search" class="btn_src" type="button" onclick="clickBtnSearch();" />
+			</fieldset>
+			
+            <div class="clear">
+                <table cellspacing="0" cellpadding="0" border="0" summary="회원목록 테이블" class="table04 mt8" style="text-align:center">
+                    <colgroup>
+	                    <col width="10%" />
+	                    <col width="" />
+	                    <col width="15%" />
+	                    <col width="10%" />
+	                    <col width="15%" />
+	                    <col width="15%" />
+	                    <col width="10%" />
+                    </colgroup>
+                    
+                    <thead><tr>
+                    	<th scope="col">회원구분</th>
+                    	<th scope="col">아이디</th>
+                    	<th scope="col">닉네임</th>
+                    	<th scope="col">상태</th>
+                    	<th scope="col">가입일</th>
+                    	<th scope="col">정지/탈퇴일</th>
+						<th class="t_end" scope="col">포인트</th>
+					</tr></thead>
+                    <tbody id="tbody_list"></tbody>
+                </table>
+				<div class="paginate clear"></div>
+			</div>	
+		</div>
+	</div>
+</div>
+			
+<%@ include file="../comm/footer.jsp" %>
+</body>
+</html>

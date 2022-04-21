@@ -1,0 +1,160 @@
+<%@ page contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ko" xml:lang="ko">
+
+<head>
+	<%@ include file="../comm/util.jsp" %>
+	<meta name="keywords" content="3DBANK" />
+	<script type="text/javascript" charset="utf-8" src="/asia3d/js/jquery.cookie.js"></script>
+	<title><%=title%></title>
+</head>
+
+<body>
+<%
+String use_yn = request.getParameter("use_yn");
+String conts_word = request.getParameter("conts_word");
+String page_num = request.getParameter("page_num");
+%>
+
+<script type="text/javascript">
+var use_yn = ("<%=use_yn%>" != "null") ? '<%=use_yn%>' : "y";
+var conts_word = ("<%=conts_word%>" != "null") ? '<%=conts_word%>' : '';
+conts_word = getDecodeTxt2(conts_word);
+var mPage = (<%=page_num%>) ? <%=page_num%> : 1;
+
+var mListInfo = new Array();
+
+$(document).ready(function() {
+	setHistory("exhibition_list", null);
+	
+	$('#use_yn').val(use_yn);
+	$('#conts_word').val(conts_word);
+	
+	readList();
+	
+	// 전시상태
+	$('#disp_st').change(function() {
+		mPage = 1;
+		refreshPage();
+	});
+});
+	
+// 화면 새로고침
+function refreshPage() {
+	var encodedWord = encodeURIComponent(encodeURIComponent(conts_word)); 
+	var pageUrl = "/event/device_list.do?use_yn=" + $('#use_yn').val() + "&conts_word=" + encodedWord + "&page_num=" + mPage;
+	location.href = pageUrl;
+}
+
+//페이지이동
+function goPage(tmpPage) {
+	mPage = tmpPage;
+	refreshPage();
+}
+
+// 검색버튼 클릭
+function clickBtnSearch() {
+	mPage = 1;
+	conts_word = $('#conts_word').val();
+	
+	refreshPage();
+}
+
+// 리스트 세팅
+function setList(tmpinfo) {
+	for (var i=0; i<tmpinfo.ctr_list.length; i++) {
+		var ctrInfo = tmpinfo.ctr_list[i];
+		var use_yn = (ctrInfo.use_yn == "y") ? "사용중" : "사용중지";
+		var tmpHtml = 
+			"<tr>" + 
+				"<td>" + parseInt((mPage-1) * 24 + (i+1)) + "</td>" + 
+	            "<td class='alignL'><a href='/event/device_modify.do?ctr_no=" + ctrInfo.ctr_no + "'</a>" + ctrInfo.ctr_nm + "</td>" +
+	            "<td>" + use_yn + "</td>" + 
+	            "<td>" + ctrInfo.permit_ids + "</td>" + 
+	            "<td class='alignL'><a href='/event/exhibition_write.do?disp_id=" + ctrInfo.disp_id + "'</a>" + ctrInfo.disp_name + "</td>" +
+	            "<td>" + getText_DateFormat(ctrInfo.disp_s_dt) + " ~ " + getText_DateFormat(ctrInfo.disp_e_dt) + "</td>" +
+			"</tr>";
+		$('#tbody_list').append(tmpHtml);
+	}
+	setPaging(mPage, mListInfo.total_cnt);
+}
+
+function readList() {
+	var jsonParam = new Object(); 
+	jsonParam.service_tp = "controller_list";
+	jsonParam.use_yn = $('#disp_st').val();
+	jsonParam.conts_word = conts_word;
+	jsonParam.page_num = "" + mPage;
+	
+	doCommunication(jsonParam);
+}
+
+
+function doCommunication(jsonParam) {
+	var jsondata = "jsondata=" + JSON.stringify(jsonParam);
+	printLog("send data", jsondata);
+	
+	$.ajax({
+        type : "POST",  
+        url : "/Ajax3DBankController.do",
+        data : jsondata,
+        success : function(result) {
+        	printLog("response data", JSON.stringify(result));
+        	
+        	if (result.retcode == "000") {
+				setList(result);
+			}
+        }
+    });
+}
+</script>
+<%@ include file="../comm/menu.jsp" %>
+
+<div id="container">
+	<div class="SubContents">
+        <!-- //sub_left -->
+        <div class="Acontents">
+             <!--타이틀-->
+            <div class="con-tit1"></div>
+            
+			<div class="list_info mb10">
+				<select id="use_yn" class="m_select select01">
+					<option value="y">사용중</option>
+					<option value="n">정지중</option>
+				</select>
+			</div>
+			<fieldset class="alignR">
+				<legend class="hid">게시물검색</legend>
+				<input id="conts_word" name="searchWrd" type="text" size="50" title="검색어 입력" placeholder="검색어를 입력하세요." class="input_sch" onkeypress="if(event.keyCode==13) {clickBtnSearch(); return false;}" />
+				<input id="btn_search" class="btn_src" type="button" onclick="clickBtnSearch();" />
+			</fieldset>
+			
+            <div class="clear">
+                <table cellspacing="0" cellpadding="0" border="0" summary="장치목록" class="table04 mt8" style="text-align:center">
+                    <colgroup>
+	                    <col width="7%" />
+	                    <col width="" />
+	                    <col width="10%" />
+	                    <col width="15%" />
+	                    <col width="20%" />
+	                    <col width="20%" />
+                    </colgroup>
+                    <thead><tr>
+                    	<th scope="col">No</th>
+                    	<th scope="col">장치명</th>
+                    	<th scope="col">사용여부</th>
+                    	<th scope="col">사용자</th>
+                    	<th scope="col">전시회명</th>
+                    	<th class="t_end" scope="col">전시기간</th>
+					</tr></thead>
+                    <tbody id="tbody_list"></tbody>
+                </table>
+				<div class="paginate clear"></div>
+			</div>	
+		</div>
+	</div>
+</div>
+			
+<%@ include file="../comm/footer.jsp" %>
+</body>
+</html>

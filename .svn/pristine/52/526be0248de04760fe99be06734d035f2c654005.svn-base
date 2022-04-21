@@ -1,0 +1,145 @@
+<%@page import="java.sql.Timestamp"%>
+<%@page import="java.util.Date"%>
+<%@page import="java.net.InetAddress"%>
+<%@page import="kr.co.nicepay.module.lite.util.NicePayParamSetter"%>
+<%@ page language="java" contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ko" xml:lang="ko">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=euc-kr" />
+<%@ include file="../comm/util.jsp" %>
+<title>취소 요청</title>
+
+<link rel="stylesheet" type="text/css" href="/asia3d/css/common.css" />
+<link rel="shortcut icon" href="/asia3d/main/img/favicon.ico" type="image/x-icon" />
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<script src="https://web.nicepay.co.kr/flex/js/nicepay_tr.js" language="javascript"></script>
+
+<%
+String TID = request.getParameter("TID");
+String CancelAmt = request.getParameter("CancelAmt");
+String CancelMsg = request.getParameter("CancelMsg");
+String pay_amount = request.getParameter("pay_amount");
+String b_user_name = request.getParameter("b_user_name");
+String s_user_name = request.getParameter("s_user_name");
+String make_title = request.getParameter("make_title");
+String moid = request.getParameter("moid");
+String after = request.getParameter("after");
+%>
+
+<script language="javascript">
+var cancelAmt = "<%=CancelAmt%>";
+var payAmt = "<%=pay_amount%>";
+$(document).ready(function() {
+	$('#TID').text("<%=TID%>");	
+	$('#CancelAmt').text(cancelAmt);	
+	$('#CancelMsg').text("<%=CancelMsg%>");	
+	$('#pay_amount').text(payAmt);	
+	$('#b_user_name').text("<%=b_user_name%>");
+	$('#s_user_name').text("<%=s_user_name%>");
+	$('#moid').text("<%=moid%>");
+	$('#MID').text("3dbank000m");
+	if (parseInt(cancelAmt) >= parseInt(payAmt))
+		$('#PartialCancelCode').val('0');
+});
+
+function goCancel() {
+	
+	var formNm = document.tranMgr;
+	
+	// TID validation
+	if(formNm.TID.value == "") {
+		alert("TID를 확인하세요.");
+		return ;
+	} else if(formNm.TID.value.length > 30 || formNm.TID.value.length < 30) {
+		alert("TID 길이를 확인하세요.");
+		return ;
+	}
+	// 취소금액
+	if(formNm.CancelAmt.value == "") {
+		alert("금액을 입력하세요.");
+		return ;
+	} else if(formNm.CancelAmt.value.length > 12 ) {
+		alert("금액 입력 길이 초과.");
+		return ;
+	}
+	
+	if(formNm.PartialCancelCode.value == '1'){
+		if(formNm.TID.value.substring(10,12) != '01' &&  formNm.TID.value.substring(10,12) != '02' &&  formNm.TID.value.substring(10,12) != '03'){
+			alert("신용카드결제, 계좌이체, 가상계좌만 부분취소/부분환불이 가능합니다");
+			return false;
+		}
+	}
+	formNm.submit();
+}
+</script>
+</head>
+
+<body style="overflow-x:hidden; overflow-y:hidden;">
+<form name="tranMgr" method="post" action="/pay/cancelResult.do">
+	<div class="money_count">
+		<h1>환불요청</h1>
+
+		<table class="DetailTable mb20">
+			<tbody>
+				<tr>
+					<th width="158">MID</th>
+					<td id="MID"></td>
+				</tr>
+				<tr>
+					<th width="158">TID</th>
+					<td id="TID"></td>
+				</tr>
+				<tr>
+					<th width="158">취소금액</th>
+					<td id="CancelAmt"></td>
+				</tr>
+				<tr>
+					<th width="158">취소사유</th>
+					<td id="CancelMsg"></td>
+				</tr>
+				<tr>
+					<th width="158">결제금액</th>
+					<td id="pay_amount"></td>
+				</tr>
+				<tr>
+					<th width="158">구매자명</th>
+					<td id="b_user_name"></td>
+				</tr>
+				<tr>
+					<th width="158">판매자명</th>
+					<td id="s_user_name"></td>
+				</tr>
+				<tr>
+					<th width="158">주문번호</th>
+					<td id="moid"></td>
+				</tr>
+				<tr>
+					<th>부분취소 여부</th>
+					<td><select id="PartialCancelCode" name="PartialCancelCode" style="width: 142px;">
+							<option value="0">전체 취소</option>
+							<option value="1" selected="selected">부분 취소</option>
+					</select></td>
+				</tr>
+			</tbody>
+		</table>
+		<div class="alignC">
+			<input type="button" name="sch_button" class="input_btn4" value="취소" onClick="window.open('about:blank', '_self').close(); return false;" />
+			<input type="button" name="sch_button" class="input_btn4" value="환불" onClick="goCancel();" />
+		</div>
+		<ul class="money_etc">
+			<li>취소가 이루어진 후에는 다시 되돌릴 수 없으니 이점 참고하시기 바랍니다.</li>
+		</ul>
+	</div>
+	
+<input type="hidden" name="TID" value="<%=TID%>" />  
+<input type="hidden" name="CancelAmt" value="<%=CancelAmt%>" />  
+<input type="hidden" name="CancelMsg" value="<%=CancelMsg%>" />  
+<input type="hidden" name="pay_amount" value="<%=pay_amount%>" />  
+<input type="hidden" name="moid" value="<%=moid%>" />
+<input type="hidden" name="after" value="<%=after%>" />    
+</form>
+</body>
+</html>

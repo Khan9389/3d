@@ -1,0 +1,1727 @@
+package com.asia3d.contents.service.impl;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.asia3d.contents.service.AjaxContentsService;
+import com.asia3d.contents.service.impl.stl.Meshconvs;
+import com.asia3d.contents.service.impl.stl.STL2Images;
+import com.asia3d.contents.service.impl.stl.STL2LoaderXYZ;
+import com.asia3d.contents.service.impl.stl.STL2VolumeWeightCalculator;
+import com.asia3d.member.service.impl.AjaxMemberDAO;
+import com.asia3d.util.FileUtil;
+import com.asia3d.util.Log;
+import com.asia3d.util.PropertyUtil;
+import com.asia3d.util.ZIPCompress;
+
+
+@Service("ajaxContentsService")
+public class AjaxContentsServiceImpl implements AjaxContentsService {
+	
+	private String PROP_FILE = "/property/3dbank.properties";
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(AjaxContentsServiceImpl.class);
+	
+	@Autowired
+	private AjaxMemberDAO ajaxMemberDAO;
+	
+	@Autowired
+	private AjaxContentsDAO ajaxContentsDAO;
+		
+	@Resource(name = "messageSource")
+	MessageSource messageSource;
+
+	/*
+	 *	 3D콘텐츠정보 등록/조회/수정
+	 */
+	@Override
+	public Map<String, Object> conts_3d_info_reg(HashMap<String, Object> jsonMap, List<MultipartFile> aMultipartFile) throws Exception {
+		if("r".equals(jsonMap.get("crud_tp"))) 
+		{
+			jsonMap = conts_3d_info_reg_r(jsonMap);
+			return jsonMap;
+		}
+		
+		HashMap<String, Object> userInfo = ajaxMemberDAO.selectUser_by_p_login_id(jsonMap);
+		if(userInfo == null)
+		{
+			jsonMap = new HashMap<String, Object>();
+			jsonMap.put("retcode", 	"991");
+			jsonMap.put("retmsg",	"존재하지 않은 사용자정보입니다.");	
+			return jsonMap;
+		}
+
+		if("c".equals(jsonMap.get("crud_tp"))) 
+		{
+			jsonMap = conts_3d_info_reg_c(jsonMap, aMultipartFile);
+		}
+		else if("u".equals(jsonMap.get("crud_tp"))) 
+		{
+			jsonMap = conts_3d_info_reg_u(jsonMap, aMultipartFile);
+		}
+		else if("d".equals(jsonMap.get("crud_tp"))) 
+		{
+			jsonMap = conts_3d_info_reg_d(jsonMap, aMultipartFile);
+		}
+		return jsonMap;
+	}
+	
+	/*
+	 * 3D콘텐츠정보 등록
+	 */
+	@SuppressWarnings("unchecked")
+	public HashMap<String, Object> conts_3d_info_reg_c(HashMap<String, Object> jsonMap, List<MultipartFile> aMultipartFile) throws Exception {
+		
+		PropertyUtil pl = new PropertyUtil(PROP_FILE);
+		
+		ajaxContentsDAO.insertContents3dInfo_reg(jsonMap);
+		
+		ArrayList<?> conts_file = (ArrayList<?>) jsonMap.get("conts_file");
+		
+		Log.print(LOGGER, "conts_file=[" + conts_file + "]");
+	
+		for(int j=0;j<aMultipartFile.size();j++) {
+			Log.print(LOGGER, "업로드할 파일[" + j + "]=[" +aMultipartFile.get(j).getOriginalFilename() +"]");
+		}
+		
+		int fileIndex = 0;
+		for(int j=0;j<conts_file.size();j++) {
+			HashMap<String, Object>  contents = (HashMap<String, Object>) conts_file.get(j);
+			contents.put("conts_uid", jsonMap.get("conts_uid"));
+			
+			if(contents.get("conts_file_name") != null && 
+					((String)contents.get("conts_file_name")).length() > 0) {
+
+				// 업로드된 파일명과 동일한지 체크한다.
+				if("file[]".equals(aMultipartFile.get(fileIndex).getName())) {
+					String conts_save_name = FileUtil.uploadFile(pl.get("IMG_UPLOAD_PATH"), aMultipartFile.get(fileIndex));
+					contents.put("conts_save_name", conts_save_name);
+					
+					// STL파일이라면 몇가지 정보를 얻는다.
+					if(	conts_save_name.toUpperCase().endsWith(".STL")) 
+					{	
+						settingSTLInformation(contents, pl.get("IMG_UPLOAD_PATH"), conts_save_name);
+					}
+					 
+					
+					fileIndex ++;
+				}
+				else if("conts_file[]".equals(aMultipartFile.get(fileIndex).getName())) {
+					String conts_save_name = FileUtil.uploadFile(pl.get("IMG_UPLOAD_PATH"), aMultipartFile.get(fileIndex));
+					contents.put("conts_save_name", conts_save_name);
+					fileIndex ++;
+				}
+			}
+			ajaxContentsDAO.insertContentsFile(contents);
+		}
+		
+		// conts_uid 기준으로 dfx, off, ply, 3ds, wr, stl, obj 관련 파일을 분석한다.
+		try { convMeshProcessByConts_uid(String.valueOf(jsonMap.get("conts_uid")));	} catch(Exception e) {	Log.print(LOGGER, e);	}
+		
+		// conts_uid 를 통해서 관련 파일을 모은 압축파일을 생성한다.
+		//try { makeZipFileByConts_uid(jsonMap);	} catch(Exception e) {	Log.print(LOGGER, e);	}
+		
+		jsonMap.put("retcode", 	"000");
+		jsonMap.put("retmsg",	"정상적으로 등록되었습니다.");
+				
+		
+		return jsonMap;
+	}
+	
+	/*
+	 * conts_uid 기준으로 dfx, off, ply, 3ds, wr, stl, obj 관련 파일을 분석한다.
+	 */
+	@SuppressWarnings("unchecked")
+	private void convMeshProcessByConts_uid(String conts_uid) throws Exception {
+		Log.print(LOGGER, "## convMeshProcessByConts_uid conts_uid:[" + conts_uid + "]");
+		
+		PropertyUtil pl = new PropertyUtil(PROP_FILE);
+		
+		HashMap<String, Object> map = new HashMap<String, Object>();
+		map.put("conts_uid", conts_uid);
+		
+		List<?> contsfile_list = ajaxContentsDAO.selectContentsFileList(map);
+		
+		// IMG_UPLOAD_PATH=/data/3dbank/upload_data/
+		// MESHCONV_DATA=/data/3dbank/upload_data/meshconv/
+
+		String meshconv_data_path = pl.get("MESHCONV_DATA") + "conts_uid_" + conts_uid + File.separator;
+		
+		Log.print(LOGGER, "## meshconv_data_path :[" + meshconv_data_path + "]");
+		FileUtil.deleteFolder(meshconv_data_path);
+		
+		for(int i=0;i<contsfile_list.size(); i++) {
+			HashMap<String, Object> contsfile = (HashMap<String, Object>) contsfile_list.get(i);
+			Log.print(LOGGER, "## contsfile_list.get(" + i + ") :" + contsfile);
+			if("01".equals(contsfile.get("conts_tp")) && contsfile.get("conts_save_name") != null && ((String)contsfile.get("conts_save_name")).trim().length() > 0  ) 
+			{		
+				Log.print(LOGGER, "### copyFile... ");
+				if(!FileUtil.isDirExist(meshconv_data_path)) {
+					FileUtil.makeDir(meshconv_data_path);
+				}
+
+				FileUtil.copyFile(	pl.get("IMG_UPLOAD_PATH") + contsfile.get("conts_save_name"),
+									meshconv_data_path + contsfile.get("conts_file_name"));
+			}
+		}
+		
+		
+		for(int i=0;i<contsfile_list.size(); i++) {
+			HashMap contsMap = (HashMap)contsfile_list.get(i);
+			if("01".equals(contsMap.get("conts_tp")) && contsMap.get("conts_save_name") != null && ((String)contsMap.get("conts_save_name")).trim().length() > 0  ) 
+			{
+				
+				if(((String)contsMap.get("conts_file_name")).toUpperCase().endsWith(".OBJ")) {
+					
+					String stlfile = (String)contsMap.get("conts_file_name");
+							
+					Meshconvs meshconvs = new Meshconvs(meshconv_data_path, stlfile, "stl");
+					stlfile = meshconvs.makefile(meshconv_data_path, stlfile.substring(0, stlfile.lastIndexOf(".")));
+					
+					// meshconv_data_path, stlfile
+					// /data/3dbank_dev/upload_data/meshconv/conts_uid_1/bma001008.stl 를 /data/3dbank_dev/upload_data 로 복사한다.
+					UUID randomeUUID = UUID.randomUUID();
+					String copy_stl_file_name = randomeUUID.toString().replaceAll("-", "") + "_" + stlfile;
+					
+					FileUtil.copyFile(meshconv_data_path + stlfile, pl.get("IMG_UPLOAD_PATH") + copy_stl_file_name);
+					
+					settingSTLInformation(contsMap, pl.get("IMG_UPLOAD_PATH"), copy_stl_file_name);
+					
+					Log.print(LOGGER, "## after settingSTLInformation contsfile:" + contsMap );
+					
+					int iret = ajaxContentsDAO.updateContentsFile(contsMap);
+					
+					Log.print(LOGGER, "## after ajaxContentsDAO.updateContentsFile iret:" + iret );
+					
+					// "stl_thumnail":"c3b0aa31e40a4e3ea535262a11a8b457_bma001008.stl.conv.png" 정보를 통해서...
+					// conts_save_name, conts_file_name 를 유추해서...
+					// stl에 관련된 내용도 추가한다.
+					setData_conts_save_name_conts_file_name(contsMap);
+					//ajaxContentsDAO.insertContentsFile(contsMap);
+				}
+			}
+		}
+	}
+	
+	private void setData_conts_save_name_conts_file_name(HashMap contsMap) {
+		// TODO Auto-generated method stub
+		String stl_thumnail = (String)contsMap.get("stl_thumnail");
+		String conts_save_name = stl_thumnail.substring(0, stl_thumnail.lastIndexOf(".stl") + 4);
+		String conts_file_name = conts_save_name.substring(conts_save_name.indexOf("_") + 1);
+		
+		contsMap.put("conts_save_name", conts_save_name);
+		contsMap.put("conts_file_name", conts_file_name);
+	}
+
+	public static void main(String h[]) {
+		HashMap contsMap = new HashMap();
+		contsMap.put("stl_thumnail", "c3b0aa31e40a4e3ea535262a11a8b457_bma001008.stl.conv.png");
+		
+		String stl_thumnail = (String)contsMap.get("stl_thumnail");
+		
+		String conts_save_name = stl_thumnail.substring(0, stl_thumnail.lastIndexOf(".stl") + 4);
+		System.out.println("conts_save_name:" + conts_save_name);
+		
+		String conts_file_name = conts_save_name.substring(conts_save_name.indexOf("_") + 1);
+		System.out.println("conts_file_name:" + conts_file_name);
+		
+	}
+	
+
+	/*
+	 * stl파일에 대한 추가적인 기능을 얻는다.
+	 */
+	private void settingSTLInformation(HashMap<String, Object> contents,  String stlpath, String stlfile)
+	{
+
+		Log.print(LOGGER, "## Call settingSTLInformation ");
+		Log.print(LOGGER, "## stlpath : " + stlpath);
+		Log.print(LOGGER, "## stlfile : " + stlfile);
+		
+		try {
+			STL2LoaderXYZ stl2LoaderXYZ = new STL2LoaderXYZ();
+			stl2LoaderXYZ.load(stlpath, stlfile);
+			contents.put("stl_x", stl2LoaderXYZ.getX());
+			contents.put("stl_y", stl2LoaderXYZ.getY());
+			contents.put("stl_z", stl2LoaderXYZ.getZ());
+		} catch (Exception e) {	e.printStackTrace(); }
+		
+		try {
+			STL2Images stl2Images = new STL2Images();
+			stl2Images.load(stlpath, stlfile);	
+			
+			int separatorIdx = stl2Images.getConvRetImage().lastIndexOf(File.separator);
+			
+			Log.print(LOGGER, "- stl2Images.getConvRetImage() : " + stl2Images.getConvRetImage());
+			Log.print(LOGGER, "- separatorIdx : " + separatorIdx);
+			
+			if(separatorIdx > 0)
+			{
+				String filename = stl2Images.getConvRetImage().substring(separatorIdx + 1);
+				Log.print(LOGGER, "- filename : " + filename);
+				contents.put("stl_thumnail", filename);
+			}
+			
+		} catch (Exception e) {	e.printStackTrace(); }
+		
+		try {
+			STL2VolumeWeightCalculator srl2VolumeWeightCalculator = new STL2VolumeWeightCalculator();
+			srl2VolumeWeightCalculator.load(stlpath, stlfile);		
+			contents.put("stl_volume", srl2VolumeWeightCalculator.getVolume());
+			contents.put("stl_weight", srl2VolumeWeightCalculator.getWeight());
+		} catch (Exception e) {	e.printStackTrace(); }	
+	
+	}
+	
+	/*
+	 * 3D콘텐츠정보 조회
+	 */
+	public HashMap<String, Object> conts_3d_info_reg_r(HashMap<String, Object> jsonMap) throws Exception {
+		
+		HashMap<String, Object> select_map = ajaxContentsDAO.selectContents3DInfo(jsonMap);
+		
+		if(select_map == null)
+		{
+			jsonMap = new HashMap<String, Object>();
+			jsonMap.put("retcode", 	"991");
+			jsonMap.put("retmsg",	"존재하지 않는 데이타입니다.");	
+			return jsonMap;
+		}
+		
+		List<?> contsfile_list = ajaxContentsDAO.selectContentsFileList(select_map);
+		select_map.put("conts_file", contsfile_list);
+				
+		select_map.put("retcode", 	"000");
+		select_map.put("retmsg",	"정상적으로 조회되었습니다.");
+		
+		return select_map;
+	}	
+	
+	/*
+	 * 3D콘텐츠정보 업데이트
+	 */
+	public HashMap<String, Object> conts_3d_info_reg_u(HashMap<String, Object> jsonMap, List<MultipartFile> aMultipartFile) throws Exception {
+		
+		// 3D콘텐츠정보 업데이트
+		int upt = ajaxContentsDAO.updateContents3DInfo(jsonMap);
+		Log.print(LOGGER, "ajaxContentsDAO.updateConts3DInfo upt=[" +upt +"]");
+		
+		PropertyUtil pl = new PropertyUtil(PROP_FILE);
+		
+		ArrayList del_file = (ArrayList) jsonMap.get("del_file");
+		ArrayList ins_file = (ArrayList) jsonMap.get("ins_file");
+		
+		if(del_file == null) { del_file = new ArrayList();  }
+		if(ins_file == null) { ins_file = new ArrayList();  }
+	
+		Log.print(LOGGER, "del_file=[" +del_file +"]");
+		Log.print(LOGGER, "ins_file=[" +ins_file +"]");
+		
+		
+		for(int i=0;i<del_file.size();i++) {
+			jsonMap.put("conts_uid", jsonMap.get("conts_uid"));
+			jsonMap.put("conts_save_name", del_file.get(i));
+			// db에서 삭제
+			int ret = ajaxContentsDAO.deleteContentsFile(jsonMap);
+			Log.print(LOGGER, "ajaxContentsDAO.deleteContentsFile ret=[" +ret +"]");
+			// 실제 물리파일 삭제
+			FileUtil.deleteFile(pl.get("IMG_UPLOAD_PATH"), (String)del_file.get(i)); 
+		}
+		
+		ArrayList conts_file = (ArrayList) jsonMap.get("conts_file");
+		if(conts_file == null) { conts_file = new ArrayList();  }
+	
+		Log.print(LOGGER, "conts_file=[" + conts_file + "]");
+		
+		/*
+		 * 파일이 존재 안하는 데이타는 다 지움
+		 */
+		String update_conts_file_seq_list = new String(); 
+		for(int j=0;j<conts_file.size();j++) {
+			HashMap hash = (HashMap<String, Object>) conts_file.get(j);
+			if(hash.containsKey("conts_file_seq")) {	
+				update_conts_file_seq_list += hash.get("conts_file_seq") + ",";
+			}
+		}
+		if(update_conts_file_seq_list.length() == 0) {
+			update_conts_file_seq_list = "ALL";
+		}
+		else if(update_conts_file_seq_list.lastIndexOf(",") > 0) {
+			update_conts_file_seq_list = update_conts_file_seq_list.substring(0, update_conts_file_seq_list.lastIndexOf(","));
+		}
+		Log.print(LOGGER, "update_conts_file_seq_list=[" + update_conts_file_seq_list + "]");
+		jsonMap.put("conts_file_seq_list", update_conts_file_seq_list);
+		
+		int iDeleteContentsNotFileALL = ajaxContentsDAO.deleteContentsNotFileALL(jsonMap);
+		Log.print(LOGGER, "iDeleteContentsNotFileALL=[" + iDeleteContentsNotFileALL +"]");
+
+		// DELEGATE_YN 값을 새로 업데이트한다.- step 2
+		HashMap<String, Object> delegateInfo = new HashMap();
+		delegateInfo.put("conts_uid", jsonMap.get("conts_uid"));
+		ajaxContentsDAO.updateContentsFile_Delegate_yn(delegateInfo);
+				
+		for(int j=0;j<conts_file.size();j++) {
+
+			HashMap<String, Object>  contents = (HashMap<String, Object>) conts_file.get(j);
+			
+			if(contents.get("conts_tp") == null) continue;
+			
+			contents.put("conts_uid", jsonMap.get("conts_uid"));
+			
+			if(contents.get("conts_file_name") != null && ((String)contents.get("conts_file_name")).length() > 0) {
+				
+				for(int i=0;i<ins_file.size();i++) {
+					
+					for(int jj=0;jj<aMultipartFile.size();jj++) {
+						// 업로드된 파일명과 동일한지 체크한다.
+						if(contents.get("conts_file_name").equals(ins_file.get(i)) &&
+								contents.get("conts_file_name").equals(aMultipartFile.get(jj).getOriginalFilename())) {
+							
+							Log.print(LOGGER, "업로드할 파일명=[" +ins_file.get(i) +"]");
+							String conts_save_name = FileUtil.uploadFile(pl.get("IMG_UPLOAD_PATH"), aMultipartFile.get(jj));
+							jsonMap.put("conts_uid", contents.get("conts_uid"));
+							jsonMap.put("conts_tp", contents.get("conts_tp"));
+							jsonMap.put("conts_file_size", contents.get("conts_file_size"));
+							jsonMap.put("p_login_id", contents.get("p_login_id"));
+							jsonMap.put("conts_save_name", conts_save_name);
+							jsonMap.put("conts_file_name", ins_file.get(i));
+							jsonMap.put("delegate_yn", contents.get("delegate_yn"));
+							
+							// STL 파일이라면 몇가지 정보를 얻는다.
+							if(	conts_save_name.toUpperCase().endsWith(".STL")) 
+							{	
+								settingSTLInformation(jsonMap, pl.get("IMG_UPLOAD_PATH"), conts_save_name);
+							}
+							
+							Log.print(LOGGER, "## debug 01=" + jsonMap); 
+							ajaxContentsDAO.insertContentsFile(jsonMap);
+		
+							break;
+						}
+					}
+				}
+				
+			}
+			else {
+				
+				// 파일이 아닌경우...
+				if(contents.containsKey("conts_file_seq")) {	
+					// 업데이트
+					ajaxContentsDAO.updateContentsFile(contents);
+				}
+				else
+				{
+					Log.print(LOGGER, "## debug 02=" + contents); 
+					ajaxContentsDAO.insertContentsFile(contents);
+				}
+			}
+		}
+		
+		// DELEGATE_YN 값을 새로 업데이트한다.- step 2
+		if(jsonMap.get("delegate_conts_file_seq") != null ) 
+		{
+			// DELEGATE_YN 값을 새로 업데이트한다.- step 2
+			delegateInfo = new HashMap();
+			delegateInfo.put("conts_uid", jsonMap.get("conts_uid"));
+			delegateInfo.put("conts_file_seq", jsonMap.get("delegate_conts_file_seq"));
+			delegateInfo.put("delegate_yn", "Y");
+			
+			Log.print(LOGGER, "DELEGATE_YN 값을 새로 업데이트한다 >> delegateInfo=" +delegateInfo );
+			ajaxContentsDAO.updateContentsFile_Delegate_yn(delegateInfo);
+		}
+		
+		// conts_uid 기준으로 dfx, off, ply, 3ds, wr, stl, obj 관련 파일을 분석한다.
+		try { convMeshProcessByConts_uid(String.valueOf(jsonMap.get("conts_uid")));	} catch(Exception e) {	Log.print(LOGGER, e);	}
+		
+		// conts_uid 를 통해서 관련 파일을 모은 압축파일을 생성한다.
+		//try { makeZipFileByConts_uid(jsonMap);	} catch(Exception e) {	Log.print(LOGGER, e);	}
+				
+		jsonMap = new HashMap<String, Object>();
+		jsonMap.put("retcode", 	"000");
+		jsonMap.put("retmsg",	"정상적으로 업데이트 되었습니다.");
+				
+		return jsonMap;
+	}	
+	
+	/*
+	 * 3D콘텐츠정보 삭제
+	 */
+	public HashMap<String, Object> conts_3d_info_reg_d(HashMap<String, Object> jsonMap, List<MultipartFile> aMultipartFile) throws Exception {
+		
+		HashMap<String, Object> contents3dinfo = ajaxContentsDAO.selectContents3DInfo(jsonMap);
+		if(contents3dinfo == null) {
+			jsonMap.put("retcode", 	"999");
+			jsonMap.put("retmsg",	"조건에 맞는 데이타가 없습니다.");
+			return jsonMap;
+		}
+		
+		// 3D콘텐츠정보 삭제
+		int ret = ajaxContentsDAO.deleteContents3DInfo_by_deleteButton(jsonMap);
+		Log.print(LOGGER, "ajaxContentsDAO.deleteContents3DInfo_by_deleteButton upt=[" +ret +"]");
+		
+		
+		jsonMap = new HashMap<String, Object>();
+		jsonMap.put("retcode", 	"000");
+		jsonMap.put("retmsg",	"정상적으로 삭제 되었습니다.");
+				
+		return jsonMap;
+	}	
+	
+
+	
+	
+	/*
+	 *	 3D콘텐츠정보 리스트
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public Map<String, Object> conts_3d_info_list(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception {
+		
+		int max_ret_count = jsonMap.get("max_ret_count") != null ? Integer.parseInt((String) jsonMap.get("max_ret_count")) : 24;
+		int pageNum = Integer.parseInt((String) jsonMap.get("page_num"));
+		int start_index = (pageNum - 1) * max_ret_count;
+		
+		jsonMap.put("start_index", start_index);
+		jsonMap.put("max_ret_count", max_ret_count);
+		
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		
+		retMap.put("page_num", 			pageNum);
+		retMap.put("max_ret_count", 	max_ret_count);
+		retMap.put("start_index", 		start_index);
+		
+		retMap.put("total_count", ajaxContentsDAO.selectContents3DInfoList_TotalCount(jsonMap));
+		
+		List<?> contents3dinfo_list = ajaxContentsDAO.selectContents3DInfoList(jsonMap);
+		retMap.put("return_list_count", contents3dinfo_list.size());
+		if(contents3dinfo_list.size() == 0) {
+			retMap.put("retcode", 	"999");
+			retMap.put("retmsg",	"조건에 맞는 데이타가 없습니다.");
+			return retMap;
+		}
+		
+		for(int i=0;i<contents3dinfo_list.size();i++)
+		{
+			HashMap<String, Object> select_map = (HashMap<String, Object>) contents3dinfo_list.get(i);
+			List<?> contsfile_list = ajaxContentsDAO.selectContentsFileList(select_map);
+			
+			ArrayList<Object> contsfile_one = new ArrayList<Object>();
+			if(contsfile_list.size() > 0) {
+				contsfile_one.add(contsfile_list.get(0));
+			}
+			
+			//((HashMap<String, Object>)contents3dinfo_list.get(i)).put("contsfile_list", contsfile_list);
+			((HashMap<String, Object>)contents3dinfo_list.get(i)).put("contsfile_list", contsfile_one);
+		}
+		
+
+		retMap.put("contents3dinfo_list", contents3dinfo_list);
+				
+		retMap.put("retcode", 	"000");
+		retMap.put("retmsg",	"정상적으로 조회되었습니다.");
+			
+		return retMap;
+	}
+
+	/*
+	 *	 출력이력정보 등록/조회/수정
+	 */
+	@Override
+	public Map<String, Object> print_history_info_reg(HashMap<String, Object> jsonMap, List<MultipartFile> aMultipartFile)	throws Exception {
+		// TODO Auto-generated method stub
+		if("r".equals(jsonMap.get("crud_tp"))) 
+		{
+			jsonMap = print_history_info_reg_r(jsonMap);
+			return jsonMap;
+		}
+		
+		HashMap<String, Object> userInfo = ajaxMemberDAO.selectUser_by_p_login_id(jsonMap);
+		if(userInfo == null)
+		{
+			jsonMap = new HashMap<String, Object>();
+			jsonMap.put("retcode", 	"991");
+			jsonMap.put("retmsg",	"존재하지 않은 사용자정보입니다.");	
+			return jsonMap;
+		}
+
+		// TODO Auto-generated method stub
+		if("c".equals(jsonMap.get("crud_tp"))) 
+		{
+			jsonMap = print_history_info_reg_c(jsonMap, aMultipartFile);
+			return jsonMap;
+		}
+		else if("u".equals(jsonMap.get("crud_tp"))) 
+		{
+			jsonMap = print_history_info_reg_u(jsonMap, aMultipartFile);
+		}
+		else if("d".equals(jsonMap.get("crud_tp"))) 
+		{
+			jsonMap = print_history_info_reg_d(jsonMap, aMultipartFile);
+		}
+	
+		
+		return jsonMap;
+	}
+	
+	/*
+	 *	 출력이력정보 등록
+	 */
+	public HashMap<String, Object> print_history_info_reg_c(HashMap<String, Object> jsonMap, List<MultipartFile> aMultipartFile) throws Exception {
+		
+		PropertyUtil pl = new PropertyUtil(PROP_FILE);
+		
+		ajaxContentsDAO.insertPrintHistoryInfo(jsonMap);
+		
+		int print_hist_uid = (int) jsonMap.get("print_hist_uid");
+		
+		ArrayList conts_file = (ArrayList) jsonMap.get("conts_file");
+		
+		Log.print(LOGGER, "conts_file=[" + conts_file + "]");
+	
+		for(int j=0;j<aMultipartFile.size();j++) {
+			Log.print(LOGGER, "업로드할 파일[" + j + "]=[" +aMultipartFile.get(j).getOriginalFilename() +"]");
+		}
+		
+		int fileIndex = 0;
+		for(int j=0;j<conts_file.size();j++) {
+			HashMap<String, Object>  contents = (HashMap<String, Object>) conts_file.get(j);
+			contents.put("conts_uid", jsonMap.get("conts_uid"));
+			contents.put("print_hist_uid", jsonMap.get("print_hist_uid"));
+			
+			if(contents.get("conts_file_name") != null && 
+					((String)contents.get("conts_file_name")).length() > 0) {
+
+				// 업로드된 파일명과 동일한지 체크한다.
+				if("file[]".equals(aMultipartFile.get(fileIndex).getName()) || 
+						"conts_file[]".equals(aMultipartFile.get(fileIndex).getName())) {
+					String conts_save_name = FileUtil.uploadFile(pl.get("IMG_UPLOAD_PATH"), aMultipartFile.get(fileIndex));
+					contents.put("conts_save_name", conts_save_name);
+					fileIndex ++;
+				}
+			}
+			ajaxContentsDAO.insertContentsImg(contents);
+		}
+		
+		jsonMap.put("print_hist_uid", 	print_hist_uid);
+		jsonMap.put("retcode", 			"000");
+		jsonMap.put("retmsg",			"정상적으로 등록되었습니다.");
+		
+		return jsonMap;
+	}	
+	
+	/*
+	 * 출력이력정보 조회
+	 */
+	public HashMap<String, Object> print_history_info_reg_r(HashMap<String, Object> jsonMap) throws Exception {
+		
+		HashMap<String, Object> select_map = ajaxContentsDAO.selectPrintHistoryInfo(jsonMap);
+		
+		if(select_map == null)
+		{
+			jsonMap = new HashMap<String, Object>();
+			jsonMap.put("retcode", 	"991");
+			jsonMap.put("retmsg",	"데이타가 존재하지 않습니다.");	
+			return jsonMap;
+		}
+		
+		List<?> contsfile_list = ajaxContentsDAO.selectContentsImgList(jsonMap);
+		select_map.put("conts_file", contsfile_list);
+				
+		select_map.put("retcode", 	"000");
+		select_map.put("retmsg",	"정상적으로 조회되었습니다.");
+		
+		return select_map;
+	}	
+
+	/*
+	 *	 출력이력정보 업데이트
+	 */
+	public HashMap<String, Object> print_history_info_reg_u(HashMap<String, Object> jsonMap, List<MultipartFile> aMultipartFile) throws Exception {
+		
+		// 3D콘텐츠정보 업데이트
+		int upt = ajaxContentsDAO.updatePrintHistoryInfo(jsonMap);
+		Log.print(LOGGER, "ajaxContentsDAO.updatePrintHistoryInfo upt=[" +upt +"]");
+		
+		PropertyUtil pl = new PropertyUtil(PROP_FILE);
+		
+		ArrayList del_file = (ArrayList) jsonMap.get("del_file");
+		ArrayList ins_file = (ArrayList) jsonMap.get("ins_file");
+		
+		if(del_file == null) { del_file = new ArrayList();  }
+		if(ins_file == null) { ins_file = new ArrayList();  }
+	
+		Log.print(LOGGER, "del_file=[" +del_file +"]");
+		Log.print(LOGGER, "ins_file=[" +ins_file +"]");
+		
+		for(int i=0;i<del_file.size();i++) {
+			jsonMap.put("conts_uid", jsonMap.get("conts_uid"));
+			jsonMap.put("conts_save_name", del_file.get(i));
+			// db에서 삭제
+			int ret = ajaxContentsDAO.deleteContentsImg(jsonMap);
+			Log.print(LOGGER, "ajaxContentsDAO.deleteContentsImg ret=[" +ret +"]");
+			// 실제 물리파일 삭제
+			FileUtil.deleteFile(pl.get("IMG_UPLOAD_PATH"), (String)del_file.get(i)); 
+		}
+		
+		ArrayList conts_file = (ArrayList) jsonMap.get("conts_file");
+		if(conts_file == null) { conts_file = new ArrayList();  }
+		
+		Log.print(LOGGER, "conts_file=[" + conts_file + "]");
+		
+		/*
+		 * 파일이 존재 안하는 데이타는 다 지움
+		 */
+		String update_conts_seq_list = new String(); 
+		for(int j=0;j<conts_file.size();j++) {
+			HashMap hash = (HashMap<String, Object>) conts_file.get(j);
+			if(hash.containsKey("conts_seq")) {	
+				update_conts_seq_list += hash.get("conts_seq") + ",";
+			}
+		}
+		if(update_conts_seq_list.length() == 0) {
+			update_conts_seq_list = "ALL";
+		}
+		else if(update_conts_seq_list.lastIndexOf(",") > 0) {
+			update_conts_seq_list = update_conts_seq_list.substring(0, update_conts_seq_list.lastIndexOf(","));
+		}
+		Log.print(LOGGER, "update_conts_seq_list=[" + update_conts_seq_list + "]");
+		jsonMap.put("conts_seq_list", update_conts_seq_list);
+		
+		int iDeleteContentsImgNotFileALL = ajaxContentsDAO.deleteContentsImgNotFileALL(jsonMap);
+		Log.print(LOGGER, "iDeleteContentsImgNotFileALL=[" + iDeleteContentsImgNotFileALL +"]");
+		
+		int print_hist_uid = (int) jsonMap.get("print_hist_uid");	
+		for(int j=0;j<conts_file.size();j++) {
+
+			HashMap<String, Object>  contents = (HashMap<String, Object>) conts_file.get(j);
+			
+			if(contents.get("conts_tp") == null) continue;
+				
+			contents.put("conts_uid", jsonMap.get("conts_uid"));
+			contents.put("print_hist_uid", print_hist_uid);
+			
+			if(contents.get("conts_file_name") != null && ((String)contents.get("conts_file_name")).length() > 0) {
+				for(int i=0;i<ins_file.size();i++) {
+					for(int jj=0;jj<aMultipartFile.size();jj++) {
+						// 업로드된 파일명과 동일한지 체크한다.
+						if(contents.get("conts_file_name").equals(ins_file.get(i)) &&
+								contents.get("conts_file_name").equals(aMultipartFile.get(jj).getOriginalFilename())) {	
+							
+							Log.print(LOGGER, "업로드할 파일명=[" +ins_file.get(i) +"]");
+							String conts_save_name = FileUtil.uploadFile(pl.get("IMG_UPLOAD_PATH"), aMultipartFile.get(jj));
+							jsonMap.put("print_hist_uid", print_hist_uid);
+							jsonMap.put("conts_uid", contents.get("conts_uid"));
+							jsonMap.put("conts_uid", contents.get("conts_uid"));
+							jsonMap.put("conts_tp", contents.get("conts_tp"));
+							jsonMap.put("conts_file_size", contents.get("conts_file_size"));
+							jsonMap.put("p_login_id", contents.get("p_login_id"));
+							jsonMap.put("conts_save_name", conts_save_name);
+							jsonMap.put("conts_file_name", ins_file.get(i));
+							ajaxContentsDAO.insertContentsImg(jsonMap);
+							
+							break;
+						}
+					}
+				}	
+			}
+			else {
+				// 파일이 아닌경우...
+				if(contents.containsKey("conts_seq")) {	
+					// 업데이트
+					ajaxContentsDAO.updateContentsImg(contents);
+				}
+				else
+				{
+					ajaxContentsDAO.insertContentsImg(contents);
+				}
+			}
+		}
+				
+		jsonMap = new HashMap<String, Object>();
+		jsonMap.put("retcode", 	"000");
+		jsonMap.put("retmsg",	"정상적으로 업데이트 되었습니다.");
+		
+		return jsonMap;
+	}	
+
+	/*
+	 *	 출력이력정보 삭제
+	 */
+	public HashMap<String, Object> print_history_info_reg_d(HashMap<String, Object> jsonMap, List<MultipartFile> aMultipartFile) throws Exception {
+		
+		// 3D콘텐츠정보 업데이트
+		int ret = ajaxContentsDAO.deletePrintHistoryInfo_by_deleteButton(jsonMap);
+		Log.print(LOGGER, "ajaxContentsDAO.deletePrintHistoryInfo_by_deleteButton ret=[" +ret +"]");
+				
+		jsonMap.put("retcode", 	"000");
+		jsonMap.put("retmsg",	"정상적으로 삭제 되었습니다.");
+		
+		return jsonMap;
+	}		
+	
+	
+	/*
+	 * 3D콘텐츠정보 관심정보 업데이트/조회(좋아요,평점,즐겨찾기,조회수)
+	 */
+	public HashMap<String, Object> conts_3d_reg_interest(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception {
+		
+		String  reg_tp = (String) jsonMap.get("reg_tp");
+		  
+			HashMap selectContents3DInfo    = ajaxContentsDAO.selectContents3DInfo(jsonMap);
+			HashMap selectConts3dRegInterestInfo  = ajaxContentsDAO.selectConts3dRegInterestInfo(jsonMap);
+		  
+			if("r".equals(reg_tp)) {
+		   // 조회이지만 hits를 업데이트하게 한다.
+				if( jsonMap.get("conts_uid") != null && ((String)jsonMap.get("conts_uid")).trim().length() > 0 &&
+						jsonMap.get("user_uid") != null && ((String)jsonMap.get("user_uid")).trim().length() > 0) {
+		    
+					HashMap hHits = new HashMap<String, Object>();
+					hHits.put("conts_uid", jsonMap.get("conts_uid"));
+					hHits.put("user_uid",  jsonMap.get("user_uid"));
+		    
+					if(selectConts3dRegInterestInfo == null) {
+						hHits.put("hits", 1);
+						ajaxContentsDAO.insertConts3dRegInterestInfo(hHits);
+						
+					} else {
+						hHits.put("hits", Long.valueOf(""+selectConts3dRegInterestInfo.get("hits"))+1);
+						ajaxContentsDAO.updateConts3dRegInterestInfo(hHits);
+					}  
+				}
+			} else if("u".equals(reg_tp) && selectConts3dRegInterestInfo == null) {
+				// 추가
+				ajaxContentsDAO.insertConts3dRegInterestInfo(jsonMap);
+				
+			} else if("u".equals(reg_tp) && selectConts3dRegInterestInfo != null) {
+				// 업데이트
+				ajaxContentsDAO.updateConts3dRegInterestInfo(jsonMap);
+				
+			} else {
+				jsonMap = new HashMap<String, Object>();
+				jsonMap.put("retcode",  "999");
+				jsonMap.put("retmsg", "reg_tp error:" + reg_tp);
+				
+				return jsonMap;
+			}
+			
+			selectConts3dRegInterestInfo  = ajaxContentsDAO.selectConts3dRegInterestInfo(jsonMap);
+		    
+			HashMap selectConts3dRegInterestInfoSum  = ajaxContentsDAO.selectConts3dRegInterestInfoSum(jsonMap);
+		  
+			if(selectConts3dRegInterestInfo == null) {
+				selectConts3dRegInterestInfo = new HashMap();
+				selectConts3dRegInterestInfo.put("my_like_click_yn", "N"); // 내가 좋아했는지 여부
+				selectConts3dRegInterestInfo.put("my_gpa", null);   // 내가 주었던 평점
+				selectConts3dRegInterestInfo.put("my_bmark_yn", "N");  // 내가 즐겨찾기 했는지 여부
+				//	selectConts3dRegInterestInfo.put("hits", 0);          // 내가 조회한횟수
+				selectConts3dRegInterestInfo.put("down_cnt", 0);         // 내가 다운로드한횟수
+			}
+		  
+//			System.out.println("$$$$ selectConts3dRegInterestInfo=" + selectConts3dRegInterestInfo);
+//			System.out.println("$$$$ selectConts3dRegInterestInfoSum=" + selectConts3dRegInterestInfoSum);
+		  
+			int hits = 1;
+			try {
+				hits = Integer.parseInt(""+ selectContents3DInfo.get("hits")) + 1;
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		    
+			selectConts3dRegInterestInfoSum.putAll(selectConts3dRegInterestInfo);
+			selectConts3dRegInterestInfoSum.put("hits", hits); // 내가 조회한횟수
+		  
+			// System.out.println("$$$$ selectConts3dRegInterestInfoSum=" + selectConts3dRegInterestInfoSum);
+		  
+			selectConts3dRegInterestInfoSum.put("retcode",  "000");
+			selectConts3dRegInterestInfoSum.put("retmsg",  "정상적으로 처리되었습니다.");
+		  
+			/*
+			 * CONTS_3D_INFO 테이블에 통계데이타를 업데이트한다.
+			 */
+			selectConts3dRegInterestInfoSum.put("conts_uid", jsonMap.get("conts_uid"));
+			int upt = ajaxContentsDAO.updateContents3DInfo(selectConts3dRegInterestInfoSum);
+			Log.print(LOGGER, "ajaxContentsDAO.updateConts3DInfo upt=[" +upt +"]");
+		  
+			return selectConts3dRegInterestInfoSum;
+	}
+
+
+	/*
+	 * 출력이력 관심정보 업데이트 : print_hist_interest (좋아요,평점,즐겨찾기,조회수)
+	 */
+	public HashMap<String, Object> print_hist_interest(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception {
+		
+		String  reg_tp = (String) jsonMap.get("reg_tp");
+				
+		HashMap selectPrintHistoryInterestInfo		= ajaxContentsDAO.selectPrintHistoryInterestInfo(jsonMap);
+		if("r".equals(reg_tp)) {
+			// 조회이지만 hits를 업데이트하게 한다.
+			if(	jsonMap.get("conts_uid") != null && ((String)jsonMap.get("conts_uid")).trim().length() > 0 &&
+				jsonMap.get("print_hist_uid") != null && ((String)jsonMap.get("print_hist_uid")).trim().length() > 0 &&
+				jsonMap.get("user_uid") != null && ((String)jsonMap.get("user_uid")).trim().length() > 0) {
+			
+				HashMap hHits = new HashMap<String, Object>();
+				hHits.put("conts_uid", 		jsonMap.get("conts_uid"));
+				hHits.put("print_hist_uid",	jsonMap.get("print_hist_uid"));
+				hHits.put("user_uid",  		jsonMap.get("user_uid"));
+				if(selectPrintHistoryInterestInfo == null) {
+					hHits.put("hits", 1);
+					ajaxContentsDAO.insertPrintHistoryInterestInfo(hHits);
+				}
+				else {
+					hHits.put("hits", Long.valueOf(""+selectPrintHistoryInterestInfo.get("hits"))+1);
+					ajaxContentsDAO.updatePrintHistoryInterestInfo(hHits);
+				}
+			}
+		} 
+		else if("u".equals(reg_tp) && selectPrintHistoryInterestInfo == null) {
+			// 추가
+			ajaxContentsDAO.insertPrintHistoryInterestInfo(jsonMap);
+		}
+		else if("u".equals(reg_tp) && selectPrintHistoryInterestInfo != null) {
+			// 업데이트
+			ajaxContentsDAO.updatePrintHistoryInterestInfo(jsonMap);
+		}
+		else {
+			jsonMap = new HashMap<String, Object>();
+			jsonMap.put("retcode", 	"999");
+			jsonMap.put("retmsg",	"reg_tp error:" + reg_tp);
+			return jsonMap;
+		}
+
+		selectPrintHistoryInterestInfo		= ajaxContentsDAO.selectPrintHistoryInterestInfo(jsonMap);
+				
+		HashMap selectPrintHistoryInterestInfoSum 	= ajaxContentsDAO.selectPrintHistoryInterestInfoSum(jsonMap);
+		
+		
+		if(selectPrintHistoryInterestInfo == null) {
+			selectPrintHistoryInterestInfo = new HashMap();
+			selectPrintHistoryInterestInfo.put("my_like_click_yn", "N"); // 내가 좋아했는지 여부
+			selectPrintHistoryInterestInfo.put("my_gpa", null);			// 내가 주었던 평점
+			selectPrintHistoryInterestInfo.put("my_bmark_yn", "N");		// 내가 즐겨찾기 했는지 여부
+			selectPrintHistoryInterestInfo.put("hits", 0);	        	// 내가 조회한횟수
+
+		}
+		
+		selectPrintHistoryInterestInfoSum.putAll(selectPrintHistoryInterestInfo);
+		
+		selectPrintHistoryInterestInfoSum.put("retcode", 	"000");
+		selectPrintHistoryInterestInfoSum.put("retmsg", 	"정상적으로 처리되었습니다.");
+		
+		
+		/*
+		 * PRINT_HIST 테이블에 통계데이타를 업데이트한다.
+		 */
+		selectPrintHistoryInterestInfoSum.put("print_hist_uid", jsonMap.get("print_hist_uid"));
+		int upt = ajaxContentsDAO.updatePrintHistoryInfo(selectPrintHistoryInterestInfoSum);
+		Log.print(LOGGER, "ajaxContentsDAO.updateConts3DInfo upt=[" +upt +"]");
+		
+		return selectPrintHistoryInterestInfoSum;
+	}
+	
+	/*
+	 *	 출력이력정보 리스트
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public Map<String, Object> print_history_info_list(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception {
+		
+		int max_ret_count = jsonMap.get("max_ret_count") != null ? Integer.parseInt((String) jsonMap.get("max_ret_count")) : 24 ;
+		 
+		int pageNum = Integer.parseInt((String) jsonMap.get("page_num"));
+		int start_index = (pageNum - 1) * max_ret_count;
+		
+		jsonMap.put("start_index", start_index);
+		jsonMap.put("max_ret_count", max_ret_count);
+		
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		
+		retMap.put("page_num", 			pageNum);
+		retMap.put("max_ret_count", 	max_ret_count);
+		retMap.put("start_index", 		start_index);
+		
+		long tot_count = ajaxContentsDAO.selectPrintHistoryInfoList_TotalCount(jsonMap);
+		retMap.put("tot_count", tot_count);
+		
+		List<?> print_history_info_list = ajaxContentsDAO.selectPrintHistoryInfoList(jsonMap);
+		retMap.put("return_list_count", print_history_info_list.size());
+		if(print_history_info_list.size() == 0) {
+			retMap.put("retcode", 	"999");
+			retMap.put("retmsg",	"조건에 맞는 데이타가 없습니다.");
+			return retMap;
+		}
+		
+		for(int i=0;i<print_history_info_list.size();i++)
+		{
+			HashMap<String, Object> select_map = (HashMap<String, Object>) print_history_info_list.get(i);
+			select_map.put("conts_tp", "10"); // 10:출력이력-공통파일
+			List<?> contsImg_list = ajaxContentsDAO.selectContentsImgList(select_map);
+			
+			List<Object> contsImg_one = new ArrayList<Object>();
+			
+			//if(jsonMap.get("conts_uid") != null) 
+			{
+				if(contsImg_list.size() > 0) {
+					contsImg_one.add(contsImg_list.get(0));
+				}
+			}
+			((HashMap<String, Object>)print_history_info_list.get(i)).put("contsImg_list", contsImg_one);
+		}
+		
+		retMap.put("print_history_info_list", print_history_info_list);
+				
+		retMap.put("retcode", 	"000");
+		retMap.put("retmsg",	"정상적으로 조회되었습니다.");
+			
+		return retMap;
+	}
+
+	@Override
+	public Map<String, Object> check_downstlfile(HashMap<String, Object> jsonMap, HttpServletRequest request, HttpServletResponse response) throws Exception {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		
+		HashMap<String, Object> select_map = ajaxMemberDAO.selectUser_by_user_uid(jsonMap);
+		if(select_map == null)
+		{
+			jsonMap.put("retcode", 	"991");
+			jsonMap.put("retmsg",	"존재하지 않는 USER_UID입니다.");	
+			return jsonMap;
+		}
+		
+		select_map = ajaxContentsDAO.selectContents3DInfo(jsonMap);
+		if(select_map == null || "Y".equals(select_map.get("del_yn"))) {
+			retMap.put("retcode", 	"991");
+			retMap.put("retmsg",	"권한이 없거나 존재하지 않은 콘텐츠입니다.");
+			return retMap;
+		}
+
+		HashMap infoMap = new HashMap();
+		infoMap.put("conts_uid", jsonMap.get("conts_uid"));
+		infoMap.put("user_uid", jsonMap.get("user_uid"));
+		
+		
+		// 다운로드수를 증가시킨다.
+		HashMap selectConts3dRegInterestInfo		= ajaxContentsDAO.selectConts3dRegInterestInfo(infoMap);
+		
+		if(selectConts3dRegInterestInfo == null) {
+			// 추가
+			infoMap.put("down_cnt",  1);
+			ajaxContentsDAO.insertConts3dRegInterestInfo(infoMap);
+		}
+		else if(selectConts3dRegInterestInfo != null) {
+			// 업데이트
+			infoMap.put("down_cnt",  (long)selectConts3dRegInterestInfo.get("down_cnt") + 1);
+			ajaxContentsDAO.updateConts3dRegInterestInfo(infoMap);
+		}
+		else {
+			jsonMap = new HashMap<String, Object>();
+			jsonMap.put("retcode", 	"999");
+			jsonMap.put("retmsg",	"error(999).");
+			return jsonMap;
+		}
+				
+		HashMap selectConts3dRegInterestInfoSum 	= ajaxContentsDAO.selectConts3dRegInterestInfoSum(infoMap);
+		Log.print(LOGGER, "selectConts3dRegInterestInfoSum(debug)=[" +selectConts3dRegInterestInfoSum +"]");
+		
+		if(selectConts3dRegInterestInfo == null) {
+			selectConts3dRegInterestInfo = new HashMap();
+			selectConts3dRegInterestInfo.put("my_like_click_yn", "N"); // 내가 좋아했는지 여부
+			selectConts3dRegInterestInfo.put("my_gpa", null);			// 내가 주었던 평점
+			selectConts3dRegInterestInfo.put("my_bmark_yn", "N");		// 내가 즐겨찾기 했는지 여부
+			selectConts3dRegInterestInfo.put("hits", 0);	        	// 내가 조회한횟수
+			selectConts3dRegInterestInfo.put("down_cnt", 0);	       	// 내가 다운로드한횟수
+		}
+		
+		selectConts3dRegInterestInfoSum.putAll(selectConts3dRegInterestInfo);
+			
+		/*
+		 * CONTS_3D_INFO 테이블에 통계데이타를 업데이트한다.
+		 */
+		selectConts3dRegInterestInfoSum.put("conts_uid", jsonMap.get("conts_uid"));
+		
+		Log.print(LOGGER, "selectConts3dRegInterestInfoSum(debug)=[" +selectConts3dRegInterestInfoSum +"]");
+		
+		int upt = ajaxContentsDAO.updateContents3DInfo(selectConts3dRegInterestInfoSum);
+		Log.print(LOGGER, "ajaxContentsDAO.updateConts3DInfo upt=[" +upt +"]");
+		
+		
+		
+		retMap.put("retcode", 	"000");
+		retMap.put("retmsg",	"정상적으로 조회되었습니다.");
+		return retMap;
+	}
+
+	/*
+	 * 지역별 소장처리스트
+	 */
+	@Override
+	public Map<String, Object> hold_loc_list(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception {
+		// TODO Auto-generated method stub
+		int max_ret_count = jsonMap.get("max_ret_count") != null ? Integer.parseInt((String) jsonMap.get("max_ret_count")) : 24;
+		 
+		int pageNum = Integer.parseInt((String) jsonMap.get("page_num"));
+		int start_index = (pageNum - 1) * max_ret_count;
+		
+		jsonMap.put("start_index", start_index);
+		jsonMap.put("max_ret_count", max_ret_count);
+		
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		
+		retMap.put("page_num", 			pageNum);
+		retMap.put("max_ret_count", 	max_ret_count);
+		retMap.put("start_index", 		start_index);
+		
+		String area_cd = (String)jsonMap.get("area_cd");
+		//List area_cd_list = StrUtil.getTokenStringArray(area_cd, ",");
+		//retMap.put("area_cd_list", 		area_cd_list);
+		//Log.print(LOGGER, "# area_cd_list=" + area_cd_list);
+		
+		long tot_count  = ajaxContentsDAO.selectHold_loc_TotalCount(jsonMap);
+		retMap.put("tot_count", tot_count);
+		if(tot_count == 0) {
+			retMap.put("retcode", 	"999");
+			retMap.put("retmsg",	"데이타가 없습니다.");
+			return retMap;
+		}
+		
+		List<?> hold_loc_list = ajaxContentsDAO.selectHold_loc_List(jsonMap);
+		retMap.put("return_list_count", hold_loc_list.size());
+		if(hold_loc_list.size() == 0) {
+			retMap.put("retcode", 	"999");
+			retMap.put("retmsg",	"조건에 맞는 데이타가 없습니다.");
+			return retMap;
+		}
+
+		retMap.put("hold_loc_list", hold_loc_list);
+		retMap.put("retcode", 	"000");
+		retMap.put("retmsg",	"정상적으로 조회되었습니다.");
+			
+		return retMap;
+	}
+
+	@Override
+	public Map<String, Object> print_corp_list(HashMap<String, Object> jsonMap,	HttpServletRequest request) throws Exception {
+		// TODO Auto-generated method stub
+		int max_ret_count = jsonMap.get("max_ret_count") != null ? Integer.parseInt((String) jsonMap.get("max_ret_count")) : 24;
+		 
+		int pageNum = Integer.parseInt((String) jsonMap.get("page_num"));
+		int start_index = (pageNum - 1) * max_ret_count;
+		
+		jsonMap.put("start_index", start_index);
+		jsonMap.put("max_ret_count", max_ret_count);
+		
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		
+		retMap.put("page_num", 			pageNum);
+		retMap.put("max_ret_count", 	max_ret_count);
+		retMap.put("start_index", 		start_index);
+		
+		String area_cd = (String)jsonMap.get("area_cd");
+		//List area_cd_list = StrUtil.getTokenStringArray(area_cd, ",");
+		//retMap.put("area_cd_list", 		area_cd_list);
+		//Log.print(LOGGER, "# area_cd_list=" + area_cd_list);
+		
+		long tot_count  = ajaxContentsDAO.selectPrint_Corp_TotalCount(jsonMap);
+		retMap.put("tot_count", tot_count);
+		if(tot_count == 0) {
+			retMap.put("retcode", 	"999");
+			retMap.put("retmsg",	"데이타가 없습니다.");
+			return retMap;
+		}
+		
+		List<?> print_corp_list = ajaxContentsDAO.selectPrint_Corp_List(jsonMap);
+		retMap.put("print_corp_list", print_corp_list.size());
+		if(print_corp_list.size() == 0) {
+			retMap.put("retcode", 	"999");
+			retMap.put("retmsg",	"조건에 맞는 데이타가 없습니다.");
+			return retMap;
+		}
+
+		retMap.put("print_corp_list", print_corp_list);
+		retMap.put("retcode", 	"000");
+		retMap.put("retmsg",	"정상적으로 조회되었습니다.");
+			
+		return retMap;
+	}
+
+	@Override
+	public Map<String, Object> comment_reg(HashMap<String, Object> jsonMap,
+			HttpServletRequest request) throws Exception {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		if("r".equals(jsonMap.get("crud_tp"))) 
+		{
+			retMap = ajaxContentsDAO.selectComment(jsonMap);
+			if(retMap == null) {
+				retMap = new HashMap<String, Object>();
+				retMap.put("retcode", 	"991");
+				retMap.put("retmsg",	"존재하지 않은 정보입니다.");	
+				return retMap;
+			}
+		}
+
+		//retMap = new HashMap<String, Object>();
+		// TODO Auto-generated method stub
+		if("c".equals(jsonMap.get("crud_tp"))) 
+		{
+			ajaxContentsDAO.createComment(jsonMap);
+				
+		}
+		else if("u".equals(jsonMap.get("crud_tp"))) 
+		{
+			int ret = ajaxContentsDAO.updateComment(jsonMap);
+			if(ret <= 0) {
+				retMap.put("retcode", 	"991");
+				retMap.put("retmsg",	"업데이트 오류입니다.");
+				return retMap;
+			}
+		}
+		else if("d".equals(jsonMap.get("crud_tp"))) 
+		{
+			int ret = ajaxContentsDAO.deleteComment(jsonMap);
+			if(ret <= 0) {
+				retMap.put("retcode", 	"992");
+				retMap.put("retmsg",	"데이타 삭제 오류입니다.");
+				return retMap;
+			}
+		}
+	
+		retMap.put("retcode", 	"000");
+		retMap.put("retmsg",	"정상적으로 처리되었습니다.");
+		return retMap;
+	}
+
+	@Override
+	public Map<String, Object> comment_list(HashMap<String, Object> jsonMap,
+			HttpServletRequest request) throws Exception {
+		// TODO Auto-generated method stub
+		int max_ret_count = jsonMap.get("max_ret_count") != null ? Integer.parseInt((String) jsonMap.get("max_ret_count")) : 24;
+		 
+		int pageNum = Integer.parseInt((String) jsonMap.get("page_num"));
+		int start_index = (pageNum - 1) * max_ret_count;
+		
+		jsonMap.put("start_index", start_index);
+		jsonMap.put("max_ret_count", max_ret_count);
+		
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		
+		retMap.put("page_num", 			pageNum);
+		retMap.put("max_ret_count", 	max_ret_count);
+		retMap.put("start_index", 		start_index);
+		
+		String area_cd = (String)jsonMap.get("area_cd");
+		
+		long tot_count  = ajaxContentsDAO.selectComment_TotalCount(jsonMap);
+		retMap.put("tot_count", tot_count);
+		if(tot_count == 0) {
+			retMap.put("retcode", 	"999");
+			retMap.put("retmsg",	"데이타가 없습니다.");
+			return retMap;
+		}
+		
+		List<?> comment_list = ajaxContentsDAO.selectComment_List(jsonMap);
+		retMap.put("comment_list", comment_list.size());
+		if(comment_list.size() == 0) {
+			retMap.put("retcode", 	"999");
+			retMap.put("retmsg",	"조건에 맞는 데이타가 없습니다.");
+			return retMap;
+		}
+
+		retMap.put("comment_list", comment_list);
+		retMap.put("retcode", 	"000");
+		retMap.put("retmsg",	"정상적으로 조회되었습니다.");
+			
+		return retMap;
+	}
+
+	/*
+	 *	 관심콘텐츠 리스트
+	 */	
+	@Override
+	public Map<String, Object> interest_conts_list(HashMap<String, Object> jsonMap, HttpServletRequest request)	throws Exception {
+		// TODO Auto-generated method stub
+		
+		int max_ret_count = jsonMap.get("max_ret_count") != null ? Integer.parseInt((String) jsonMap.get("max_ret_count")) : 24;
+		 
+		int pageNum = Integer.parseInt((String) jsonMap.get("page_num"));
+		int start_index = (pageNum - 1) * max_ret_count;
+		
+		jsonMap.put("start_index", start_index);
+		jsonMap.put("max_ret_count", max_ret_count);
+		
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		
+		retMap.put("page_num", 			pageNum);
+		retMap.put("max_ret_count", 	max_ret_count);
+		retMap.put("start_index", 		start_index);
+
+		List<?> interest_conts_list = ajaxContentsDAO.selectInterestConts_List(jsonMap);
+		retMap.put("return_list_count", interest_conts_list.size());
+		if(interest_conts_list.size() == 0) {
+			retMap.put("retcode", 	"999");
+			retMap.put("retmsg",	"조건에 맞는 데이타가 없습니다.");
+			return retMap;
+		}
+		
+		/*
+		for(int i=0;i<interest_conts_list.size();i++)
+		{
+			HashMap<String, Object> select_map = (HashMap<String, Object>) interest_conts_list.get(i);
+			select_map.put("conts_tp", "10"); // 10:출력이력-공통파일
+			List<?> contsImg_list = ajaxContentsDAO.selectContentsImgList(select_map);
+			
+			List contsImg_one = new ArrayList();
+			
+			//if(jsonMap.get("conts_uid") != null) 
+			{
+				if(contsImg_list.size() > 0) {
+					contsImg_one.add(contsImg_list.get(0));
+				}
+			}
+
+			((HashMap<String, Object>)interest_conts_list.get(i)).put("contsImg_list", contsImg_one);
+		}
+		*/
+		
+		retMap.put("interest_conts_list", interest_conts_list);
+				
+		retMap.put("retcode", 	"000");
+		retMap.put("retmsg",	"정상적으로 조회되었습니다.");
+			
+		return retMap;	
+	}
+
+	/*
+	 *	 다운로드콘텐츠 리스트
+	 */
+	@Override
+	public Map<String, Object> download_conts_list(HashMap<String, Object> jsonMap, HttpServletRequest request)	throws Exception {
+		// TODO Auto-generated method stub
+		
+		int max_ret_count = jsonMap.get("max_ret_count") != null ? Integer.parseInt((String) jsonMap.get("max_ret_count")) : 24;
+		 
+		int pageNum = Integer.parseInt((String) jsonMap.get("page_num"));
+		int start_index = (pageNum - 1) * max_ret_count;
+		
+		jsonMap.put("start_index", start_index);
+		jsonMap.put("max_ret_count", max_ret_count);
+		
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		
+		retMap.put("page_num", 			pageNum);
+		retMap.put("max_ret_count", 	max_ret_count);
+		retMap.put("start_index", 		start_index);
+
+		List<?> download_conts_list = ajaxContentsDAO.selectDownloadConts_List(jsonMap);
+		retMap.put("return_list_count", download_conts_list.size());
+		if(download_conts_list.size() == 0) {
+			retMap.put("retcode", 	"999");
+			retMap.put("retmsg",	"조건에 맞는 데이타가 없습니다.");
+			return retMap;
+		}
+		
+		for(int i=0;i<download_conts_list.size();i++)
+		{
+			HashMap<String, Object> select_map = (HashMap<String, Object>) download_conts_list.get(i);
+			select_map.put("conts_tp", "10"); // 10:출력이력-공통파일
+			List<?> contsImg_list = ajaxContentsDAO.selectContentsImgList(select_map);
+			
+			List contsImg_one = new ArrayList();
+			
+			//if(jsonMap.get("conts_uid") != null) 
+			{
+				if(contsImg_list.size() > 0) {
+					contsImg_one.add(contsImg_list.get(0));
+				}
+			}
+
+			((HashMap<String, Object>)download_conts_list.get(i)).put("contsImg_list", contsImg_one);
+		}
+		
+		retMap.put("download_conts_list", download_conts_list);
+				
+		retMap.put("retcode", 	"000");
+		retMap.put("retmsg",	"정상적으로 조회되었습니다.");
+			
+		return retMap;
+	}
+
+	/*
+	 *	 업로드콘텐츠 리스트
+	 */
+	@Override
+	public Map<String, Object> upload_conts_list(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception {
+		int max_ret_count = jsonMap.get("max_ret_count") != null ? Integer.parseInt((String) jsonMap.get("max_ret_count")) : 24;
+		 
+		int pageNum = Integer.parseInt((String) jsonMap.get("page_num"));
+		int start_index = (pageNum - 1) * max_ret_count;
+		
+		jsonMap.put("start_index", start_index);
+		jsonMap.put("max_ret_count", max_ret_count);
+		
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		
+		retMap.put("page_num", 			pageNum);
+		retMap.put("max_ret_count", 	max_ret_count);
+		retMap.put("start_index", 		start_index);
+
+		List<?> upload_conts_list = ajaxContentsDAO.selectUploadConts_List(jsonMap);
+		retMap.put("return_list_count", upload_conts_list.size());
+		if(upload_conts_list.size() == 0) {
+			retMap.put("retcode", 	"999");
+			retMap.put("retmsg",	"조건에 맞는 데이타가 없습니다.");
+			return retMap;
+		}
+		
+		for(int i=0;i<upload_conts_list.size();i++)
+		{
+			HashMap<String, Object> select_map = (HashMap<String, Object>) upload_conts_list.get(i);
+			select_map.put("conts_tp", "10"); // 10:출력이력-공통파일
+			List<?> contsImg_list = ajaxContentsDAO.selectContentsImgList(select_map);
+			
+			List contsImg_one = new ArrayList();
+			
+			//if(jsonMap.get("conts_uid") != null) 
+			{
+				if(contsImg_list.size() > 0) {
+					contsImg_one.add(contsImg_list.get(0));
+				}
+			}
+
+			((HashMap<String, Object>)upload_conts_list.get(i)).put("contsImg_list", contsImg_one);
+		}
+		
+		retMap.put("upload_conts_list", upload_conts_list);
+				
+		retMap.put("retcode", 	"000");
+		retMap.put("retmsg",	"정상적으로 조회되었습니다.");
+			
+		return retMap;
+	}
+
+	@Override
+	public Map<String, Object> make_downstlfile(HashMap<String, Object> jsonMap, HttpServletRequest request, HttpServletResponse response) throws Exception {
+		HashMap<String, Object> retMap = ajaxContentsDAO.selectContents3DInfo(jsonMap);
+		if(retMap == null) {
+			retMap = new HashMap();
+			retMap.put("retcode", 	"999");
+			retMap.put("retmsg",	"조건에 맞는 데이타가 없습니다.");
+			return retMap;
+		}
+		
+		retMap.put("download_filename", retMap.get("conts_name") + ".zip");
+
+		makeZipFileByConts_uid(jsonMap);
+	
+		return retMap;
+	}
+	
+	public void makeZipFileByConts_uid(HashMap map) throws Exception {
+		
+		Log.print(LOGGER, "## makeZipFileByConts_uid [" + map.get("conts_uid") + "]");
+		
+		List<?> contsfile_list = ajaxContentsDAO.selectContentsFileList(map);
+		
+		ArrayList aSaveFileName = new ArrayList();
+		ArrayList aUploadFileName = new ArrayList();
+		for(int i=0;i<contsfile_list.size(); i++) {
+			HashMap contsfile = (HashMap)contsfile_list.get(i);
+			if("01".equals(contsfile.get("conts_tp")) && 
+					contsfile.get("conts_save_name") != null && ((String)contsfile.get("conts_save_name")).trim().length() > 0  &&
+					contsfile.get("conts_file_name") != null && ((String)contsfile.get("conts_file_name")).trim().length() > 0  ) {
+				
+				aSaveFileName.add("" + contsfile.get("conts_save_name"));
+				aUploadFileName.add("" + contsfile.get("conts_file_name"));
+			}
+		}
+		
+		if(aSaveFileName.size() == 0) return ;
+		
+		PropertyUtil pl = new PropertyUtil(PROP_FILE);
+		
+		String sSaveFileName[] = new String[aSaveFileName.size()];
+		for(int i=0;i<aSaveFileName.size();i++ ) {
+			//sFile[i] = pl.get("IMG_UPLOAD_PATH") + (String)aFile.get(i);
+			sSaveFileName[i] = pl.get("IMG_UPLOAD_PATH") + (String)aSaveFileName.get(i);
+		}
+		
+		ZIPCompress  zip = new ZIPCompress(sSaveFileName, aUploadFileName);
+		zip.run(pl.get("IMG_UPLOAD_PATH") + map.get("conts_uid") + ".zip");
+		
+		Log.print(LOGGER, "## zip create:[" + pl.get("IMG_UPLOAD_PATH") + map.get("conts_uid") + ".zip" + "]");
+			
+	}
+
+	/**
+	 * 콘텐츠그룹 조회수정
+	 */
+	@Override
+	public Map<String, Object> cgrp_reg(HashMap<String, Object> jsonMap) throws Exception {
+		HashMap<String, Object> returnMap = new HashMap<String, Object>();
+		
+		if("c".equals(jsonMap.get("crud_tp"))) {
+			int conts_cnt = ajaxContentsDAO.select_cgrp_contents_uid(jsonMap).size();
+			System.out.println(">>>>>>>>>> conts_cnt  :  " + conts_cnt);
+			if (conts_cnt <= 0) {
+				returnMap.put("retcode", "991");
+				returnMap.put("retmsg", "콘텐츠가 없습니다.");
+				return returnMap;
+			}
+			jsonMap.put("conts_cnt", conts_cnt);
+			ajaxContentsDAO.insert_cgrp(jsonMap);
+			
+		} else if("r".equals(jsonMap.get("crud_tp"))) {
+			returnMap = ajaxContentsDAO.select_cgrp_info(jsonMap);
+			if (returnMap == null) {
+				returnMap = new HashMap<String, Object>();
+				returnMap.put("retcode", "991");
+				returnMap.put("retmsg", "콘텐츠가 없습니다.");
+				return returnMap;
+			}
+		} else if("u".equals(jsonMap.get("crud_tp"))) {
+			int conts_cnt = ajaxContentsDAO.select_cgrp_contents_uid(jsonMap).size();
+			System.out.println(">>>>>>>>>> conts_cnt  :  " + conts_cnt);
+			if (conts_cnt <= 0) {
+				returnMap.put("retcode", "991");
+				returnMap.put("retmsg", "콘텐츠가 없습니다.");
+				return returnMap;
+			}
+			
+			jsonMap.put("conts_cnt", conts_cnt);
+			int ret = ajaxContentsDAO.update_cgrp(jsonMap);
+			if(ret <= 0) {
+				returnMap.put("retcode", 	"991");
+				returnMap.put("retmsg",	"업데이트 오류입니다.");
+				return returnMap;
+			}
+		} else if("d".equals(jsonMap.get("crud_tp"))) {
+			int ret = ajaxContentsDAO.delete_cgrp(jsonMap);
+			if(ret <= 0) {
+				returnMap.put("retcode", 	"992");
+				returnMap.put("retmsg",	"데이타 삭제 오류입니다.");
+				return returnMap;
+			}
+		}
+		returnMap.put("retcode", 	"000");
+		returnMap.put("retmsg",	"정상적으로 등록되었습니다.");
+		
+		return returnMap;
+	}
+	
+	/**
+	 * 콘텐츠그룹 목록조회
+	 */
+	@Override
+	public Map<String, Object> cgrp_list(HashMap<String, Object> jsonMap) throws Exception {
+		HashMap<String, Object> returnMap = new HashMap<String, Object>();
+		int total_cnt = ajaxContentsDAO.select_cgrp_total_cnt(jsonMap);
+		System.out.println(">>>>>>>>>>>>>>> total_cnt : " + total_cnt);
+		
+		if (total_cnt <= 0) {
+			returnMap.put("retcode", "991");
+			returnMap.put("retmsg", "데이터가 존재하지 않습니다.");
+			return returnMap;
+		}
+		returnMap.put("total_cnt", total_cnt);
+		
+		int max_ret_count = jsonMap.get("max_ret_count") != null ? Integer.parseInt((String) jsonMap.get("max_ret_count")) : 24;
+		int pageNum = Integer.parseInt((String) jsonMap.get("page_num"));
+		int start_index = (pageNum - 1) * max_ret_count;
+		
+		jsonMap.put("start_index", start_index);
+		jsonMap.put("max_ret_count", max_ret_count);
+		
+		List<?> list = ajaxContentsDAO.select_cgrp_list(jsonMap);
+		
+		returnMap.put("cgrp_list", list);
+		returnMap.put("retcode", 	"000");
+		returnMap.put("retmsg",	"정상적으로 조회되었습니다.");
+		
+		return returnMap;
+	}
+
+	/**
+	 * 3D전시 등록/수정/조회/삭제
+	 */
+	@Override
+	public Map<String, Object> disp_reg(HashMap<String, Object> jsonMap, List<MultipartFile> aMultipartFile) throws Exception {
+		HashMap<String, Object> returnMap = new HashMap<String, Object>();
+		
+		if ("c".equals(jsonMap.get("crud_tp"))) {
+			PropertyUtil pl = new PropertyUtil(PROP_FILE);
+			int disp_id = ajaxContentsDAO.insert_disp_info(jsonMap);
+			System.out.println(">>>>>> disp_id : " + disp_id);
+			ArrayList disp_file = (ArrayList) jsonMap.get("disp_file");
+			
+			int fileIndex = 0;
+			for(int i=0; i<disp_file.size(); i++) {
+				HashMap<String, Object>  dispMap = (HashMap<String, Object>) disp_file.get(i);
+				dispMap.put("disp_id", disp_id);
+				
+				if(dispMap.get("disp_file_name") != null && ((String)dispMap.get("disp_file_name")).length() > 0) {
+					// 업로드된 파일명과 동일한지 체크
+					if("file[]".equals(aMultipartFile.get(fileIndex).getName())) {
+						String disp_save_name = FileUtil.uploadFile(pl.get("IMG_UPLOAD_EXHIBITION_PATH"), aMultipartFile.get(fileIndex));
+						dispMap.put("disp_save_name", disp_save_name);
+						
+						fileIndex ++;
+					}
+				}
+				ajaxContentsDAO.insert_disp_file(dispMap);
+			}
+			returnMap.put("retcode", 	"000");
+			returnMap.put("retmsg",	"정상적으로 등록되었습니다.");
+					
+		} else if ("r".equals(jsonMap.get("crud_tp"))) {
+			returnMap = ajaxContentsDAO.select_disp_info(jsonMap);
+			
+			if (returnMap == null || returnMap.size() <= 0) {
+				returnMap = new HashMap<String, Object>();
+				returnMap.put("retcode", 	"991");
+				returnMap.put("retmsg",	"존재하지 않는 데이타입니다.");
+				
+				return returnMap;
+			}
+			
+			List<?> listDispFile = ajaxContentsDAO.select_disp_file_list(jsonMap);
+			returnMap.put("disp_file", listDispFile);
+			returnMap.put("retcode", 	"000");
+			returnMap.put("retmsg",	"정상적으로 조회되었습니다.");
+			
+		} else if ("u".equals(jsonMap.get("crud_tp"))) {
+			ajaxContentsDAO.update_disp_info(jsonMap);
+			PropertyUtil pl = new PropertyUtil(PROP_FILE);
+			
+			ArrayList del_file = (ArrayList) jsonMap.get("del_file");
+			ArrayList ins_file = (ArrayList) jsonMap.get("ins_file");
+			
+			if(del_file == null) { del_file = new ArrayList();  }
+			if(ins_file == null) { ins_file = new ArrayList();  }
+		
+			Log.print(LOGGER, "del_file=[" +del_file +"]");
+			Log.print(LOGGER, "ins_file=[" +ins_file +"]");
+			
+			for(int i=0; i<del_file.size(); i++) {
+				jsonMap.put("disp_save_name", del_file.get(i));
+				
+				// db에서 삭제
+				int ret = ajaxContentsDAO.delete_disp_file(jsonMap);
+				// 실제 물리파일 삭제
+				FileUtil.deleteFile(pl.get("IMG_UPLOAD_EXHIBITION_PATH"), (String) del_file.get(i)); 
+			}
+			
+			ArrayList disp_file = (ArrayList) jsonMap.get("disp_file");
+			if(disp_file == null) 
+				disp_file = new ArrayList();
+/*			
+			// 파일이 존재 안하는 데이타는 다 지움
+			String update_disp_file_seq_list = new String(); 
+			for(int i=0; i<disp_file.size(); i++) {
+				HashMap hash = (HashMap<String, Object>) disp_file.get(i);
+				if(hash.containsKey("disp_file_seq")) {	
+					update_disp_file_seq_list += hash.get("disp_file_seq") + ",";
+				}
+			}
+			if(update_disp_file_seq_list.length() == 0)
+				update_disp_file_seq_list = "ALL";
+			else if(update_disp_file_seq_list.lastIndexOf(",") > 0)
+				update_disp_file_seq_list = update_disp_file_seq_list.substring(0, update_disp_file_seq_list.lastIndexOf(","));
+			
+			jsonMap.put("disp_file_seq_list", update_disp_file_seq_list);
+			int iDeleteContentsNotFileALL = ajaxContentsDAO.delete_disp_file_all(jsonMap);
+*/
+			for(int j=0; j<disp_file.size(); j++) {
+				HashMap<String, Object>  dispMap = (HashMap<String, Object>) disp_file.get(j);
+				
+				if(dispMap.get("disp_tp") == null) 
+					continue;
+				
+				if(dispMap.get("disp_file_name") != null && ((String)dispMap.get("disp_file_name")).length() > 0) {
+					for(int i=0;i<ins_file.size();i++) {
+						for(int k=0;k<aMultipartFile.size();k++) {
+							// 업로드된 파일명과 동일한지 체크한다.
+							if(dispMap.get("disp_file_name").equals(ins_file.get(i)) && dispMap.get("disp_file_name").equals(aMultipartFile.get(k).getOriginalFilename())) {
+								Log.print(LOGGER, "업로드할 파일명=[" +ins_file.get(i) +"]");
+								String conts_save_name = FileUtil.uploadFile(pl.get("IMG_UPLOAD_EXHIBITION_PATH"), aMultipartFile.get(k));
+								jsonMap.put("disp_tp", dispMap.get("disp_tp"));
+								jsonMap.put("disp_save_name", conts_save_name);
+								jsonMap.put("disp_file_name", ins_file.get(i));
+								jsonMap.put("delegate_yn", (String) dispMap.get("delegate_yn"));
+								
+								System.out.println(">>>>>>>>>>>> jsonMap : " + jsonMap.get("delegate_yn"));
+								ajaxContentsDAO.insert_disp_file(jsonMap);
+							}
+						}
+					}
+				}
+			}
+			// 대표이미지 세팅
+			if (!jsonMap.get("delegate_file_seq").equals(-1) ) {
+				jsonMap.put("disp_file_seq", jsonMap.get("delegate_file_seq"));
+				jsonMap.put("delegate_yn", "Y");
+				
+				ajaxContentsDAO.update_disp_file_delegate_all(jsonMap);
+				ajaxContentsDAO.update_disp_file(jsonMap);
+			}
+			returnMap.put("retcode", "000");
+			returnMap.put("retmsg", "정상적으로 업데이트 되었습니다.");
+			
+		} else if ("d".equals(jsonMap.get("crud_tp"))) {
+			ajaxContentsDAO.delete_disp_file(jsonMap);
+			int delCnt = ajaxContentsDAO.delete_disp_info(jsonMap);
+			
+			if (delCnt <= 0) {
+				jsonMap.put("retcode", 	"999");
+				jsonMap.put("retmsg",	"조건에 맞는 데이타가 없습니다.");
+			} else {
+				returnMap.put("retcode", "000");
+				returnMap.put("retmsg", "정상적으로 삭제 되었습니다.");
+			}
+		}
+		return returnMap;
+	}
+
+	@Override
+	public Map<String, Object> disp_list(HashMap<String, Object> jsonMap, HttpServletRequest request) throws Exception {
+		HashMap<String, Object> returnMap = new HashMap<String, Object>();
+		int totalCnt = ajaxContentsDAO.select_disp_list_total_cnt(jsonMap);
+		
+		if (totalCnt <= 0) {
+			jsonMap.put("retcode", 	"991");
+			jsonMap.put("retmsg",	"데이타가 존재하지 않습니다.");	
+			return jsonMap;
+		}
+		returnMap.put("total_cnt", totalCnt);
+		
+		int max_ret_count = jsonMap.get("max_ret_count") != null ? Integer.parseInt((String) jsonMap.get("max_ret_count")) : 24;
+		int pageNum = Integer.parseInt((String) jsonMap.get("page_num"));
+		int start_index = (pageNum - 1) * max_ret_count;
+		
+		jsonMap.put("start_index", start_index);
+		jsonMap.put("max_ret_count", max_ret_count);
+		
+		List<?> dispList = ajaxContentsDAO.select_disp_list(jsonMap);
+		returnMap.put("disp_list", dispList);
+		returnMap.put("retcode", 	"000");
+		returnMap.put("retmsg",	"정상적으로 조회되었습니다.");
+		
+		return returnMap;
+	}
+	
+}

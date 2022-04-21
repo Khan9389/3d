@@ -1,0 +1,5 @@
+.main_wrap{width:100%; content:""; float:none; clear:both; display:block;}
+.top_contents{width:962px; margin:0 auto; text-align:left; position:relative;}
+.main_contents{width:962px; margin:0 auto; text-align:center; position:relative;}
+#content3{background:#4867aa;}
+.bnb_line{border-top:1px solid #e1e1e1; border-bottom:1px solid #e1e1e1; height:42px;}

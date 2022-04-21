@@ -1,0 +1,240 @@
+/*
+ * Copyright 2008-2009 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.asia3d.ordermade.service.impl;
+
+import java.util.HashMap;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Repository;
+
+import com.asia3d.util.Log;
+
+import egovframework.rte.psl.dataaccess.EgovAbstractDAO;
+
+/**
+ * @Class Name : SampleDAO.java
+ * @Description : Sample DAO Class
+ * @Modification Information
+ * @
+ * @  수정일      수정자              수정내용
+ * @ ---------   ---------   -------------------------------
+ * @ 2009.03.16           최초생성
+ *
+ * @author 개발프레임웍크 실행환경 개발팀
+ * @since 2009. 03.16
+ * @version 1.0
+ * @see
+ *
+ *  Copyright (C) by MOPAS All right reserved.
+ */
+
+@Repository("ordermadeDAO")
+public class AjaxOrderMadeDAO extends EgovAbstractDAO {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(AjaxOrderMadeDAO.class);
+
+	public void insertMakeInfo(HashMap<String, Object> jsonMap) {
+		int new_make_uid = (int)insert("ordermadeDAO.insertMakeInfo", jsonMap);
+		Log.print(LOGGER, "insertMakeInfo new_make_uid=" + new_make_uid);
+		jsonMap.put("make_uid", new_make_uid);
+	}
+
+	@SuppressWarnings("unchecked")
+	public HashMap<String, Object> selectMakeInfo(HashMap<String, Object> jsonMap) {
+		return (HashMap<String, Object>) select("ordermadeDAO.selectMakeInfo", jsonMap);
+	}
+
+	public List<?> selectMakeAttchFileList(HashMap<String, Object> jsonMap) {
+		return list("ordermadeDAO.selectMakeAttchFileList", jsonMap);
+	}
+
+	public int updateMakeInfo(HashMap<String, Object> jsonMap) {
+		return update("ordermadeDAO.updateMakeInfo", jsonMap);
+	}
+
+	/*
+	 * 제품제작첨부파일 정보 추가
+	 */
+	public void insertMakeAttchFile(HashMap<String, Object> jsonMap) {
+		int new_make_file_seq = (int)insert("ordermadeDAO.insertMakeAttchFile", jsonMap);
+		Log.print(LOGGER, "insertMakeAttchFile new_make_file_seq=" + new_make_file_seq);
+		jsonMap.put("make_file_seq", new_make_file_seq);
+	}
+	/*
+	 * 제품제작첨부파일 정보 업데이트
+	 */
+	public int updateMakeAttchFile(HashMap<String, Object> contents) {
+		// TODO Auto-generated method stub
+		return update("ordermadeDAO.updateMakeAttchFile", contents);
+	}
+	
+	/*
+	 * 제품제작첨부파일 정보 조회
+	 */
+	public HashMap<String, Object> selectMakeAttchFile(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return (HashMap<String, Object>) select("ordermadeDAO.selectMakeAttchFile", jsonMap);
+	}
+
+	/*
+	 * 제품제작첨부파일 정보 삭제
+	 */
+	public int deleteMakeAttchFile(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return delete("ordermadeDAO.deleteMakeAttchFile", jsonMap);
+	}
+	
+	/*
+	 * 제품제작첨부파일 정보 삭제(MAKE_UID 에 대한 파일이 아닌 글인 경우..)
+	 */
+	public int deleteMakeAttchFileNotFileALL(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return delete("ordermadeDAO.deleteMakeAttchFileNotFileALL", jsonMap);
+	}
+
+	
+	/*
+	 * 주문제작 삭제
+	 */
+	public int deleteMakeInfo_by_deleteButton(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		int delcnt = 0;
+		delcnt += update("ordermadeDAO.deleteMAKE_INFO", jsonMap);
+		delcnt += update("ordermadeDAO.deleteMAKE_ATTCH_FILE", jsonMap);
+		
+		return delcnt;
+	}
+
+	/*
+	 * DELEGATE_YN 값을 새로 업데이트한다.
+	 */
+	public int updateMakeAttchFile_Delegate_yn(HashMap<String, Object> jsonMap) {
+		return update("ordermadeDAO.updateMakeAttchFile_Delegate_yn", jsonMap);
+	}
+
+	/*
+	 * 견적[업체]정보(ESTIMATE_INFO) 추가
+	 */
+	public void insertEstimateInfo(HashMap<String, Object> jsonMap) {
+		insert("ordermadeDAO.insertEstimateInfo", jsonMap);
+	}
+	
+	public HashMap<String, Object> selectEstimateInfo(HashMap<String, Object> jsonMap) {
+		return (HashMap<String, Object>) select("ordermadeDAO.selectEstimateInfo", jsonMap);
+	}
+	
+	/*
+	 * 견적[업체]정보(ESTIMATE_INFO) 업데이트
+	 */
+	public int updateEstimateInfo(HashMap<String, Object> jsonMap) {
+		return update("ordermadeDAO.updateEstimateInfo", jsonMap);
+	}
+	
+	/*
+	 * 견적[업체]정보(ESTIMATE_INFO) 삭제
+	 */
+	public int deleteEstimateInfo_by_make_uid(HashMap<String, Object> jsonMap) {
+		return delete("ordermadeDAO.deleteEstimateInfo_by_make_uid", jsonMap);
+	}
+	
+	public int deleteEstimateInfo(HashMap<String, Object> jsonMap) {
+		return delete("ordermadeDAO.deleteEstimateInfo", jsonMap);
+	}
+	
+	/*
+	 * 견적[업체]정보(ESTIMATE_INFO) 조회리스트
+	 */
+	public List<?> selectEstimateInfoList(HashMap<String, Object> jsonMap) {
+		return list("ordermadeDAO.selectEstimateInfoList", jsonMap);
+	}
+
+	/*
+	 * 제작정보(MAKE_INFO) 조회리스트
+	 */
+	public List<?> selectMake_Info_List(HashMap<String, Object> jsonMap) {
+		// TODO Auto-generated method stub
+		return list("ordermadeDAO.selectMake_Info_List", jsonMap);
+
+	}
+
+	// 결제요청
+	public void insertPayRequest(HashMap map) {
+		// TODO Auto-generated method stub
+		insert("ordermadeDAO.insertPayRequest", map);
+	}
+	
+	// 결제결과
+	public void insertPayResult(HashMap map) {
+		insert("ordermadeDAO.insertPayResult", map);
+	}
+
+	@SuppressWarnings("unchecked")
+	public HashMap<String, Object> select_pay_list_total_cnt(HashMap<String, Object> jsonMap) {
+		return (HashMap<String, Object>) select("ordermadeDAO.select_pay_list_total_cnt", jsonMap);
+	}
+
+	public List<?> select_pay_list(HashMap<String, Object> jsonMap) {
+		return list("ordermadeDAO.select_pay_list", jsonMap);
+	}
+
+	public List<?> pay_calculate_list(HashMap<String, Object> jsonMap) {
+		return list("ordermadeDAO.pay_calculate_list", jsonMap);
+	}
+	
+	public HashMap<String, Object> pay_calculate_list_total_cnt(HashMap<String, Object> jsonMap) {
+		return (HashMap<String, Object>) select("ordermadeDAO.pay_calculate_list_total_cnt", jsonMap);
+	}
+
+	public List<?> refund_list(HashMap<String, Object> jsonMap) {
+		return list("ordermadeDAO.refund_list", jsonMap);
+	}
+	public int refund_list_total_cnt(HashMap<String, Object> jsonMap) {
+		return (int) select("ordermadeDAO.refund_list_total_cnt", jsonMap);
+	}
+
+	public int updateRefundInfo(HashMap<String, Object> jsonMap) {
+		return update("ordermadeDAO.updateRefundInfo", jsonMap);
+	}
+
+	@SuppressWarnings("unchecked")
+	public HashMap<String, Object> select_deposit_list_total_cnt(HashMap<String, Object> jsonMap) {
+		return (HashMap<String, Object>) select("ordermadeDAO.select_deposit_list_total_cnt", jsonMap);
+	}
+
+	public List<?> select_deposit_list(HashMap<String, Object> jsonMap) {
+		return list("ordermadeDAO.select_deposit_list", jsonMap);
+	}
+
+	public int insert_cancel_info(HashMap<String, Object> map) {
+		return (int) insert("ordermadeDAO.insert_cancel_info", map);
+	}
+
+	@SuppressWarnings("unchecked")
+	public HashMap<String, Object> select_refund_info(HashMap<String, Object> jsonMap) {
+		return (HashMap<String, Object>) select("ordermadeDAO.select_refund_info", jsonMap);
+	}
+
+	public void update_refund_info(HashMap<String, Object> jsonMap) {
+		update("ordermadeDAO.update_refund_info", jsonMap);
+	}
+
+	public void cpay_update(HashMap<String, Object> jsonMap) {
+		update("ordermadeDAO.cpay_update", jsonMap);
+	}
+
+}

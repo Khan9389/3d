@@ -1,0 +1,83 @@
+<%@page import="kr.co.nicepay.module.lite.util.NicePayUtils"%>
+<%@ page language="java" contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ko" xml:lang="ko">
+
+<%
+String resultCode = (String) request.getAttribute("ResultCode"); 	// 결과코드 (정상 :2001(취소성공), 2002(취소진행중), 그 외 에러)
+String resultMsg = (String) request.getAttribute("ResultMsg");   	// 결과메시지
+String cancelAmt = (String) request.getAttribute("CancelAmt");   	// 취소금액
+String cancelDate = (String) request.getAttribute("CancelDate"); 	// 취소일
+String cancelTime = (String) request.getAttribute("CancelTime");  // 취소시간
+String cancelNum = (String) request.getAttribute("CancelNum");   	// 취소번호
+String payMethod = (String) request.getAttribute("PayMethod");   	// 취소 결제수단
+String mid = (String) request.getAttribute("MID");             // 상점 ID
+String tid = (String) request.getAttribute("TID");              // TID
+String errorCD = (String) request.getAttribute("ErrorCD");        // 상세 에러코드
+String errorMsg = (String) request.getAttribute("ErrorMsg");      // 상세 에러메시지
+String authDate = (String) request.getAttribute("AuthDate");		// 거래시간
+%>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=euc-kr" />
+	<title>취소 결과</title>
+	<link rel="stylesheet" type="text/css" href="/asia3d/css/common.css" />
+	<script src="/asia3d/js/jquery-2.2.3.js" type="text/javascript"></script>	
+</head>
+
+<script type="text/javascript">
+$(document).ready(function() {
+	alert("<%=resultCode%>");
+	opener.parent.afterCancel("<%=resultCode%>");
+});
+</script>
+
+<body style="overflow-x:hidden; overflow-y:hidden;">
+<div class="money_count">
+	<h1>환불요청결과</h1>
+	<ul class="money_exe">
+		<li>환불 요청이 완료되었습니다.</li>
+	</ul>
+	<p>환불 내역입니다.</p>
+	
+	<table width="562" class="DetailTable"><tbody>
+		<tr>
+			<th width="100" id="borderBottom">거래 아이디</th>
+			<td id="borderBottom">&nbsp;<%=tid %></td>
+		</tr>
+		<tr class="hide">
+			<th width="100" id="borderBottom">거래 시간</th>
+			<td id="borderBottom">&nbsp;<%=NicePayUtils.makeDateString(authDate) %></td>
+		</tr>
+		<tr>
+			<th width="100" id="borderBottom">결과 내용</th>
+			<td id="borderBottom">&nbsp;[<%=resultCode%>] <%=resultMsg%></td>
+		</tr>
+		<tr>
+			<th width="100" id="borderBottom">취소 금액</th>
+			<td id="borderBottom">&nbsp;<%=cancelAmt %></td>
+		</tr>
+<%		
+		if (!"2001".equals(resultCode)) {
+		out.println("<tr>");
+		out.println("		<th width=\"100\" id=\"borderBottom\">실패 메시지</th>");
+		out.print("		<td id=\"borderBottom\">");
+		out.print("			&nbsp;[" + errorCD + "]");
+		out.println("		</td>");
+		out.println("</tr>");
+		}
+%>
+	</tbody></table>
+	<br>
+	<div class="alignC">
+		<input type="button" name="sch_button" class="input_btn4" value="확인" onClick="window.open('about:blank', '_self').close(); return false;" />
+	</div>
+	<ul class="money_etc">
+		<li><span class="fontC01">* </span>취소가 성공한 경우에는 다시 승인상태로 복구 할 수 없습니다.</li>
+	</ul>
+</div>
+</body>
+</html>

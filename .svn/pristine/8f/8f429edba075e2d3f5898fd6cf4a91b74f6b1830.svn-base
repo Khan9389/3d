@@ -1,0 +1,72 @@
+
+@charset "utf-8";
+/* 커서 */
+.cursor_hand {
+	cursor:pointer;
+}
+/* hide */
+.hide {
+	display:none;
+}
+.txc-image{ max-width:730px; }
+/* 로딩바 */
+.wrap-loading { /*화면 전체를 어둡게 합니다.*/
+	position: fixed; 	left: 0;	right: 0; 	top: 0; 	bottom: 0; 	background: rgba(0, 0, 0, 0.2); z-index:100; /*not in ie */	
+	filter: progid:DXImageTransform.Microsoft.Gradient(startColorstr='#20000000', endColorstr='#20000000'); /* ie */
+}
+.wrap-loading div { /*로딩 이미지*/
+	position: fixed; 	top: 50%; 	left: 50%; 	margin-left: -21px; 	margin-top: -21px;
+}
+.display-none { /*감추기*/
+	display: none;
+}
+
+/* 이미지 슬라이드 */
+.roll_thum_area{
+	position:relative;	 width:560px; 	height:79px; 	overflow:hidden;	float:left;
+}
+.roll_thum_area2{
+	position:relative;	 width:700px; 	height:103px; 	overflow:hidden;	float:left;
+}
+.roll_thum_box{
+	position:absolute; 	left:0;	top:0;	width:auto;		 height:79px;	overflow:hidden;
+}
+.roll_thum_box2{
+	position:absolute; 	left:0;	top:0;	width:auto;		 height:103px;	overflow:hidden;
+}
+.roll_thum_box li{
+	float:left;
+}
+.roll_thum_box li.first{
+	margin-left:0;
+}
+.roll_thum_box li a{
+	display:block;
+}
+
+/* 하단탭 슬라이드 */
+.roll_thum_area_record{
+	position:relative;	 width:911px; 	height:160px; 	overflow:hidden;	float:left;
+}
+.roll_thum_box_record{
+	position:absolute; 	left:0;	top:0;	width:1200px;	 height:160px;		overflow:hidden;
+}
+.roll_thum_box_record dl{
+	float:left; margin-right:15px;
+}
+.roll_thum_box_record dl.first{
+	margin-left:0;
+}
+
+/* 레이어팝업 */
+.pop_layer { 
+	position: fixed; 	left: 0;	right: 0; 	top: 0; 	bottom: 0; 	background: rgba(0, 0, 0, 0.1); z-index:100; /*not in ie */	
+}
+.pop_layer_model { 
+	position: fixed; 	left: 0;	right: 0; 	top: 0; 	bottom: 0; 	background: rgba(0, 0, 0, 0.1); z-index:100; /*not in ie */	
+}
+
+/* 이미지썸네일 */
+.img_thumb {
+	width:auto; height:auto; max-width:98px; max-height:75px; margin:0 auto; vertical-align:middle; display:block; border:0px;
+}

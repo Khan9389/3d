@@ -1,0 +1,66 @@
+package com.asia3d.daemon;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import com.asia3d.calculate.service.CalculateService;
+
+@Component
+public class BatchCalculateProc {
+
+	@Autowired
+	private CalculateService calculateService;
+	protected final static Logger logger = LoggerFactory.getLogger(BatchCalculateProc.class);
+	
+	public void start(int runloop) throws Exception {
+		// TODO Auto-generated method stub
+		logger.debug("## BatchCalculateProc start:" + runloop);
+		
+		while(true)
+		{
+			run();
+			
+			if(true) break; // 임시로 break
+			
+			// 처리주기
+			logger.debug("========================================");
+			logger.debug("= [" + runloop  + "]초 후 계속조회 = ");
+			logger.debug("========================================");
+			Thread.sleep(runloop*1000);	
+		}
+		
+	}
+	
+	public void run() throws Exception
+	{
+		logger.debug("========================================");
+		logger.debug("// 거래대사/조회 응답 - 신용카드");
+		logger.debug("========================================");
+		calculateService.calculatePayResult("CD0001");
+		
+		logger.debug("========================================");
+		logger.debug("// 거래대사/조회 응답 - 계좌이체");
+		logger.debug("========================================");
+		calculateService.calculatePayResult("BK0001");		
+		
+	
+		logger.debug("========================================");
+		logger.debug("// 정산/조회 응답 - 신용카드");
+		logger.debug("========================================");
+		calculateService.calculateSettleResult("CD0001");
+
+		logger.debug("========================================");
+		logger.debug("// 정산/조회 응답 - 계좌이체");
+		logger.debug("========================================");
+		calculateService.calculateSettleResult("BK0001");
+		
+		logger.debug("========================================");
+		logger.debug("// 입금대사");
+		logger.debug("========================================");
+		calculateService.calculateDepositResult();
+
+	}
+
+}

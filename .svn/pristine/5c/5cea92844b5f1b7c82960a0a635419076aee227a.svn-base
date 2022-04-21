@@ -1,0 +1,125 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ko" xml:lang="ko">
+<head>
+<meta name="keywords" content="3DBANK" />
+<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+<title>3DBANK</title>
+<link rel="stylesheet" type="text/css" href="../css/common.css" />
+<script type="text/javascript" src="../js/jquery-1.11.4.js"/></script>
+
+</head>
+<script>
+$(function(){
+	//상단메뉴 선택시 세부메뉴 활성화
+	var openIdx;
+	$(".gnb > li").mouseover(function(){
+		//alert($(".gnb > li").index(this));
+		if(openIdx != $(".gnb > li").index(this)){
+			$(".gnb > li:eq("+openIdx+") > ul").slideUp();
+			openIdx = $(".gnb > li").index(this);
+			$(".gnb > li:eq("+openIdx+") > ul").slideDown(400);
+		}
+ 
+	});
+	$(".top_bg, #quick, #footer_wrap").mouseover(function(){
+		$(".gnb > li:eq("+openIdx+") > ul").slideUp(400);
+		openIdx = "";
+	});
+});
+</script>
+<body>
+<dl class="hid">
+    <dt>바로가기 메뉴</dt>
+    <dd><a href="#gnb">주메뉴 바로가기</a></dd>
+    <dd><a href="#container">본문 바로가기</a></dd>
+    <dd><a href="#address">주소 바로가기</a></dd>
+</dl>
+<div id="header_wrap">
+    <div class="top_bg">
+        <!--header -->
+        <div id="header">
+            <!-- top_mnu -->
+            <div class="top_mnu">
+                <h1 class="logo"><a href="index.html"><img src="../images/common/com_logo.gif" alt="3DBANK"/></a></h1>
+                <ul class="util_mnu">
+                    <li class="bgNo"><a href="#">로그인</a></li>
+                    <li><a href="#">회원가입</a></li>
+                    <li><a href="#">아이디/비밀번호찾기</a></li>
+                    <li><a href="#">마이페이지</a></li>
+                    <li><a href="#">싸이트맵</a></li>
+                    <li class="cart">카트<span>1</span></li>
+                    <li class="lng"><a href="#">Language</a></li>
+                    <li class="money"><a href="#">수수료안내</a></li>
+                </ul>
+            </div>
+            <!-- //top_mnu -->
+            <!-- //gnb_wrap -->
+        </div>
+        <!-- //header -->
+    </div>
+    <!-- //top_bg -->
+    <div id="gnb_wrap">
+        <div id="gnb_group">
+            <ul class="gnb">
+                <li class="menu"><a href="#" style="color:#f27417;">3D MODEL</a> 
+                    <ul class="sub first" style="display:none">
+                        <li class="sub_tit"><img src="../images/common/gnb_tit01.gif" alt="녹색인증개요" class="fl" style="margin-right:20px" /></li>
+                        <li class="gnbSub_bg01"><a href="#">문화유산</a></li>
+                        <li class="gnbSub_bg02"><a href="#">박물관</a></li>
+                        <li class="gnbSub_bg03"><a href="#">생활ㆍ과학관</a></li>
+                        <li class="gnbSub_bg04 bl_no "><a href="#">모델링</a></li>
+                    </ul>
+                </li>
+                <li class="menu"><a href="#">COMMUNITY</a>
+                    <ul class="sub first"  style="display:none">
+                        <li class="sub_tit">
+                            <p>COMMUNITY</p>
+                            <span>방대하고 다양하나 주제의 3D 모델을 <br />
+                            만나실 수 있습니다.</span></li>
+                        <li class="gnbSub_bg06"><a href="#">회원소개</a></li>
+                        <li class="gnbSub_bg07"><a href="#">교육강의</a></li>
+                        <li class="gnbSub_bg08"><a href="#">뉴스&amp;트랜드 </a></li>
+                        <li class="gnbSub_bg09"><a href="#">공지사항</a></li>
+                        <li class="gnbSub_bg10"><a href="#">FAQ</a></li>
+                        <li class="gnbSub_bg11 bl_no "><a href="#">Q&amp;A </a></li>
+                    </ul>
+                </li>
+                <li class="menu"><a href="#">ORDER</a></li>
+                <li class="menu"><a href="#">LEARN</a></li>
+               
+                <li class="menu nobar"><a href="#">3D MUSEUM</a></li>
+                <li class="cafemenu"><a href="#">3DBANK 카페</a></li>
+            </ul>
+        </div>
+        <!-- //gnb_group -->
+    </div>
+    <!-- //gnb_wrap -->
+</div>
+<!-- //header_wrap -->
+<!-- quick Menu -->
+<dl id="quick">
+    <dt>나의현황정보</dt>
+    <dd>
+        <ul>
+            <li><img src="../images/common/quick_img01.gif" alt="이의신청이미지" class="mb7"/></li>
+            <li>이의신청 <span class="bold fontC02">1건</span></li>
+        </ul>
+    </dd>
+    <dd>
+        <ul>
+            <li><img src="../images/common/quick_img02.gif" alt="온라인답변이미지" class="mb7"/></li>
+            <li>온라인답변 <span class="bold fontC02">1건</span></li>
+        </ul>
+    </dd>
+    <dd>
+        <ul>
+            <li><img src="../images/common/quick_img03.gif" alt="문서보관이미지" class="mb7"/></li>
+            <li>문서보관 <span class="bold fontC02">1건</span></li>
+        </ul>
+    </dd>
+    <dd class="top_btn"><a href="#"><img src="../images/common/top_btn.gif" alt="top가기" /></a></dd>
+</dl>
+<!-- //quick Menu -->
+
+</body>
+</html>

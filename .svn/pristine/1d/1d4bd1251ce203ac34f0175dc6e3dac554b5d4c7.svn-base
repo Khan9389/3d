@@ -1,0 +1,447 @@
+
+var container;
+var camera;
+var scene; 
+var renderer;
+var pivot;
+var zoom=32;
+var targetZoom=32;
+var targetRotationX=0;
+var targetRotationY=0;
+var rotationX=0;
+var rotationY=0;
+var startDragFlag=false;
+var materialFinition=null;
+var stats = new Stats();
+
+
+
+	
+/*
+ * Initialisation
+ */ 
+
+function init( obj_file,  texture_files) 
+{
+	
+
+	stats.setMode(0);
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.left = '0px';
+	stats.domElement.style.top = '0px'
+	document.body.appendChild( stats.domElement );
+
+
+	directionalLight = new THREE.DirectionalLight( 0xffeedd);
+	container = document.createElement( 'div' );
+	container.setAttribute("onMouseDown","return false;");
+	container.style.position="absolute";
+	container.style.left="0px";
+	container.style.top="0px";
+	container.style.bottom="0px";
+	container.style.right="0px";
+	container.style.zIndex="0";
+	document.body.appendChild(container);
+	camera = new THREE.PerspectiveCamera( 35, window.innerWidth / window.innerHeight, 10, 600 );
+	camera.position.x = 0;
+	camera.position.y = 0;
+	camera.position.z = 45;
+	scene = new THREE.Scene();
+	scene.add(camera);
+	pivot = new THREE.Object3D();
+	var ambient = new THREE.AmbientLight( 0xdddddd );
+	scene.add( ambient );
+	
+
+
+	// lys01 추가
+	//var texture_files =  new Array('NFM151631.jpg','NFM151632.jpg');
+	//var texture_files =  new Array('bma001008.jpg');
+
+	var materials = new Array();
+	for(i=0;i<texture_files.length;i++) {
+		materials[i] = new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture(texture_files[i]) } );
+	}
+
+	var meshFaceMaterial = new THREE.MeshFaceMaterial( materials );
+  	
+	{
+		var loader = new THREE.OBJMTLLoader();
+		loader.addEventListener( 'load', function ( event ) 
+		{
+			var object = event.content;
+			object.position.set(-0, 0, 0 );
+			//object.rotation.set(0, -Math.PI*0.5, 0 );
+			pivot.add(object);
+			object.traverse( function( object ) 
+			{
+				//object.castShadow = true;
+				//object.receiveShadow = true;
+				//console.log(object);
+				if(object.material && object.material.name=="Material__40")
+				{
+					materialFinition=object.material;
+					console.log(object.material.name);
+				}
+
+				// lys01 추가
+				object.material = meshFaceMaterial;
+			
+			});
+			//optimizeObject(object);
+		});
+
+
+		/* https://www.script-tutorials.com/demos/409/index2.html 
+		*/
+
+		loader.load(obj_file);
+	}
+	
+	
+
+
+	directionalLight.position.set(-25, 125, 50 ).normalize();
+	directionalLight.castShadow = true;
+	directionalLight.shadowDarkness = 0.1;
+	directionalLight.shadowMapWidth = 512;
+	directionalLight.shadowMapHeight = 512;
+	directionalLight.intensity=1.0;
+	directionalLight.shadowCameraVisible =true;
+	directionalLight.shadowBias  =-0.02;
+	scene.add(directionalLight);
+	
+
+	renderer = new THREE.WebGLRenderer({antialias:true, alpha: true});
+	//renderer.shadowMapEnabled = true;
+	//renderer.shadowMapSoft = true;
+	renderer.setClearColor( new THREE.Color( 0x000000 ), 0 );
+
+	//renderer.shadowMapCullFace = THREE.CullFaceNone;
+	//renderer.shadowMapType  = THREE.PCFShadowMap;
+	renderer.gammaInput = false;
+	renderer.gammaOutput = false;
+	renderer.physicallyBasedShading = false;
+
+
+	renderer.setSize( window.innerWidth, window.innerHeight );
+	container.appendChild( renderer.domElement );
+	
+	container.addEventListener( 'mousewheel', onSceneMouseWheel, false );
+	container.addEventListener( 'DOMMouseScroll', onSceneMouseWheel, false );
+	container.addEventListener( 'mousedown', onSceneMouseDown, false );
+	container.addEventListener( 'mousemove', onSceneMouseMove, false );
+	window.addEventListener( 'resize', onWindowResize, false );
+	//renderer.shadowMapDebug  = true;
+	
+	scene.add( pivot );
+	
+	setTargetZoom(4.0);
+	animate();
+	initTouchHandler();
+}
+
+
+THREE.Material.prototype.equals = function(material)
+{
+	if(material==null)
+		return false;
+	
+	if(material == this)
+		return true;
+		
+	if(!(material instanceof THREE.Material))
+		return false;
+		
+	for(var attribute in this)
+	{
+		if(attribute!=material[attribute])
+			return false;
+	}
+	return true;
+}
+
+
+THREE.MeshFaceMaterial.prototype.equals = function(material)
+{
+	if(material==null)
+		return false;
+		
+	if(material == this)
+		return true;
+	
+	if(!(material instanceof THREE.MeshFaceMaterial))
+		return false;
+		
+	for(var materialId in this.materials)
+	{
+		if(!this.materials[materialId].equals(material))
+			return false;
+	}
+	return true;
+}
+function optimizeObject(object)
+{
+	var materials=[];
+	var materialsOptimized=[];
+	var objects=[];
+	
+	object.traverse( function( object ) 
+	{
+		
+		if(object.material !=null)
+		{
+			objects.push(object);
+			materials.push(object.material);
+			if(object.material instanceof THREE.MeshFaceMaterial)
+			{
+					for(var materialId=0;materialId<object.material.materials.length;materialId++)
+					{
+						if(object.material.materials[materialId]!=null)
+							materials.push(object.material.materials[materialId]);
+					}
+			}
+		}
+	});
+	
+	for (var objectId=0;objectId<objects.length;objectId++)
+	{
+		var object=objects[objectId];
+		
+		var materialFound=false;
+		for(var materialId=0;materialId<materialsOptimized.length;materialId++)
+		{
+			var material=materialsOptimized[materialId];
+			//if(material instanceof THREE.Material)
+			{
+				if(material.equals(object.material))
+				{
+					materialFound=true;
+					object.material=material;
+					object.renderDepth=materialId;
+					break;
+				}
+			}
+		}
+		if(!materialFound && object.material)
+			materialsOptimized.push(object.material);
+		
+    }
+	
+	console.log("Object count = " + objects.length );
+	console.log("Material count = " + materials.length );
+	console.log("MaterialsOptimized count = " + materialsOptimized.length );
+	console.log(materials[0]);
+}
+
+function animate() 
+{
+	stats.begin();
+	requestAnimationFrame( animate );
+	render();
+	stats.end();
+
+}
+function updateColor(colorNum)
+{
+	console.log(materialFinition);
+	switch(colorNum)
+	{
+		case 1:
+			materialFinition.color.setRGB(0.6,0.6,0);
+			materialFinition.ambient.setRGB(0.6,0.6,0);
+			materialFinition.specular.setRGB(0.25,0.25,0);
+		break;
+		
+		case 2:
+			materialFinition.color.setRGB(0.6,0,0);
+			materialFinition.ambient.setRGB(0.6,0,0);
+			materialFinition.specular.setRGB(0.25,0,0);
+		break;
+		
+		case 3:
+			materialFinition.color.setRGB(0.3,0.3,0.3);
+			materialFinition.ambient.setRGB(0.3,0.3,0.3);
+			materialFinition.specular.setRGB(0.25,0.25,0.25);
+		break;
+	}
+}
+
+/*
+ * Rendu de la scene
+ */
+function render() 
+{
+	zoom+=(targetZoom*3-zoom)*0.1; //ajustement du zoom *3
+	
+	rotationX+=(targetRotationX-rotationX)*0.1;
+	rotationY+=(targetRotationY-rotationY)*0.1;
+	
+	pivot.rotation.y=rotationX*0.005;
+	pivot.rotation.x=rotationY*0.005;
+	
+	var homogeneousZoom=zoom/1024;
+	
+	pivot.scale.set(homogeneousZoom,homogeneousZoom,homogeneousZoom);
+	pivot.updateMatrix();
+/*
+	var k=homogeneousZoom;//*0.95+0.05;
+	camera.near=homogeneousZoom*20;
+	camera.far=homogeneousZoom*100000;
+	camera.updateProjectionMatrix();
+	
+	directionalLight.shadowCameraRight    =  512*k;
+	directionalLight.shadowCameraLeft     = -512*k;
+	directionalLight.shadowCameraTop      =  512*k;
+	directionalLight.shadowCameraBottom   = -512*k;
+	directionalLight.shadowCameraNear = -512*k;
+	directionalLight.shadowCameraFar = 512*k;
+	
+	if(directionalLight.shadowCamera)
+	{
+		directionalLight.shadowCamera.right=directionalLight.shadowCameraRight;
+		directionalLight.shadowCamera.left=directionalLight.shadowCameraLeft;
+		directionalLight.shadowCamera.top=directionalLight.shadowCameraTop;
+		directionalLight.shadowCamera.bottom=directionalLight.shadowCameraBottom;
+		directionalLight.shadowCamera.near=directionalLight.shadowCameraNear;
+		directionalLight.shadowCamera.far=directionalLight.shadowCameraFar;
+		directionalLight.shadowCamera.updateProjectionMatrix();
+	}
+	*/
+	renderer.render( scene, camera);
+	
+}
+
+function onWindowResize() 
+{
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+
+	renderer.setSize( window.innerWidth, window.innerHeight );
+}
+
+function onSceneMouseWheel( event ) 
+{
+	var wheelDelta=(event.wheelDelta)?event.wheelDelta:event.detail*-120;
+	if(wheelDelta>0)
+		increaseTargetZoom();
+	else
+		decreaseTargetZoom();
+}
+
+var mouseDownFlag=false;
+function onSceneMouseDragStart(event)
+{
+	startDragFlag=true;
+	startDragRotationX=targetRotationX;
+	startDragRotationY=targetRotationY;
+	document.addEventListener( 'mousemove', onMouseDrag, false );
+	document.addEventListener( 'mouseup', onMouseDragEnd, false );
+}
+
+function onSceneMouseDown( event ) 
+{
+	mouseDownFlag=true;
+	startDragX=event.clientX;
+	startDragY=event.clientY;
+	document.addEventListener( 'mouseup', onSceneMouseUp, false );
+}
+
+
+function onSceneMouseUp( event ) 
+{
+	document.removeEventListener( 'mouseup', onSceneMouseUp, false );
+	mouseDownFlag=false;
+}
+
+function onMouseDragEnd( event ) 
+{
+	startDragFlag=false;
+}
+
+function onMouseDrag( event ) 
+{
+	var mouseX=event.clientX;
+	var mouseY=event.clientY;
+
+	if(startDragFlag)
+	{
+		targetRotationX=startDragRotationX+(mouseX-startDragX);
+		targetRotationY=startDragRotationY+(mouseY-startDragY);
+	}
+}
+
+
+function onSceneMouseMove( event ) 
+{
+	var mouseX=event.clientX;
+	var mouseY=event.clientY;
+	
+	if(startDragFlag)
+		return;
+		
+	if(mouseDownFlag)
+	{
+		var mouseDX=mouseX-startDragX;
+		var mouseDY=mouseY-startDragY;
+		if(mouseDX*mouseDX+mouseDY*mouseDY>10)
+		{
+			onSceneMouseDragStart(event);
+			return;
+		}
+	}
+}
+
+
+function setTargetZoom(value)
+{
+	targetZoom=parseInt(Math.pow(2,value));
+	if(targetZoom<4)
+		targetZoom=4;
+	if(targetZoom>512)
+		targetZoom=512;
+}
+
+function increaseTargetZoom()
+{
+	targetZoom*=1.1;
+	if(targetZoom>512)
+		targetZoom=512;
+}
+
+function decreaseTargetZoom()
+{
+	targetZoom/=1.1;
+	if(targetZoom<4)
+		targetZoom=4;
+}
+
+function increaseRotationZ()
+{
+	pivot.rotation.z+=0.01;
+}
+
+function decreaseRotationZ()
+{
+	pivot.rotation.z-=0.01;
+}
+
+function moveRight()
+{
+	pivot.position.x+=0.1;
+}
+
+function moveLeft()
+{
+	pivot.position.x-=0.1;
+}
+
+function moveUp()
+{
+	pivot.position.y+=0.1;
+}
+
+function moveDown()
+{
+	pivot.position.y-=0.1;
+}

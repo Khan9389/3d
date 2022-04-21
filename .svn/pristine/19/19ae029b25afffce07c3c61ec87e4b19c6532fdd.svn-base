@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMapConfig PUBLIC "-//iBATIS.com//DTD SQL Map Config 2.0//EN" "http://www.ibatis.com/dtd/sql-map-config-2.dtd">
+
+<sqlMapConfig>
+	<sqlMap resource="asia3d/sqlmap/3dbank/sample/EgovSample_Sample_SQL.xml"/>
+	<sqlMap resource="asia3d/sqlmap/3dbank/ibatis/Member_SQL.xml"/>
+	<sqlMap resource="asia3d/sqlmap/3dbank/ibatis/Contents_SQL.xml"/>
+	<sqlMap resource="asia3d/sqlmap/3dbank/ibatis/OrderMade_SQL.xml"/>
+	<sqlMap resource="asia3d/sqlmap/3dbank/ibatis/Calculate_SQL.xml"/>
+</sqlMapConfig>

@@ -1,0 +1,351 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ko" xml:lang="ko">
+<head>
+<meta name="keywords" content="3DBANK" />
+<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+<title>3DBANK</title>
+<link rel="stylesheet" type="text/css" href="../css/common.css" />
+<script type="text/javascript" src="../js/jquery-1.11.4.js"/>
+</script>
+</head>
+<script>
+$(function(){
+	//상단메뉴 선택시 세부메뉴 활성화
+	var openIdx;
+	$(".gnb > li").mouseover(function(){
+		//alert($(".gnb > li").index(this));
+		if(openIdx != $(".gnb > li").index(this)){
+			$(".gnb > li:eq("+openIdx+") > ul").slideUp();
+			openIdx = $(".gnb > li").index(this);
+			$(".gnb > li:eq("+openIdx+") > ul").slideDown(400);
+		}
+ 
+	});
+	$(".top_bg, #quick, #footer_wrap").mouseover(function(){
+		$(".gnb > li:eq("+openIdx+") > ul").slideUp(400);
+		openIdx = "";
+	});
+});
+</script>
+<body class="mabg">
+<dl class="hid">
+    <dt>바로가기 메뉴</dt>
+    <dd><a href="#gnb">주메뉴 바로가기</a></dd>
+    <dd><a href="#container">본문 바로가기</a></dd>
+    <dd><a href="#address">주소 바로가기</a></dd>
+</dl>
+<div id="header_wrap">
+    <div class="top_bg">
+        <!--header -->
+        <div id="header">
+            <!-- top_mnu -->
+            <div class="top_mnu">
+                <h1 class="logo"><a href="index.html"><img src="../images/common/com_logo.gif" alt="3DBANK"/></a></h1>
+                <ul class="util_mnu">
+                    <li class="bgNo"><a href="#">LOGIN</a></li>
+                    <li>JOIN</li>
+                    <li><a href="#">SITEMAP</a></li>
+                    <li class="lng"><a href="#">Language</a></li>
+                </ul>
+            </div>
+            <!-- //top_mnu -->
+        </div>
+        <!-- //header -->
+    </div>
+    <!-- //top_bg -->
+    <div id="gnb_wrap">
+        <div id="gnb_group">
+            <ul class="gnb">
+                <li class="menu"><a href="#">3D 콘텐츠</a>
+                    <ul class="sub first" style="display:none">
+                        <li class="sub_tit">
+                            <p>3D 콘텐츠</p>
+                            <span>방대하고 다양하나 주제의 3D 모델을 <br />
+                            만나실 수 있습니다.</span></li>
+                        <li class="gnbSub_bg01"><a href="#">문화유산</a></li>
+                        <li class="gnbSub_bg02"><a href="#">미술ㆍ박물관</a></li>
+                        <li class="gnbSub_bg03"><a href="#">생물ㆍ과학관</a></li>
+                        <li class="gnbSub_bg04 bl_no "><a href="#">모델링</a></li>
+                    </ul>
+                </li>
+                <li class="menu"><a href="#">컬렉션</a>
+                    <ul class="sub first"  style="display:none">
+                        <li class="sub_tit">
+                            <p>콘텐츠관리</p>
+                            <span>방대하고 다양하나 주제의 3D 모델을 <br />
+                            만나실 수 있습니다.</span></li>
+                        <li class="gnbSub_bg05"><a href="#">콘텐츠업로드</a></li>
+                        <li class="gnbSub_bg06"><a href="#">관심콘텐츠</a></li>
+                        <li class="gnbSub_bg07"><a href="#">다운로드콘텐츠 </a></li>
+                        <li class="gnbSub_bg08"><a href="#">업로드콘텐츠</a></li>
+                        <li class="gnbSub_bg09 bl_no "><a href="#">출력이력 </a></li>
+                    </ul>
+                </li>
+                <li class="menu"><a href="#">주문제작</a>
+                    <ul class="sub first" style="display:none">
+                        <li class="gnbSub_no  bl_no"></li>
+                        <li class="gnbSub_bg10 "><a href="#">주문제작가이드</a></li>
+                        <li class="gnbSub_bg11"><a href="#">제품제작이력</a></li>
+                        <li class="gnbSub_bg12"><a href="#">제품제작신청</a></li>
+                        <li class="gnbSub_bg13"><a href="#">제품제작공모 </a></li>
+                        <li class="gnbSub_bg14"><a href="#">출력대행이력</a></li>
+                        <li class="gnbSub_bg15 bl_no "><a href="#">출력대행신청</a></li>
+                    </ul>
+                </li>
+                <li class="menu"><a href="#">커뮤니티</a>
+                    <ul class="sub first"  style="display:none">
+                        <li class="gnbSub_no  bl_no"></li>
+                        <li class="gnbSub_bg16"><a href="#">회원소개</a></li>
+                        <li class="gnbSub_bg17"><a href="#">교육안내</a></li>
+                        <li class="gnbSub_bg18"><a href="#">교육접수</a></li>
+                        <li class="gnbSub_bg19"><a href="#">뉴스트랜드 </a></li>
+                        <li class="gnbSub_bg20"><a href="#">공지사항</a></li>
+                        <li class="gnbSub_bg21"><a href="#">FAQ</a></li>
+                        <li class="gnbSub_bg22 bl_no "><a href="#">Q&amp;A </a></li>
+                    </ul>
+                </li>
+                <li class="menu nobar"><a href="#">이벤트</a>
+                    <ul class="sub first"  style="display:none">
+                        <li class="sub_tit">
+                            <p>3D이벤트</p>
+                            <span>방대하고 다양하나 주제의 3D 모델을 <br />
+                            만나실 수 있습니다.</span></li>
+                        <li class="gnbSub_bg23"><a href="#">상설전시관</a></li>
+                        <li class="gnbSub_bg24"><a href="#">기획전시관</a></li>
+                        <li class="gnbSub_bg25 bl_no"><a href="#">이벤트안내 </a></li>
+                    </ul>
+                </li>
+            </ul>
+            <ul class="cafe">
+                <li><img src="../images/common/menu06.gif"  alt="cafe"/></li>
+            </ul>
+            <ul class="info1">
+                <li><img src="../images/common/menu07.gif"  alt="내정보관리"/></li>
+            </ul>
+            <ul class="info2">
+                <li><img src="../images/common/menu08.gif" /></li>
+            </ul>
+            <div class="info2_1">
+                <p><img src="../images/common/arro_up.gif" /></p>
+                <ul>
+                    <li>디자인업무</li>
+                    <li>출력업무</li>
+                </ul>
+            </div>
+        </div>
+        <!-- //gnb_group -->
+    </div>
+</div>
+<!-- //header_wrap -->
+<div id="ma_body">
+    <div><img src="../images/main/ma_img01.jpg" /></div>
+    <p class="bestweek">BESTWEEK</p>
+    <div class="bestweek_list">
+        <dl class="good">
+            <dt>좋아요 모델</dt>
+            <dd class="img">2</dd>
+            <dd class="title">2</dd>
+            <dd class="total">2</dd>
+        </dl>
+        <dl class="hit">
+            <dt>좋아요 모델</dt>
+            <dd class="img">2</dd>
+            <dd class="title">2</dd>
+            <dd class="total">2</dd>
+        </dl>
+        <dl class="best">
+            <dt>좋아요 모델</dt>
+            <dd class="img">2</dd>
+            <dd class="title">2</dd>
+            <dd class="total">2</dd>
+        </dl>
+         <dl class="call">
+            <dt>좋아요 모델</dt>
+            <dd class="img">2</dd>
+            <dd class="title">2</dd>
+            <dd class="total">2</dd>
+        </dl>
+    </div>
+    <p class="ma_model">3DMODEL</p>
+    <div class="model">
+        <div class="phtolist">
+            <div class="Lphtobox mgRight10"><span><img src="../images/phto/ma_img01.jpg" width="223" height="180" /></span>
+                <dl>
+                    <p><img src="../images/phto/3d_logo.png" /></p>
+                    <dt>국보21호 불국사 삼층석탑</dt>
+                    <dd>모델제작 : 3DBANK</dd>
+                </dl>
+                <ul>
+                    <li class="love01">100</li>
+                    <li class="love02">200</li>
+                    <li class="love03">600</li>
+                </ul>
+            </div>
+            <div class="Lphtobox mgRight10"><span><img src="../images/phto/ma_img02.jpg" width="221" height="181" /></span>
+                <p><img src="../images/phto/men01.jpg" /></p>
+                <dl>
+                    <dt>국보24호 경주 석굴암 석굴</dt>
+                    <dd>모델제작 : 3DBANK</dd>
+                </dl>
+                <ul>
+                    <li class="love01">100</li>
+                    <li class="love02">200</li>
+                    <li class="love03">60</li>
+                </ul>
+            </div>
+            <div class="Lphtobox mgRight10"><span><img src="../images/phto/ma_img03.jpg" width="221" height="181" /></span>
+                <p><img src="../images/phto/men01.jpg" /></p>
+                <dl>
+                    <dt>국보24호 경주 석굴암 석굴</dt>
+                    <dd>모델제작 : 3DBANK</dd>
+                </dl>
+                <ul>
+                    <li class="love01">100</li>
+                    <li class="love02">200</li>
+                    <li class="love03">60</li>
+                </ul>
+            </div>
+            <div class="Lphtobox"><span><img src="../images/phto/ma_img04.jpg" width="221" height="181" /></span>
+                <p><img src="../images/phto/men01.jpg" /></p>
+                <dl>
+                    <dt>보물343호산수산경무늬전돌</dt>
+                    <dd>모델제작 : 3DBANK</dd>
+                </dl>
+                <ul>
+                    <li class="love01">100</li>
+                    <li class="love02">200</li>
+                    <li class="love03">60</li>
+                </ul>
+            </div>
+        </div>
+        <div class="phtolist">
+            <div class="Lphtobox mgRight10"><span><img src="../images/phto/ma_img05.jpg" width="223" height="180" /></span>
+                <dl>
+                    <p><img src="../images/phto/3d_logo.png" /></p>
+                    <dt>브라키오사우르스</dt>
+                    <dd>모델제작 : 3DBANK</dd>
+                </dl>
+                <ul>
+                    <li class="love01">100</li>
+                    <li class="love02">200</li>
+                    <li class="love03">600</li>
+                </ul>
+            </div>
+            <div class="Lphtobox mgRight10"><span><img src="../images/phto/ma_img06.jpg" width="221" height="181" /></span>
+                <p><img src="../images/phto/men01.jpg" /></p>
+                <dl>
+                    <dt>아시아큰거북</dt>
+                    <dd>모델제작 : 3DBANK</dd>
+                </dl>
+                <ul>
+                    <li class="love01">100</li>
+                    <li class="love02">200</li>
+                    <li class="love03">60</li>
+                </ul>
+            </div>
+            <div class="Lphtobox mgRight10"><span><img src="../images/phto/ma_img07.jpg" width="221" height="181" /></span>
+                <p><img src="../images/phto/men01.jpg" /></p>
+                <dl>
+                    <dt>국보25호태종무열왕릉비</dt>
+                    <dd>모델제작 : 3DBANK</dd>
+                </dl>
+                <ul>
+                    <li class="love01">100</li>
+                    <li class="love02">200</li>
+                    <li class="love03">60</li>
+                </ul>
+            </div>
+            <div class="Lphtobox"><span><img src="../images/phto/ma_img08.jpg" width="221" height="181" /></span>
+                <p><img src="../images/phto/men01.jpg" /></p>
+                <dl>
+                    <dt>다람쥐</dt>
+                    <dd>모델제작 : 3DBANK</dd>
+                </dl>
+                <ul>
+                    <li class="love01">100</li>
+                    <li class="love02">200</li>
+                    <li class="love03">60</li>
+                </ul>
+            </div>
+        </div>
+        <!--//모델리스트-->
+        <div class="trand">
+            <div class="ma_notice">
+                <p class="more">+more</p>
+                <dl>
+                    <dt>공지사항</dt>
+                    <dd><a>3D BANK와 함께 하는 '3D 프린팅 디자인 컨테스트'</a>2016.06.01 </dd>
+                    <dd><a>3D BANK와 함께 하는 '3D 프린팅 디자인 컨테스트'</a>2016.06.01 </dd>
+                    <dd><a>3D BANK와 함께 하는 '3D 프린팅 디자인 컨테스트'</a>2016.06.01 </dd>
+                    <dd><a>3D BANK와 함께 하는 '3D 프린팅 디자인 컨테스트'</a>2016.06.01 </dd>
+                </dl>
+            </div>
+            <div class="ma_news">
+                <dl>
+                    <dt>뉴스 & 트렌드</dt>
+                    <p><img src="../images/main/ma_new.jpg" /></p>
+                    <dd class="new_name"><a>3D프린터 도입한 미슐랭 레스토랑</a></dd>
+                    <dd><a>두바이에는 건물 전체와 이를 채울 가구까지 3D프린터로 제작하는 사무실이 들어선다고 하죠.지 3D프린터로 제작하는 사무실이 들어선다고 하죠.</a> </dd>
+                    <dd class="new_day">2016-06-15</dd>
+                </dl>
+            </div>
+        </div>
+        <div class="ma_benner mb15 mt15"><img src="../images/main/ma_img04.jpg" /></div>
+    </div>
+</div>
+<!-- quick Menu -->
+<div id="quick">
+    <p>처음오세요?</p>
+    <ul>
+        <li class="member">회원가이드</li>
+        <li class="company">업무가이드</li>
+    </ul>
+    <dl>
+        <dt><img src="../images/common/quick_img01.gif" alt="댓글" class="mb7"/></dt>
+        <dd> 댓글 <span class="bold fontC02">12 </span></dd>
+    </dl>
+    <dl>
+        <dt><img src="../images/common/quick_img02.gif" alt="3D Knowhow" class="mb7"/></dt>
+        <dd> 3D Knowhow </dd>
+    </dl>
+    <dl>
+        <dt><img src="../images/common/quick_img03.gif" alt="구매현황" class="mb7"/></dt>
+        <dd> 구매현황 <span class="bold fontC02">12 </span></dd>
+    </dl>
+    <dl>
+        <dt><img src="../images/common/quick_img04.gif" alt="공모견적" class="mb7"/></dt>
+        <dd> 공모견적 <span class="bold fontC02">12 </span></dd>
+    </dl>
+    <dl>
+        <dt><img src="../images/common/quick_img05.gif" alt="제작공모" class="mb7"/></dt>
+        <dd> 제작공모 <span class="bold fontC02">12 </span></dd>
+    </dl>
+    <dl class="nb">
+        <dt><img src="../images/common/quick_img06.gif" alt="제작요청" class="mb7"/></dt>
+        <dd> 제작요청 <span class="bold fontC02">12 </span></dd>
+    </dl>
+    <p><a href="#"><img src="../images/common/top_btn.gif" alt="top가기" /></a></p>
+</div>
+<!-- //quick Menu -->
+<div id="footer">
+    <div id="mainfooter">
+        <p><img src="../images/common/bot_logo.gif"  alt="3DBANK"/></p>
+        <ul class="use-help">
+            <li class="mgBtm12">회사소개 </li>
+            <li class="mgBtm12">고객센터 </li>
+            <li class="mgBtm12">이용약관 </li>
+            <li class="textyel">개인정보처리방침 </li>
+            <li  class="nobar"> 찾아오시는길 </li>
+        </ul>
+        <div class="add">
+            <ul>
+                <li>주 소 : 서울시 서초구 서초중앙로 63 리더스 빌딩6층</li>
+                <li>대 표 : 김동욱       고객센터 : 02-1234-5678        E-mail : 3dbank@3dbank.com        business license : 335-86-00161 </li>
+                <li>Copyright ㈜쓰리디뱅크. All rights reserved </li>
+            </ul>
+        </div>
+    </div>
+</div>
+<!--//footer-->
+</body>
+</html>

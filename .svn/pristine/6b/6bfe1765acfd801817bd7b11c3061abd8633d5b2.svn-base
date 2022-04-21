@@ -1,0 +1,312 @@
+<%@ page contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
+<script>
+$(function() {
+	if ('<%=user_uid%>' == mUserUid) {
+		readEtcInfo();
+	} else {
+		readFollowInfo();
+	}
+	
+	$(".point_popup_ul li").click(function(){
+		$(".point_popup_ul li").children("div").css("display","none");
+		$(this).children("div").css("display","block");
+	});
+	$(".ul_xbtn").click(function(){
+		$(".point_popup_div").hide();
+		return false;
+	});
+	
+	// 숫자체크
+	$('#point').blur(function() {
+		if (!$(this).val())
+			return;
+			
+		if (!jQuery.isNumeric($(this).val())) {
+			alert("숫자만 입력 가능 합니다.")
+			$(this).val("");
+			$(this).focus();
+		}
+	});
+});
+
+function setEtcInfo(tmpData) {
+	$('#t_follower').text(tmpData.t_follower);
+	$('#t_following').text(tmpData.t_following);
+	$('#design_cnt').text(tmpData.design_cnt);
+	$('#print_cnt').text(tmpData.print_cnt);
+	$('#t_like_cnt1').text(tmpData.t_like_cnt);
+	$('#t_bmark1').text(tmpData.t_bmark);
+}
+
+function setBtn_Follow(tmpCrud) {
+	$('#p_follow, #p_unfollow').hide();
+	
+	if (!<%=isLogin%>)
+		return;
+}
+
+// 기타항목 클릭
+function clickEtcInfo(tmpType) {
+	return;
+	var url= "";
+	switch (tmpType) {
+	case 0:
+		url = "/community/member_info.do?user_uid=" + mUserUid + "&p_login_id=" + mLoginId + "&follow_tp=1";
+		break;
+	case 1:
+		if ($('#t_follower').text() > 0)
+			url = "/community/follow_list.do?user_uid=" + mUserUid + "&p_login_id=" + mLoginId + "&follow_tp=1";
+		break;
+	case 2:
+		if ($('#t_following').text() > 0)
+			url = "/community/follow_list.do?user_uid=" + mUserUid + "&p_login_id=" + mLoginId + "&follow_tp=2";
+		break;
+	case 3:
+		if ($('#design_cnt').text() > 0)
+			url = "/community/etc_list.do?user_uid=" + mUserUid + "&p_login_id=" + mLoginId + "&follow_tp=1";
+		break;
+	case 4:
+		if ($('#print_cnt').text() > 0)
+			url = "/community/etc_list.do?user_uid=" + mUserUid + "&p_login_id=" + mLoginId + "&follow_tp=2";
+		break;
+	case 5:
+		if ($('#t_like_cnt1').text() > 0)
+			url = "/community/etc_list.do?user_uid=" + mUserUid + "&p_login_id=" + mLoginId + "&follow_tp=3";
+		break;
+	case 6:
+		if ($('#t_bmark1').text() > 0)
+			url = "/community/etc_list.do?user_uid=" + mUserUid + "&p_login_id=" + mLoginId + "&follow_tp=4";
+		break;
+	default:
+		return;
+	}
+	if (url)
+		location.href = url;
+}
+
+//회원정보 세팅
+function setUserInfo2(tmpUrl, tmpName) {
+	if (tmpUrl)
+		$('#img_profile').attr("src", img_path + tmpUrl);
+	
+	$('#dd_name').text(tmpName);
+}
+
+// 회원상태변경버튼 클릭
+function clickBtnCondition() {
+	if (!confirm("회원상태를 변경 하시겠습니까?"))
+		return;
+	
+	var user_condition = $('input:radio[name="radio"]:checked').val();
+	
+	var paramJson = new Object();
+	paramJson.service_tp = "user_reg";
+	paramJson.p_login_id = mLoginId;
+	paramJson.crud_tp = "u";
+	paramJson.user_condition = user_condition;
+	paramJson.stop_desc = getText_Encode($('#stop_desc').val());
+	
+	if (user_condition == "01")
+		paramJson.stop_dttm = "";
+	else
+		paramJson.stop_dttm = getDate(true);
+	
+	doCommunication2(paramJson);
+}
+
+// 포인트 지급/차단 등록버튼 클릭
+function clickBtnPoint() {
+	if (!confirm("포인트를 변경 하시겠습니까?"))
+		return;
+	
+	var add_tp = $('input:radio[name="radio2"]:checked').val();
+	
+	var paramJson = new Object();
+	paramJson.service_tp = "point_add_hist_reg";
+	paramJson.user_uid = mUserUid;
+	paramJson.crud_tp = "c";
+	paramJson.point_seq = "00";
+	paramJson.point_name = $('#point_name').val();
+	paramJson.add_tp = add_tp;
+	paramJson.point = $('#point').val();
+	
+	if (user_condition == "01")
+		paramJson.stop_dttm = "";
+	else
+		paramJson.stop_dttm = getDate(true);
+	
+	doCommunication2(paramJson);
+}
+
+// 사용자 정보 가져오기
+function readUser2() {
+	var paramJson = new Object();
+	paramJson.service_tp = "user_reg";		
+	paramJson.crud_tp = "r";
+	paramJson.p_login_id = mLoginId;
+
+	doCommunication2(paramJson);
+}
+
+// 기타정보 가져오기
+function readEtcInfo() {
+	var jsonParam = new Object();
+	jsonParam.service_tp = "user_summary_etc_info";
+	jsonParam.user_uid = mUserUid;
+	
+	doCommunication2(jsonParam);
+}
+
+function readFollowInfo() {
+	var jsonParam = new Object();
+	jsonParam.service_tp = "follow_reg";
+	jsonParam.user_uid = "<%= user_uid %>"; 
+	jsonParam.p_login_id = "<%= p_login_id %>";
+	jsonParam.crud_tp = "r";
+	jsonParam.follower_user_uid = mUserUid;					
+	jsonParam.following_user_uid = "<%= user_uid %>";	// 로그인한 사람
+	
+	doCommunication2(jsonParam);
+}
+
+function doCommunication2(jsonParam) {
+	var jsondata = "jsondata=" + JSON.stringify(jsonParam);
+	printLog("send data", jsondata);
+	
+	$.ajax({
+        type : "POST",  
+        url : "/Ajax3DBankController.do",
+        data : jsondata,
+        success : function(result) {
+        	printLog("response data", JSON.stringify(result));
+        	
+        	if (result.retcode == "000") {
+        		if (jsonParam.service_tp == "user_summary_etc_info") {
+        			setEtcInfo(result);
+        			
+        		} else if (jsonParam.service_tp == "follow_reg" && jsonParam.crud_tp == "r") {
+        			setBtn_Follow(result.totcnt);
+        			readEtcInfo();
+        			
+        		} else if (jsonParam.service_tp == "follow_reg" && jsonParam.crud_tp != "r") {
+        			setBtn_Follow(jsonParam.crud_tp);
+        			readEtcInfo();
+        			
+        		} else if (jsonParam.service_tp == "user_reg" && jsonParam.crud_tp == "r") {
+        			setUserInfo2(result.my_photo, getName(result));
+        			
+        		} else if (jsonParam.service_tp == "user_reg" && jsonParam.crud_tp == "u") {
+        			location.href = "/member/member_info.do?user_uid=" + mUserUid + "&p_login_id=" + mLoginId;
+        			
+        		} else if (jsonParam.service_tp == "point_add_hist_reg") {
+        			location.href = "/member/member_info.do?user_uid=" + mUserUid + "&p_login_id=" + mLoginId;
+        		}
+        	} else {
+        		alert(result.retmsg);
+        	}
+        }
+    });
+}
+</script>
+
+<div class="desig_left">
+	<div class="profile"><dl>
+		<dt><img id="img_profile" class="cursor_hand" src="/asia3d/images/phto/default_img.png" width="223" height="180" onclick="clickEtcInfo(0);" /></dt>
+	    <dd id="dd_name"></dd>
+	    <p id="p_myInfo" class="hide"><input type="button" class="input_btn" name="sch_button" value="내정보수정" onclick="location.href='/mypage/my_info_write.do' " /></p>
+	    <p id="p_follow" class="hide"><img src="/asia3d/images/sub/btn_follow.gif" width="80" height="28" onclick="clickFollow(true);" alt="Follow"/></p>
+	    <p id="p_unfollow" class="hide"><img src="/asia3d/images/sub/btn_unfollow.gif" width="80" height="28" onclick="clickFollow(false);" alt="unFollow"/></p>
+	</dl></div>
+	
+	<div class="mt15 mb10 clear"></div>
+	<div class="desigtotal">
+	    <ul class="mr3 tot01 cursor_hand" onclick="clickEtcInfo(1);">
+            <li class="dotline"><span id="t_follower"></span></li>
+            <li>Followers</li>
+        </ul>
+        <ul class="tot02 cursor_hand" onclick="clickEtcInfo(2);">
+            <li class="dotline"><span id="t_following"></span></li>
+            <li>Following</a></li>
+        </ul>
+        <ul class="tot03 mr3 cursor_hand" onclick="clickEtcInfo(3);">
+            <li class="dotline"><span id="design_cnt"></span></li>
+            <li>Design</li>
+        </ul>
+        <ul class="tot04 cursor_hand" onclick="clickEtcInfo(4);">
+            <li class="dotline1"><span id="print_cnt"></span></li>
+            <li>Makes</li>
+        </ul>
+        <ul class="mr3 tot05 cursor_hand" onclick="clickEtcInfo(5);">
+            <li class="dotline1"><span id="t_like_cnt1"></span></li>
+            <li>Like</li>
+        </ul>
+        <ul class="tot06 cursor_hand" onclick="clickEtcInfo(6);">
+            <li class="dotline1"><span id="t_bmark1"></span></li>
+            <li>Collections</li>
+        </ul>
+	</div>
+	
+	<div class="point mt15 mb10 clear">
+		<ul class="point_popup_ul">
+			<li class="cursor_hand">회원상태변경
+				<div class="point_popup_div">
+					<table summary="" class="">
+						<colgroup>
+							<col width="20%" />
+							<col width="" />
+						</colgroup>
+						<tbody>
+							<tr>
+								<th scope="col">회원 상태</th>
+								<td>
+									<input id="radio1" type="radio" name="radio" checked="checked" value="01" /><label for="radio1">정상</label>
+									<input id="radio2" type="radio" name="radio" value="02" /><label for="radio2">정지</label>
+									<input id="radio3" type="radio" name="radio" value="03" /><label for="radio3">탈퇴</label>
+								</td>
+							</tr>					
+							<tr>
+								<th scope="col">사유</th>
+								<td><textarea id="stop_desc" class="point_popup_texta" maxlength="255" style="resize:none;"></textarea></td>
+							</tr>							
+						</tbody>						
+					</table>
+					<p class="admin_btn">
+						<span onclick="clickBtnCondition();">등록</span>
+						<span class="ul_xbtn">닫기</span>
+					</p>
+				</div>
+			</li>
+			<li class="noline cursor_hand">포인트지급삭제
+				<div class="point_popup_div">
+					<table summary="" class="">
+						<colgroup>
+							<col width="20%" />
+							<col width="" />
+						</colgroup>
+						<tbody>
+							<tr>
+								<th scope="col">포인트</th>
+								<td>
+									<input id="radio4" type="radio" name="radio2" value="01" checked="checked" /><label for="radio4">지급</label>
+									<input id="radio5" type="radio" name="radio2" value="02" /><label for="radio5">차감</label>
+								</td>
+							</tr>					
+							<tr>
+								<th scope="col">제목</th>
+								<td><input id="point_name" type="text" class="input02" maxlength="200" style="width:350px;" /></td>
+							</tr>
+							<tr>
+								<th scope="col">포인트</th>
+								<td><input id="point" type="text" class="input02" maxlength="4" /> 포인트</td>
+							</tr>							
+						</tbody>
+					</table>
+					<p class="admin_btn">
+						<span class="" onclick="clickBtnPoint();" >등록</span>
+						<span class="ul_xbtn">닫기</span>
+					</p>
+				</div>
+			</li>
+		</ul>
+	</div>
+</div>

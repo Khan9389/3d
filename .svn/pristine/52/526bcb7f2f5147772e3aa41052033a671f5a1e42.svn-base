@@ -1,0 +1,81 @@
+package com.asia3d.web;
+
+import com.asia3d.util.Log;
+
+
+public class DefineService {
+
+	//
+	public static Log log = null;
+	
+	/*
+	 * Ajax3DBankController.java 에 정의된 내용과 일치시킨다.
+	 */
+	 public enum Service
+	 {
+		 user_reg, 
+		 user_login, 
+		 user_photo_download, 
+		 my_info_fileupload, 
+		 mail_auth_confirm, 
+		 print_corp_info_reg, 
+		 modeler_info_reg, 
+		 contents_fileupload, 
+		 conts_3d_info_reg, 
+		 conts_3d_info_list, 
+		 print_history_info_reg, 
+		 conts_3d_reg_interest,  
+		 file_tmp_updownload, 
+		 user_logout, 
+		 print_history_info_list, 
+		 print_hist_interest, 
+		 hold_loc_list, 
+		 print_corp_list, 
+		 comment_reg, 
+		 comment_list, 
+		 notice_reg, 
+		 notice_list, 
+		 qna_reg, 
+		 qna_list, 
+		 news_trand_reg, 
+		 news_trand_list, 
+		 interest_conts_list, 
+		 download_conts_list, 
+		 upload_conts_list, 
+		 follow_reg, 
+		 user_info_list, 
+		 user_info_by_user_uid, 
+		 user_summary_etc_info, 
+		 user_summary_etc_info_list, 
+		 order_made_info, 
+		 make_info_list, 
+		 estimate_info_reg, 
+		 main_info, 
+		 sns_login, 
+		 admin_login, 
+		 cgrp_reg, 
+		 cgrp_list, 
+		 disp_reg, 
+		 disp_list, 
+		 point_reg, 
+		 pay_list, 
+		 pay_calculate_list, 
+		 point_trans_reg, 
+		 refund_list, 
+		 deposit_list, 
+		 point_add_hist_reg, 
+		 refund_reg,
+		 company_unpaid_list, 
+		 company_unpaid_descript, 
+		 company_paid_list,
+		 company_paid_descript, 
+		 calculate_target_list, 
+		 calculate_deposit_list,
+		 all_script_list
+	 }
+
+	// 한 페이지 당 출력될 개수
+	public static int RE_LIST_CNT=30;
+	
+
+}

@@ -1,0 +1,213 @@
+<%@ page contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ko" xml:lang="ko">
+
+<head>
+	<%@ include file="../comm/util.jsp" %>
+	<meta name="keywords" content="3DBANK" />
+	<title><%=title%></title>
+</head>
+
+<body>
+<script type="text/javascript">
+<% 
+String cgrp_id = request.getParameter("cgrp_id");
+String disp_id = request.getParameter("disp_id");
+%>
+
+var cgrp_id = <%=cgrp_id%>; 
+var disp_id = <%=disp_id%>; 
+var mCrudTp = (cgrp_id == "null" || !cgrp_id) ? "c" : "r";
+var mInfo;
+
+$(document).ready(function() {
+	if (mCrudTp == "r") {
+		$('#btn_save').show();
+		setHistory("cgrp_write2", null);
+		readInfo();
+	} else {
+		$('#btn_regist').show();
+		setHistory("cgrp_write", null);		
+	}
+});
+
+
+// 콘텐츠그룹정보 불러오기
+function readInfo() {
+	var paramJson = new Object();
+	paramJson.service_tp = "cgrp_reg";
+	paramJson.p_login_id = "<%= p_login_id %>"; 
+	paramJson.user_uid = "<%= user_uid %>";
+	paramJson.crud_tp = mCrudTp;
+	paramJson.cgrp_id = cgrp_id;
+	paramJson.disp_id = disp_id;
+	
+	doCommunication(paramJson);
+}
+
+// 콘텐츠그룹정보 세팅
+function setInfo(tmpInfo) {
+	$('#cgrp_name').val(mInfo.cgrp_name);
+	$('#grp_sql').val(mInfo.grp_sql);
+	$('#grp_desc').val(getDecodeTxt2(mInfo.grp_desc));
+	$('#conts_cnt').text(mInfo.conts_cnt);
+	$('input:radio[name=grp_use_yn]:input[value=' + mInfo.grp_use_yn + ']').attr("checked", true);
+	
+	if (mInfo.disp_name) {
+		$('#div_disp').show();
+		$('#upt_dttm').val(getText_DateFormat(mInfo.upt_dttm));
+		$('#disp_st').val(getText_DispSt(mInfo.disp_st));
+		$('#disp_name').val(mInfo.disp_name);
+	}
+}
+
+
+
+// 저장버튼 클릭
+function clickBtnSave() {
+	var cgrp_name = $('#cgrp_name').val();
+	var grp_sql = $('#grp_sql').val();
+	
+	if (!cgrp_name) {
+		alert("콘텐츠그룹명을 입력해주세요.");
+		$('#cgrp_name').focus();
+		return;
+	}
+	if (!grp_sql) {
+		alert("콘텐츠그룹SQL을 입력해주세요.");
+		$('#grp_sql').focus();
+		return;
+	}
+	
+	var paramJson = new Object();
+	paramJson.service_tp = "cgrp_reg";
+	paramJson.crud_tp = mCrudTp;
+	paramJson.cgrp_id = cgrp_id;
+	paramJson.cgrp_name = cgrp_name;
+	paramJson.grp_sql = grp_sql;
+	paramJson.grp_desc = getText_Encode($('#grp_desc').val());
+	paramJson.grp_use_yn = $(":input:radio[name=grp_use_yn]:checked").val();
+	
+	doCommunication(paramJson);
+}
+
+// ajax 통신 및 callback
+function doCommunication(tmpJson) {
+	var jsondata = "jsondata=" + JSON.stringify(tmpJson);
+	printLog(jsondata);
+	
+	$.ajax({
+        type : "POST",  
+        url : "/Ajax3DBankController.do",
+        data : jsondata,
+        success : function(args) {
+        	printLog(JSON.stringify(args));
+        	
+        	if (args.retcode == "000") {
+        		if (tmpJson.service_tp == "cgrp_reg" && tmpJson.crud_tp == "r") {
+        			mInfo = args;
+        			mCrudTp = "u";
+        			setInfo();
+        			
+        		} else if (tmpJson.service_tp == "cgrp_reg" && (tmpJson.crud_tp == "c" || tmpJson.crud_tp == "u")) {
+        			alert("저장완료되었습니다.");
+        			location.href = "/event/cgrp_list.do";
+        		}
+        	} else {
+        		alert(args.retmsg);
+        	}
+        }
+    });
+}
+
+</script>
+<%@ include file="../comm/menu.jsp" %>
+
+<div id="container">
+    <div class="SubContents"  >
+       	<div class="Acontents">
+	        <!-- navi -->
+           	<div class="con-tit1"></div>
+           	
+           	<div id="notice" class="clear">
+				<h6 class="mb15">등록정보</h6>
+				<table summary="" class="DetailTable" style="width:100%">
+                    <colgroup>
+	                    <col width="20%" />
+	                    <col width="" />
+	                    <col width="20%" />
+	                    <col width="" />
+                    </colgroup>
+                    <tbody>
+	                    <tr>
+	                        <th scope="col">콘텐츠그룹명</th>
+	                        <td colspan="3"  class="bdRno">
+	                        	<input id="cgrp_name" class="input02" type="text" name="input" style="width:400px;" />
+	                        </td>
+	                    </tr>
+	                    <tr>
+	                        <th scope="col">콘텐츠그룹SQL</th>
+	                        <td colspan="3"  class="bdRno">
+	                        	<input class="input02" style="width:400px;" type="text" value="SELECT CONTS_UID FROM CONTS_3D_INFO WHERE" readonly="readonly" /><br>
+								<textarea id="grp_sql" class="admin_textarea" placeholder="조건문을 등록해주세요." style="resize:none"></textarea>
+							</td>
+	                    </tr>
+	                    <tr>
+	                        <th scope="col">그룹설명</th>
+	                        <td colspan="3" class="bdRno">
+	                        	<textarea id="grp_desc" class="admin_textarea" style="resize:none"></textarea>
+	                        </td>
+	                    </tr>
+	                    <tr>
+	                        <th scope="col">그룹상태</th>
+	                        <td colspan="3" class="bdRno">
+	                        	<input type="radio" name="grp_use_yn" id="radio1" value="Y" checked="checked" />
+	                            <label for="radio1">사용</label>
+	                            <input type="radio" name="grp_use_yn" id="radio3" value="N" />
+	                            <label for="radio3">정지</label>
+							</td>
+						</tr>
+	                    <tr>
+	                    	<th class="bdRno">그룹내콘텐츠수</th>
+	                        <td id="conts_cnt" class="bdRno" colspan="3"></td>
+	                    </tr>
+	                </tbody>
+	            </table>
+
+				<div id="div_disp" class="hide">
+				<h6 class="mb15 mt15">부가정보</h6>
+				<table summary="" class="DetailTable" style="width:100%">
+	                <colgroup>
+		                <col width="20%" />
+		                <col width="" />
+		                <col width="20%" />
+		                <col width="" />
+	                </colgroup>
+	                <tbody>
+	                    <tr>
+							<th scope="col">변경일시</th>
+	                        <td id="upt_dttm" class="bdRno" colspan="3"></td>
+	                    </tr>                       
+	                    <tr>
+	                        <th scope="col">전시상태</th>
+	                        <td colspan="3"  class="bdRno">
+	                        	<input id="disp_st" class="input02" style="width:150px;" type="text" readonly="readonly" />
+								<input id="disp_name" class="input02" style="width:380px;" type="text" readonly="readonly" />
+							</td>
+	                    </tr>
+					</tbody>
+	            </table>
+            	</div>
+				<div class="btnR">
+	                <button id="btn_save" class="btnList mr3 hide" type="submit" onclick="clickBtnSave();">저장</button>
+	                <button id="btn_regist" class="btnList mr3 hide" type="submit" onclick="clickBtnSave();">등록</button>
+	                <button type="submit" class="btnList mr3" onclick="location.href='/event/cgrp_list.do'">목록</button>
+	            </div>
+			</div>
+		</div>	
+	</div>
+</div>
+
+<%@ include file="../comm/footer.jsp" %>
+</body>
+</html>

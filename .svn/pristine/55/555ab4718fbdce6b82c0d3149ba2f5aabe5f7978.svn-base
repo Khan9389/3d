@@ -1,0 +1,30 @@
+{
+  "name": "node-stl",
+  "version": "0.0.1",
+  "description": "parse stl files with Node.js and get volume, and weight",
+  "author": {
+    "name": "Johannes Boyne",
+    "email": "johannes@boyne.de",
+    "url": "http://boyne-developing.de"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/johannesboyne/node-stl.git"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "license": "MIT",
+  "dependencies": {},
+  "readme": "node-stl\n========\n\nparse stl files with Node.js and get volume, and weight\n\n## example\n\n```javascript\nvar stl = NodeStl(__dirname + '/myCool.stl');\nconsole.log(stl.volume + 'cm^3');\nconsole.log(stl.weight + 'gm');\n```\nnode-stl recognizes by itself whether it is dealing with an ASCII STL or a binary STL file\n\n## license\n\nMIT\n\n## Version\n\n`0.0.1`",
+  "readmeFilename": "README.md",
+  "bugs": {
+    "url": "https://github.com/johannesboyne/node-stl/issues"
+  },
+  "_id": "node-stl@0.0.1",
+  "dist": {
+    "shasum": "2f9f25265856135792df633de24ca17d8d97780a"
+  },
+  "_from": "node-stl@",
+  "_resolved": "https://registry.npmjs.org/node-stl/-/node-stl-0.0.1.tgz"
+}
